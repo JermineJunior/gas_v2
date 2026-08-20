@@ -1,0 +1,117 @@
+<?php
+
+return [
+    'stations' => [
+        'stations.view'       => 'عرض المحطات',
+        'stations.create'     => 'إضافة محطة',
+        'stations.edit'       => 'تعديل محطة',
+        'stations.delete'     => 'حذف محطة',
+    ],
+    'users' => [
+        'users.view'          => 'عرض المستخدمين',
+        'users.create'        => 'إضافة مستخدم',
+        'users.edit'          => 'تعديل مستخدم',
+        'users.delete'        => 'حذف مستخدم',
+    ],
+    'roles' => [
+        'roles.view'          => 'عرض الأدوار',
+        'roles.create'        => 'إضافة دور',
+        'roles.edit'          => 'تعديل دور',
+        'roles.delete'        => 'حذف دور',
+    ],
+    'clients' => [
+        'clients.view'        => 'عرض العملاء',
+        'clients.create'      => 'إضافة عميل',
+        'clients.edit'        => 'تعديل عميل',
+        'clients.delete'      => 'حذف عميل',
+    ],
+    'suppliers' => [
+        'suppliers.view'      => 'عرض الموردين',
+        'suppliers.create'    => 'إضافة مورد',
+        'suppliers.edit'      => 'تعديل مورد',
+        'suppliers.delete'    => 'حذف مورد',
+    ],
+    'fuel_orders' => [
+        'fuel_orders.view'    => 'عرض طلبات الوقود',
+        'fuel_orders.create'  => 'إضافة طلب وقود',
+        'fuel_orders.edit'    => 'تعديل طلب وقود',
+        'fuel_orders.delete'  => 'حذف طلب وقود',
+    ],
+    'machines' => [
+        'machines.view'       => 'عرض الماكينات',
+        'machines.create'     => 'إضافة ماكينة',
+        'machines.edit'       => 'تعديل ماكينة',
+        'machines.delete'     => 'حذف ماكينة',
+    ],
+    'machine_details' => [
+        'machine_details.view'    => 'عرض العدادات',
+        'machine_details.create'  => 'إضافة عداد',
+        'machine_details.edit'    => 'تعديل عداد',
+        'machine_details.delete'  => 'حذف عداد',
+    ],
+    'tunckers' => [
+        'tunckers.view'       => 'عرض التناكر',
+        'tunckers.create'     => 'إضافة تنكر',
+        'tunckers.edit'       => 'تعديل تنكر',
+        'tunckers.delete'     => 'حذف تنكر',
+    ],
+    'deposit_details' => [
+        'deposit_details.view'    => 'عرض التوريدات',
+        'deposit_details.create'  => 'إضافة توريد',
+        'deposit_details.edit'    => 'تعديل توريد',
+        'deposit_details.delete'  => 'حذف توريد',
+    ],
+    'employees' => [
+        'employees.view'      => 'عرض الموظفين',
+        'employees.create'    => 'إضافة موظف',
+        'employees.edit'      => 'تعديل موظف',
+        'employees.delete'    => 'حذف موظف',
+    ],
+    'stocks' => [
+        'stocks.view'         => 'عرض الابار',
+        'stocks.create'       => 'إضافة بير',
+        'stocks.edit'         => 'تعديل بير',
+        'stocks.delete'       => 'حذف بير',
+    ],
+    'revenue' => [
+        'revenue.view'        => 'عرض الإيرادات',
+        'revenue.create'      => 'إضافة إيراد',
+        'revenue.edit'        => 'تعديل إيراد',
+        'revenue.delete'      => 'حذف إيراد',
+    ],
+    'prices' => [
+        'prices.view'         => 'عرض الاسعار',
+        'prices.manage'       => 'إدارة الاسعار',
+    ],
+    'reports' => [
+        'reports.debt'              => 'تقرير الحسابات',
+        'reports.tuncker'           => 'تقرير التناكر',
+        'reports.machine_detail'    => 'تقرير العدادات',
+        'reports.deposit_detail'    => 'تقرير التوريد',
+        'reports.supplier'          => 'تقرير الموردين',
+        'reports.warehouse'         => 'تقرير المستودعات',
+    ],
+    'warehouses' => [
+        'warehouses.view'              => 'عرض المستودعات',
+        'warehouses.create'            => 'إضافة مستودع',
+        'warehouses.edit'              => 'تعديل مستودع',
+        'warehouses.delete'            => 'حذف مستودع',
+    ],
+    'warehouse_withdrawals' => [
+        'warehouse_withdrawals.view'   => 'عرض سحوبات المستودع',
+        'warehouse_withdrawals.create' => 'إضافة سحب من المستودع',
+        'warehouse_withdrawals.edit'   => 'تعديل سحب من المستودع',
+        'warehouse_withdrawals.delete' => 'حذف سحب من المستودع',
+    ],
+    'warehouse_transactions' => [
+        'warehouse_transactions.view'   => 'عرض حركات المستودع',
+        'warehouse_transactions.create' => 'إضافة حركة مستودع',
+        'warehouse_transactions.edit'   => 'تعديل حركة مستودع',
+        'warehouse_transactions.delete' => 'حذف حركة مستودع',
+    ],
+    'warehouse_transfers' => [
+        'warehouse_transfers.view'      => 'عرض تحويلات المستودع',
+        'warehouse_transfers.create'    => 'إضافة تحويل مستودع',
+        'warehouse_transfers.delete'    => 'حذف تحويل مستودع',
+    ],
+];

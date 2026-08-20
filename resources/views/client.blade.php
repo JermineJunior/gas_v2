@@ -26,19 +26,21 @@
     @include('header')
 
     <!-- قسم الحسابات -->
-    <div x-data="{ showAddModal: false, showEditModal: false, editclient: { id: '', name: '', phone: '', type: '' } }" class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
+    <div x-data="{ showAddModal: false, showEditModal: false, editclient: { id: '', name: '', phone: '', type: '' }, activeTab: '1' }" x-init="$watch('activeTab', v => window._clientActiveTab = v); window._clientActiveTab = activeTab" class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
 
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">إدارة العملاء</h2>
 
             <!-- زر إضافة -->
             @if (!isset($station))
+                @can('clients.create')
                 <div class="flex gap-1">
                     <button @click="showAddModal = true"
                         class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                         + إضافة عميل جديد
                     </button>
                 </div>
+                @endcan
             @endif
         </div>
 
@@ -50,10 +52,29 @@
             </div>
         @endif
 
+        <!-- تبويبات أنواع العملاء -->
+        <div class="flex gap-2 mb-6">
+            <button @click="activeTab = 'all'"
+                :class="activeTab === 'all' ? 'bg-primary-strong text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="px-5 py-2 rounded-lg font-semibold transition">
+                الكل
+            </button>
+            <button @click="activeTab = '1'"
+                :class="activeTab === '1' ? 'bg-primary-strong text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="px-5 py-2 rounded-lg font-semibold transition">
+                العملاء
+            </button>
+            <button @click="activeTab = '2'"
+                :class="activeTab === '2' ? 'bg-primary-strong text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="px-5 py-2 rounded-lg font-semibold transition">
+                الباصات
+            </button>
+        </div>
+
         <!-- بطاقات الحسابات -->
         <div id="clientGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($clients as $client)
-                <div
+                <div data-type="{{ $client->type }}" x-show="activeTab === 'all' || activeTab == '{{ $client->type }}'"
                     class="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
 
                     <!-- زر ثلاث نقاط + قائمة منسدلة -->
@@ -73,6 +94,7 @@
                             class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
 
                             <!-- تعديل -->
+                            @can('clients.edit')
                             <button
                                 @click="$dispatch('edit-client', {
                                     id: {{ $client->id }},
@@ -84,9 +106,11 @@
                                 class="w-full text-right px-4 py-2 hover:bg-gray-100 text-green-600">
                                 تعديل
                             </button>
+                            @endcan
 
 
                             <!-- حذف -->
+                            @can('clients.delete')
                             <form action="{{ route('client.delete', $client->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
@@ -95,6 +119,7 @@
                                     حذف
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     </div>
 
@@ -298,6 +323,7 @@
 
                 timer = setTimeout(() => {
                     let keyword = $(this).val();
+                    let activeTab = window._clientActiveTab || '1';
 
                     $.ajax({
                         url: "{{ route('client.search') }}",
@@ -309,30 +335,30 @@
                         success: function(response) {
                             $("#clientGrid").empty();
 
-                            if (response.length === 0) {
+                            let filtered = activeTab === 'all' ? response : response.filter(c => String(c.type) === String(activeTab));
+
+                            if (filtered.length === 0) {
                                 $("#clientGrid").html(
                                     '<p class="text-center col-span-3 text-gray-600 mt-6">لا توجد نتائج مطابقة.</p>'
                                 );
                                 return;
                             }
 
-                            response.forEach(client => {
+                            filtered.forEach(client => {
 
                                 let balance = (client.total_sum - client
                                     .paid_sum) || 0;
                                 balance = balance.toLocaleString();
 
-                                // 👇 الشرط الخاص بالإيرادات والحذف
-                                let revenueBtn = "";
-                                let deleteBtn = "";
-
-                                revenueBtn = `
+                                let revenueBtn = `
                                         <a href="/revenue/${client.id}"
                                             class="w-1/2 text-center bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
                                             الإيرادات
                                         </a>
                                     `;
 
+                                let deleteBtn = '';
+                                @can('clients.delete')
                                 deleteBtn = `
                                         <form action="/client/delete/${client.id}" method="POST" class="w-full">
                                             @csrf
@@ -343,11 +369,34 @@
                                             </button>
                                         </form>
                                     `;
+                                @endcan
+
+                                let editBtn = '';
+                                @can('clients.edit')
+                                editBtn = `
+                                        <button
+                                            @click="$dispatch('edit-client', { id: ${client.id}, name: '${client.name}', phone: '${client.phone}', type: '${client.type}' })"
+                                            class="w-full text-right px-4 py-2 hover:bg-gray-100 text-green-600">
+                                            تعديل
+                                        </button>
+                                    `;
+                                @endcan
 
                                 $("#clientGrid").append(`
-                        <div class="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
+                        <div data-type="${client.type}" x-show="activeTab === 'all' || activeTab == '${client.type}'" class="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
 
-                            <!-- اسم + الرصيد -->
+                            <div x-data="{ openMenu: false }" class="absolute top-3 left-3">
+                                <button @click="openMenu = !openMenu" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                                        <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+                                    </svg>
+                                </button>
+                                <div x-show="openMenu" @click.away="openMenu = false" class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
+                                    ${editBtn}
+                                    ${deleteBtn}
+                                </div>
+                            </div>
+
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-2">${client.name}</h3>
                                 <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
@@ -356,20 +405,19 @@
                                 </p>
                             </div>
 
-                            <!-- الأزرار -->
                             <div class="flex justify-between gap-2 mt-4">
-
                                 <a href="/client/${client.id}"
                                     class="w-1/2 text-center bg-primary-strong text-white py-2 rounded-lg hover:bg-primary-strong transition font-semibold">
                                     المديونيات
                                 </a>
-
                                 ${revenueBtn}
                             </div>
 
                         </div>
                     `);
                             });
+
+                            Alpine.initTree(document.getElementById('clientGrid'));
                         }
                     });
                 }, 400);

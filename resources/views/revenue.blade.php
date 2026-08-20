@@ -56,12 +56,12 @@
 
                 <div class="flex items-center gap-3">
                     <!-- إضافة (لون شعار الفجر #00AEEF) -->
-                    @if (auth()->id() == $client->user_id)
+                    @can('revenue.create')
                         <button onclick="openAddModal()"
                             class="flex items-center gap-2 bg-primary-strong hover:bg-primary-strong text-white px-4 py-2 rounded-lg shadow">
                             + إضافة ايراد
                         </button>
-                    @endif
+                    @endcan
                 </div>
             </div>
 
@@ -87,9 +87,9 @@
                                 <th class="px-4 py-3 text-right">التاريخ</th>
                                 <th class="px-4 py-3 text-right">الايراد</th>
                                 <th class="px-4 py-3 text-right">التفاصيل</th>
-                                @if (auth()->user()->type == 0)
+                                @canany(['revenue.edit', 'revenue.delete'])
                                     <th class="px-4 py-3 text-center">الإجراءات</th>
-                                @endif
+                                @endcanany
                             </tr>
                         </thead>
                         <tbody id="accountsBody">
@@ -99,29 +99,33 @@
                                     <td class="px-4 py-4 text-right">{{ $cus->date->format('Y-m-d') }}</td>
                                     <td class="px-4 py-4 text-right">{{ number_format($cus->amount, 2) }}</td>
                                     <td class="px-4 py-4 text-right">{{ $cus->note }}</td>
-                                    @if (auth()->user()->type == 0)
+                                    @canany(['revenue.edit', 'revenue.delete'])
                                         <td class="px-4 py-4 text-center">
                                             <div class="inline-flex gap-2">
-                                                <button
-                                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg edit-btn"
-                                                    data-id="{{ $cus->id }}"
-                                                    data-date="{{ $cus->date->format('Y-m-d') }}"
-                                                    data-amount="{{ $cus->amount }}" data-note="{{ $cus->note }}"
-                                                    data-route="{{ route('revenue.update', $cus->id) }}">
-                                                    تعديل
-                                                </button>
-
-                                                <form action="{{ route('revenue.delete', $cus->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button"
-                                                        class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg">
-                                                        حذف
+                                                @can('revenue.edit')
+                                                    <button
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg edit-btn"
+                                                        data-id="{{ $cus->id }}"
+                                                        data-date="{{ $cus->date->format('Y-m-d') }}"
+                                                        data-amount="{{ $cus->amount }}" data-note="{{ $cus->note }}"
+                                                        data-route="{{ route('revenue.update', $cus->id) }}">
+                                                        تعديل
                                                     </button>
-                                                </form>
+                                                @endcan
+
+                                                @can('revenue.delete')
+                                                    <form action="{{ route('revenue.delete', $cus->id) }}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button"
+                                                            class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg">
+                                                            حذف
+                                                        </button>
+                                                    </form>
+                                                @endcan
                                             </div>
                                         </td>
-                                    @endif
+                                    @endcanany
                                 </tr>
                             @empty
                                 <tr class="text-center">

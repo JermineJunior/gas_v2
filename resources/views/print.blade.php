@@ -60,8 +60,7 @@
 
 </head>
 
-<body>
-    @include('partials.theme') class="bg-gray-100 p-6">
+<body class="bg-gray-100 font-sans">
 
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 no-print-shadow">
 

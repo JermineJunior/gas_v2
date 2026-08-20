@@ -38,6 +38,10 @@ class UserTableSeeder extends Seeder
         // إرفاق كل المحطات بالمستخدم
         $bayan->stations()->syncWithoutDetaching(Station::pluck('id')->toArray());
         $admin->stations()->syncWithoutDetaching(Station::pluck('id')->toArray());
-        $user->stations()->syncWithoutDetaching(Station::pluck('id')->toArray());
+
+        $bayan->assignRole('admin');
+        $admin->assignRole('admin');
+        $user->assignRole('viewer');
+        //$user->stations()->syncWithoutDetaching(Station::pluck('id')->toArray());
     }
 }

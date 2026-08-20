@@ -66,10 +66,19 @@
                 <input type="date" name="end_date" class="w-full p-2 border rounded-lg">
             </div>
 
+            <!-- فلاتر سريعة -->
+            <div class="md:col-span-3 flex flex-wrap justify-center gap-2">
+                <button type="button" onclick="setQuickDate('today')" class="quick-date-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm hover:bg-blue-200 transition">اليوم</button>
+                <button type="button" onclick="setQuickDate('7days')" class="quick-date-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm hover:bg-blue-200 transition">آخر 7 أيام</button>
+                <button type="button" onclick="setQuickDate('month')" class="quick-date-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm hover:bg-blue-200 transition">هذا الشهر</button>
+                <button type="button" onclick="setQuickDate('year')" class="quick-date-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm hover:bg-blue-200 transition">هذا العام</button>
+            </div>
+
             <!-- زر البحث -->
             <div class="md:col-span-3 flex justify-center mt-4">
                 <button type="submit"
-                    class="bg-primary-strong text-white px-6 py-2 rounded-lg hover:bg-primary-strong transition-colors">
+                    class="bg-primary-strong text-white px-6 py-2 rounded-lg hover:bg-primary-strong transition-colors"
+                    @cannot('reports.debt') disabled @endcannot>
                     بحث
                 </button>
             </div>
@@ -130,6 +139,31 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        function setQuickDate(preset) {
+            var today = new Date();
+            var start, end;
+            var yyyy = today.getFullYear();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            var todayStr = yyyy + '-' + mm + '-' + dd;
+
+            if (preset === 'today') {
+                start = end = todayStr;
+            } else if (preset === '7days') {
+                end = todayStr;
+                var d = new Date(today);
+                d.setDate(d.getDate() - 6);
+                start = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            } else if (preset === 'month') {
+                end = todayStr;
+                start = yyyy + '-' + mm + '-01';
+            } else if (preset === 'year') {
+                end = todayStr;
+                start = yyyy + '-01-01';
+            }
+            document.querySelector('input[name="start_date"]').value = start;
+            document.querySelector('input[name="end_date"]').value = end;
+        }
         $(document).ready(function() {
             $('.select2').select2({
                 placeholder: "اختر العميل",

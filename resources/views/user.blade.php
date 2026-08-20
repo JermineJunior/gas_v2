@@ -54,7 +54,7 @@
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen p-6" x-data="{ openAdd: false, openEdit: false, editUser: { id: '', name: '', username: '', stations: [] } }">
+<body class="bg-gray-100 min-h-screen p-6" x-data="{ openAdd: false, openEdit: false, editUser: { id: '', name: '', username: '', stations: [], role_id: '' } }">
     <!-- شريط علوي أفقي (خفيف، خارجي عن الكارد) -->
     @include('header')
 
@@ -62,10 +62,18 @@
     <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">المستخدمين المسجلين</h2>
-            <button @click="openAdd = true"
-                class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
-                + إضافة مستخدم جديد
-            </button>
+            <div class="flex gap-2">
+                @can('roles.view')
+                    <a href="{{ route('roles.index') }}"
+                        class="bg-gray-500 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-600 transition">
+                        الأدوار والصلاحيات
+                    </a>
+                @endcan
+                <button @click="openAdd = true"
+                    class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
+                    + إضافة مستخدم جديد
+                </button>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -76,6 +84,7 @@
                         <th class="px-4 py-3 text-right">الاسم</th>
                         <th class="px-4 py-3 text-right">اسم المستخدم</th>
                         <th class="px-4 py-3 text-right">المحطات</th>
+                        <th class="px-4 py-3 text-right">الدور</th>
                         <th class="px-4 py-3 text-right">الإجراءات</th>
                     </tr>
                 </thead>
@@ -85,13 +94,21 @@
                             <td class="px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $user->name }}</td>
                             <td class="px-4 py-3">{{ $user->username }}</td>
-                            <td class="px-4 py-3"> {{ $user->stations->pluck('name')->join(' - ') }}</td>
+                            <td class="px-4 py-3">{{ $user->stations->pluck('name')->join(' - ') }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 text-xs rounded-full {{ $user->roles->first()?->name === 'admin' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }} font-semibold">
+                                    {{ $user->roles->first()?->name ?? '—' }}
+                                </span>
+                            </td>
                             <td class="px-4 py-3 flex gap-2">
                                 <button
                                     @click="
-                                    editUser = {id:{{ $user->id }}, name:'{{ $user->name }}', username:'{{ $user->username }}', stations:{{ $user->stations->pluck('id') }}};
+                                    editUser = {id:{{ $user->id }}, name:'{{ $user->name }}', username:'{{ $user->username }}', stations:{{ $user->stations->pluck('id') }}, role_id:'{{ $user->roles->first()?->id ?? '' }}'};
                                     openEdit = true;
-                                    setTimeout(()=>$('#stationEdit').val(editUser.stations).trigger('change'),200);
+                                        setTimeout(()=>{
+                                            $('#stationEdit').val(editUser.stations).trigger('change');
+                                            $('#roleEdit').val(editUser.role_id).trigger('change');
+                                        },200);
                                 "
                                     class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">
                                     تعديل
@@ -153,6 +170,15 @@
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">الدور</label>
+                    <select name="role_id" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="">اختر الدور</option>
+                        @foreach ($roles as $role)
+                            <option value="{{ $role->id }}">{{ $role->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="flex justify-end">
                     <button type="submit"
                         class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
@@ -194,6 +220,15 @@
                     <select name="station_id[]" id="stationEdit" multiple required class="w-full">
                         @foreach ($stations as $station)
                             <option value="{{ $station->id }}">{{ $station->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">الدور</label>
+                    <select name="role_id" id="roleEdit" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="">اختر الدور</option>
+                        @foreach ($roles as $role)
+                            <option value="{{ $role->id }}">{{ $role->name }}</option>
                         @endforeach
                     </select>
                 </div>

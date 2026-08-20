@@ -15,6 +15,12 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TunckerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WarehouseWithdrawalController;
+use App\Http\Controllers\WarehouseTransactionController;
+use App\Http\Controllers\WarehouseTransferController;
+use App\Http\Controllers\WarehouseReportController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +37,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::delete('users/{user}', [UserController::class, 'delete'])->name('user.delete');
     Route::post('users/{user}', [UserController::class, 'reset'])->name('user.reset');
     Route::post('/user/update-password', [UserController::class, 'updatePassword'])->name('user.update-password');
+
+    // Roles & Permissions
+    Route::resource('roles', RoleController::class)->except(['show']);
 
     Route::get('report/deposit_detail', [ReportController::class, 'deposit_detail'])->name('reports.deposit_detail');
     Route::post('report/deposit_detail', [ReportController::class, 'deposit_detail_result'])->name('reports.deposit_detail.result');
@@ -114,4 +123,50 @@ Route::group(['middleware' => 'auth'], function () {
     Route::put('stock', [StockController::class, 'update'])->name('stock.update');
     Route::delete('stock/{stock}/delete', [StockController::class, 'delete'])->name('stock.delete');
     Route::get('/get-stocks-by-type', [StockController::class, 'getByType'])->name('stock.getByType');
+
+    // === Warehouses ===
+    Route::get('warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
+    Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
+    Route::post('warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
+    Route::get('warehouses/{warehouse}/edit', [WarehouseController::class, 'edit'])->name('warehouses.edit');
+    Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('warehouses.update');
+    Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('warehouses.destroy');
+
+    // === Warehouse Withdrawals ===
+    Route::get('warehouse-withdrawals', [WarehouseWithdrawalController::class, 'index'])->name('warehouse_withdrawals.index');
+    Route::get('warehouse-withdrawals/create', [WarehouseWithdrawalController::class, 'create'])->name('warehouse_withdrawals.create');
+    Route::post('warehouse-withdrawals', [WarehouseWithdrawalController::class, 'store'])->name('warehouse_withdrawals.store');
+    Route::get('warehouse-withdrawals/{warehouse_withdrawal}/edit', [WarehouseWithdrawalController::class, 'edit'])->name('warehouse_withdrawals.edit');
+    Route::put('warehouse-withdrawals/{warehouse_withdrawal}', [WarehouseWithdrawalController::class, 'update'])->name('warehouse_withdrawals.update');
+    Route::delete('warehouse-withdrawals/{warehouse_withdrawal}', [WarehouseWithdrawalController::class, 'destroy'])->name('warehouse_withdrawals.destroy');
+
+    // === Warehouse Transactions (manual additions) ===
+    Route::get('warehouse-transactions', [WarehouseTransactionController::class, 'index'])->name('warehouse_transactions.index');
+    Route::get('warehouse-transactions/create', [WarehouseTransactionController::class, 'create'])->name('warehouse_transactions.create');
+    Route::post('warehouse-transactions', [WarehouseTransactionController::class, 'store'])->name('warehouse_transactions.store');
+    Route::get('warehouse-transactions/{warehouse_transaction}/edit', [WarehouseTransactionController::class, 'edit'])->name('warehouse_transactions.edit');
+    Route::put('warehouse-transactions/{warehouse_transaction}', [WarehouseTransactionController::class, 'update'])->name('warehouse_transactions.update');
+    Route::delete('warehouse-transactions/{warehouse_transaction}', [WarehouseTransactionController::class, 'destroy'])->name('warehouse_transactions.destroy');
+
+    // === Warehouse Transfers ===
+    Route::get('warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('warehouse_transfers.index');
+    Route::get('warehouse-transfers/create', [WarehouseTransferController::class, 'create'])->name('warehouse_transfers.create');
+    Route::post('warehouse-transfers', [WarehouseTransferController::class, 'store'])->name('warehouse_transfers.store');
+    Route::delete('warehouse-transfers/{warehouse_transfer}', [WarehouseTransferController::class, 'destroy'])->name('warehouse_transfers.destroy');
+
+    // === Warehouse Ledger Report ===
+    Route::get('reports/warehouse', [WarehouseReportController::class, 'index'])->name('reports.warehouse');
+    Route::post('reports/warehouse', [WarehouseReportController::class, 'result'])->name('reports.warehouse.result');
+
+    // === API ===
+    Route::get('api/warehouse-stock', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'fuel_type'    => 'required|in:1,2',
+        ]);
+        $stock = \App\Models\WarehouseStock::where('warehouse_id', $request->warehouse_id)
+            ->where('fuel_type', $request->fuel_type)
+            ->first();
+        return response()->json(['stock' => $stock->current_stock ?? 0]);
+    })->name('api.warehouse-stock');
 });

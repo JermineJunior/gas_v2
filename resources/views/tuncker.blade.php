@@ -168,10 +168,12 @@
                 </div>
             </div>
 
-            <button type="submit"
-                class="flex items-center bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition-colors">
-                حفظ
-            </button>
+            @can('tunckers.create')
+                <button type="submit"
+                    class="flex items-center bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition-colors">
+                    حفظ
+                </button>
+            @endcan
         </form>
     </div>
 

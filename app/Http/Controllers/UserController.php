@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -15,7 +16,8 @@ class UserController extends Controller
     {
         $users = User::whereNot('id', 1)->get();
         $stations = Station::get();
-        return view('user', compact('users', 'stations'));
+        $roles = Role::all();
+        return view('user', compact('users', 'stations', 'roles'));
     }
 
     public function store(Request $request)
@@ -25,6 +27,7 @@ class UserController extends Controller
             'username' => 'required|unique:users,username',
             'password' => 'required',
             'station_id' => ['required', 'exists:stations,id'],
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         $user = User::create([
@@ -34,6 +37,8 @@ class UserController extends Controller
         ]);
 
         $user->stations()->syncWithoutDetaching($request->station_id);
+        $user->roles()->detach();
+        $user->assignRole(Role::find($request->role_id));
 
         return back()->with('success', 'تم اضافة المستخدم بنجاج');
     }
@@ -45,6 +50,7 @@ class UserController extends Controller
             'username' => ['required', Rule::unique('users', 'username')->ignore($request->id, 'id')],
             'password' => 'nullable',
             'station_id' => 'required|exists:stations,id',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         $user = User::findOrFail($request->id);
@@ -58,7 +64,10 @@ class UserController extends Controller
             $user->password = $request->password;
         }
 
+        $user->save();
         $user->stations()->sync($request->station_id);
+        $user->roles()->detach();
+        $user->assignRole(Role::find($request->role_id));
 
         return back()->with('success', 'تم تعديل المستخدم بنجاج');
     }

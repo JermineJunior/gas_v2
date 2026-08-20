@@ -21,7 +21,6 @@
 
 <body class="bg-gray-100 min-h-screen p-6">
 
-    @include('partials.theme')
     @include('header')
 
     <!-- البطاقة الرئيسية -->
@@ -36,14 +35,14 @@
                 <p class="text-gray-600 mt-2">اختر محطة الوقود للمتابعة</p>
             </div>
 
-            @if (auth()->user()->type == 0)
+            @can('stations.create')
                 <div class="flex justify-start mb-6">
                     <button id="openModal"
                         class="px-6 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 transition">
                         + إضافة محطة جديدة
                     </button>
                 </div>
-            @endif
+            @endcan
 
             <!-- شبكة Bento -->
             <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -73,114 +72,184 @@
                                     <div x-show="open" @click.away="open = false" x-transition
                                         class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2 text-sm">
                                         @if (auth()->user()->type == 0 || auth()->user()->type == 1)
-                                            <button @click="open = false"
-                                                class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
-                                                data-id="{{ $station->id }}" data-name="{{ $station->name }}">
-                                                تعديل
-                                            </button>
-                                            <form method="POST" action="{{ route('station.destroy', $station->id) }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button"
-                                                    class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                                                    حذف
+                                            @can('stations.edit')
+                                                <button @click="open = false"
+                                                    class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
+                                                    data-id="{{ $station->id }}" data-name="{{ $station->name }}">
+                                                    تعديل
                                                 </button>
-                                            </form>
-                                            <a href="{{ route('tuncker.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                كل التناكر التي تم شحنها
-                                            </a>
-                                            <a href="{{ route('client.station', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                ادارة الحسابات لدى المحطة
-                                            </a>
-                                        @endif
-                                        @if (auth()->user()->type == 2)
-                                            <button @click="open = false"
-                                                class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
-                                                data-id="{{ $station->id }}" data-name="{{ $station->name }}">
-                                                تعديل
-                                            </button>
-                                            <form method="POST" action="{{ route('station.destroy', $station->id) }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button"
-                                                    class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                                                    حذف
-                                                </button>
-                                            </form>
-                                            @if ($station->id == 1)
+                                            @endcan
+                                            @can('stations.delete')
+                                                <form method="POST" action="{{ route('station.destroy', $station->id) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                            @can('tunckers.view')
+                                                <a href="{{ route('tuncker.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    كل التناكر التي تم شحنها
+                                                </a>
+                                            @endcan
+                                            @can('clients.view')
+                                                <a href="{{ route('client.station', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    ادارة الحسابات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('employees.view')
                                                 <a href="{{ route('employee.index', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     قائمة الموظفين
                                                 </a>
+                                            @endcan
+                                            @can('stocks.view')
                                                 <a href="{{ route('stock.index', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     قائمة الابار
                                                 </a>
+                                            @endcan
+                                            @can('machine_details.view')
+                                                <a href="{{ route('machine_detail.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة العدادات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('deposit_details.view')
+                                                <a href="{{ route('deposit_detail.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة التوريدات لدى المحطة
+                                                </a>
+                                            @endcan
+                                        @endif
+                                        @if (auth()->user()->type == 2)
+                                            @can('stations.edit')
+                                                <button @click="open = false"
+                                                    class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
+                                                    data-id="{{ $station->id }}" data-name="{{ $station->name }}">
+                                                    تعديل
+                                                </button>
+                                            @endcan
+                                            @can('stations.delete')
+                                                <form method="POST" action="{{ route('station.destroy', $station->id) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                            @if ($station->id == 1)
+                                                @can('employees.view')
+                                                    <a href="{{ route('employee.index', $station->id) }}"
+                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                        قائمة الموظفين
+                                                    </a>
+                                                @endcan
+                                                @can('stocks.view')
+                                                    <a href="{{ route('stock.index', $station->id) }}"
+                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                        قائمة الابار
+                                                    </a>
+                                                @endcan
+                                                @can('tunckers.create')
+                                                    <a href="{{ route('tuncker.create', $station->id) }}"
+                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                        تسجيل التنكر
+                                                    </a>
+                                                @endcan
+                                                @can('machine_details.create')
+                                                    <a href="{{ route('machine_detail.create', $station->id) }}"
+                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                        تسجيل العدادات
+                                                    </a>
+                                                @endcan
+                                                @can('deposit_details.create')
+                                                    <a href="{{ route('deposit_detail.create', $station->id) }}"
+                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                        تسجيل التوريدات
+                                                    </a>
+                                                @endcan
+                                            @endif
+                                            @can('clients.view')
+                                                <a href="{{ route('client.station', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    ادارة الحسابات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('tunckers.view')
+                                                <a href="{{ route('tuncker.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة التناكر لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('machine_details.view')
+                                                <a href="{{ route('machine_detail.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة العدادات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('deposit_details.view')
+                                                <a href="{{ route('deposit_detail.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة التوريدات لدى المحطة
+                                                </a>
+                                            @endcan
+                                        @endif
+                                        @if (auth()->user()->type != 0 && auth()->user()->type != 1 && auth()->user()->type != 2)
+                                            @can('tunckers.create')
                                                 <a href="{{ route('tuncker.create', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     تسجيل التنكر
                                                 </a>
+                                            @endcan
+                                            @can('tunckers.view')
+                                                <a href="{{ route('tuncker.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة التناكر لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('machine_details.create')
                                                 <a href="{{ route('machine_detail.create', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     تسجيل العدادات
                                                 </a>
+                                            @endcan
+                                            @can('machine_details.view')
+                                                <a href="{{ route('machine_detail.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة العدادات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('deposit_details.create')
                                                 <a href="{{ route('deposit_detail.create', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     تسجيل التوريدات
                                                 </a>
-                                            @endif
-                                            <a href="{{ route('client.station', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                ادارة الحسابات لدى المحطة
-                                            </a>
-                                            <a href="{{ route('tuncker.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة التناكر لدى المحطة
-                                            </a>
-                                            <a href="{{ route('machine_detail.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة العدادات لدى المحطة
-                                            </a>
-                                            <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة التوريدات لدى المحطة
-                                            </a>
-                                        @endif
-                                        @if (auth()->user()->type != 0 && auth()->user()->type != 1 && auth()->user()->type != 2)
-                                            <a href="{{ route('tuncker.create', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                تسجيل التنكر
-                                            </a>
-                                            <a href="{{ route('tuncker.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة التناكر لدى المحطة
-                                            </a>
-                                            <a href="{{ route('machine_detail.create', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                تسجيل العدادات
-                                            </a>
-                                            <a href="{{ route('machine_detail.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة العدادات لدى المحطة
-                                            </a>
-                                            <a href="{{ route('deposit_detail.create', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                تسجيل التوريدات
-                                            </a>
-                                            <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة التوريدات لدى المحطة
-                                            </a>
-                                            <a href="{{ route('employee.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة الموظفين
-                                            </a>
-                                            <a href="{{ route('stock.index', $station->id) }}"
-                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                قائمة الابار
-                                            </a>
+                                            @endcan
+                                            @can('deposit_details.view')
+                                                <a href="{{ route('deposit_detail.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة التوريدات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('employees.view')
+                                                <a href="{{ route('employee.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة الموظفين
+                                                </a>
+                                            @endcan
+                                            @can('stocks.view')
+                                                <a href="{{ route('stock.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة الابار
+                                                </a>
+                                            @endcan
                                         @endif
                                     </div>
                                 </div>
@@ -206,17 +275,19 @@
                             </div>
 
                             <!-- زر التسجيل -->
-                            @if (auth()->user()->type == 0 || auth()->user()->type == 1)
-                                <a href="{{ route('tuncker.create', $station->id) }}"
-                                    class="block text-center text-green-600 font-bold text-sm hover:underline transition">
-                                    تسجيل التناكر التي تم شحنها ←
-                                </a>
-                            @else
-                                <a href="{{ route('tuncker.create', $station->id) }}"
-                                    class="block text-center text-green-600 font-bold text-sm hover:underline transition">
-                                     تسجيل التناكر ←
-                                </a>
-                            @endif
+                            @can('tunckers.create')
+                                @if (auth()->user()->type == 0 || auth()->user()->type == 1)
+                                    <a href="{{ route('tuncker.create', $station->id) }}"
+                                        class="block text-center text-green-600 font-bold text-sm hover:underline transition">
+                                        تسجيل التناكر التي تم شحنها ←
+                                    </a>
+                                @else
+                                    <a href="{{ route('tuncker.create', $station->id) }}"
+                                        class="block text-center text-green-600 font-bold text-sm hover:underline transition">
+                                         تسجيل التناكر ←
+                                    </a>
+                                @endif
+                            @endcan
                         </div>
                     @endif
                 @endforeach

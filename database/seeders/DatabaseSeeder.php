@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // Station::factory(10)->create();
 
         $this->call(StationTableSeeder::class);
+        $this->call(RolePermissionSeeder::class);
         $this->call(UserTableSeeder::class);
     }
 }

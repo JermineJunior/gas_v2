@@ -93,9 +93,9 @@
                                         <th class="px-4 py-3 text-right"> صافي العداد</th>
                                         <th class="px-4 py-3 text-right">سعر اللتر</th>
                                         <th class="px-4 py-3 text-right">اجمالي المبلغ</th>
-                                        @if (auth()->user()->type == 3 || (auth()->user()->type == 2 && $station->id == 1))
+                                        @canany(['machine_details.edit', 'machine_details.delete'])
                                             <th class="px-4 py-3 text-right">الإجراءات</th>
-                                        @endif
+                                        @endcanany
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -110,19 +110,23 @@
                                             <td class="px-4 py-3">{{ number_format($machine->net) }}</td>
                                             <td class="px-4 py-3">{{ number_format($machine->price) }}</td>
                                             <td class="px-4 py-3">{{ number_format($machine->total) }}</td>
-                                            @if (auth()->user()->type == 3 || (auth()->user()->type == 2 && $station->id == 1))
+                                            @canany(['machine_details.edit', 'machine_details.delete'])
                                                 <td class="px-4 py-3 flex gap-2">
-                                                    <a href="{{ route('machine_detail.edit', $machine->id) }}"
-                                                        class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
-                                                    <form action="{{ route('machine_detail.delete', $machine->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="button"
-                                                            class="delete-btn bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">حذف</button>
-                                                    </form>
+                                                    @can('machine_details.edit')
+                                                        <a href="{{ route('machine_detail.edit', $machine->id) }}"
+                                                            class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
+                                                    @endcan
+                                                    @can('machine_details.delete')
+                                                        <form action="{{ route('machine_detail.delete', $machine->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="button"
+                                                                class="delete-btn bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">حذف</button>
+                                                        </form>
+                                                    @endcan
                                                 </td>
-                                            @endif
+                                            @endcanany
                                         </tr>
                                     @endforeach
                                     <tr class="border-b hover:bg-gray-200">

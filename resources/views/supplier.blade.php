@@ -38,10 +38,12 @@
     <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">الموردين المسجلين</h2>
+            @can('suppliers.edit')
             <button @click="openAdd = true"
                 class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                 + إضافة مورد جديد
             </button>
+            @endcan
         </div>
 
         <div class="overflow-x-auto">
@@ -68,6 +70,7 @@
                             <td class="px-4 py-3">{{ number_format($supplier->total_orders - $supplier->total_deliveries) }} لتر</td>
                             <td class="px-4 py-3 flex gap-2">
                                 <a href="{{ route('fuel_order.index',$supplier->id) }}" class="bg-[#0dcaf0] text-white px-3 py-1 rounded-lg hover:bg-[#0dcaf0]/80">طلب وقود</a>
+                                @can('suppliers.edit')
                                 <button
                                     @click="
                                     editsupplier = {id:{{ $supplier->id }}, name:'{{ $supplier->name }}', phone:'{{ $supplier->phone }}'};
@@ -76,12 +79,15 @@
                                     class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">
                                     تعديل
                                 </button>
+                                @endcan
+                                @can('suppliers.delete')
                                 <form action="{{ route('supplier.delete', $supplier->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button"
                                         class=" delete-btn bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">حذف</button>
                                 </form>
+                                @endcan
 
                             </td>
                         </tr>

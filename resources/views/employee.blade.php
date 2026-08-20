@@ -38,10 +38,12 @@
     <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">الموظفين المسجلين</h2>
+            @can('employees.edit')
             <button @click="openAdd = true"
                 class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                 + إضافة موظف جديد
             </button>
+            @endcan
         </div>
 
         <div class="overflow-x-auto">
@@ -59,6 +61,7 @@
                             <td class="px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $employee->name }}</td>
                             <td class="px-4 py-3 flex gap-2">
+                                @can('employees.edit')
                                 <button
                                     @click="
                                     editemployee = {id:{{ $employee->id }}, name:'{{ $employee->name }}'};
@@ -67,12 +70,15 @@
                                     class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">
                                     تعديل
                                 </button>
+                                @endcan
+                                @can('employees.delete')
                                 <form action="{{ route('employee.delete', $employee->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button"
                                         class=" delete-btn bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">حذف</button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

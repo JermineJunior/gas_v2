@@ -386,7 +386,6 @@
 </head>
 
 <body>
-    @include('partials.theme')
 
     <div class="split">
         <!-- جانب النموذج (يمين في RTL) -->

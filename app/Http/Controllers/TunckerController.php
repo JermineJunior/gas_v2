@@ -90,7 +90,7 @@ class TunckerController extends Controller
 
             StockDetail::insert($data);
             DB::commit();
-            return back()->with('success', 'تم اضافة البيانات بنجاح');
+            return redirect('/')->with('success', 'تم اضافة البيانات بنجاح');
         } catch (Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', $e->getMessage());

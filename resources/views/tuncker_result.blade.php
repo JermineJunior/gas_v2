@@ -48,8 +48,7 @@
     </style>
 </head>
 
-<body>
-    @include('partials.theme') class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans">
 
     <div class="max-w-6xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6 print-card">
 

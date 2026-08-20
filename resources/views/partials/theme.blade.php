@@ -68,7 +68,36 @@
 
     html[data-theme="dark"] table tbody tr:hover { background-color: transparent !important; }
 
-    html[data-theme="dark"] .hover\:bg-gray-100:hover { background-color: transparent !important; }
+    html[data-theme="dark"] .hover\:bg-gray-100:hover { background-color: var(--color-surface-2) !important; }
+
+    html[data-theme="dark"] .select2-dropdown {
+        background-color: var(--color-surface) !important;
+        border-color: var(--color-border) !important;
+    }
+    html[data-theme="dark"] .select2-results__option {
+        color: var(--color-text) !important;
+        background-color: var(--color-surface) !important;
+    }
+    html[data-theme="dark"] .select2-results__option--highlighted,
+    html[data-theme="dark"] .select2-results__option[aria-selected="true"] {
+        background-color: var(--color-surface-2) !important;
+        color: var(--color-text) !important;
+    }
+    html[data-theme="dark"] .select2-search--dropdown .select2-search__field {
+        background-color: var(--color-surface-2) !important;
+        color: var(--color-text) !important;
+        border-color: var(--color-border) !important;
+    }
+
+    html[data-theme="dark"] .swal2-popup {
+        background-color: var(--color-surface) !important;
+        color: var(--color-text) !important;
+    }
+    html[data-theme="dark"] .swal2-title { color: var(--color-heading) !important; }
+    html[data-theme="dark"] .swal2-html-container { color: var(--color-text) !important; }
+    html[data-theme="dark"] .swal2-styled { border: 1px solid var(--color-border) !important; }
+    html[data-theme="dark"] .swal2-close { color: var(--color-text-muted) !important; }
+    html[data-theme="dark"] .swal2-timer-progress-bar { background: var(--color-primary) !important; }
 
     html[data-theme="dark"] input,
     html[data-theme="dark"] select,
@@ -113,6 +142,7 @@
     .bg-blue-50 { background-color: var(--color-primary-softer) !important; }
     .hover\:bg-blue-50:hover { background-color: var(--color-primary-softer) !important; }
     .bg-blue-100 { background-color: var(--color-primary-soft) !important; }
+    .hover\:bg-blue-200:hover { background-color: var(--color-primary) !important; }
     html[data-theme="dark"] .bg-blue-100\/30 { background-color: var(--color-primary-soft) !important; }
     .text-blue-600 { color: var(--color-primary) !important; }
     .hover\:text-blue-600:hover { color: var(--color-primary) !important; }
