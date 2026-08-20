@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>اختيار الطرمبة</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -14,206 +16,207 @@
             font-family: 'Cairo', sans-serif;
         }
     </style>
+
 </head>
 
 <body class="bg-gray-100 min-h-screen p-6">
 
+    @include('partials.theme')
     @include('header')
 
+    <!-- البطاقة الرئيسية -->
     <div class="min-h-[70vh] flex items-center justify-center">
         <div class="max-w-6xl w-full bg-white rounded-2xl shadow-2xl p-8">
-
-            <!-- Header -->
-            <div class="text-center mb-10">
-                <img src="{{ asset('images/logo.png') }}" class="w-28 mx-auto mb-4">
-                <h1 class="text-4xl font-bold text-[#2E2A6F]">
-                    نظام تسجيل بيانات الوقود
-                </h1>
-                <p class="text-gray-500 mt-2">اختر طرمبة الوقود للمتابعة</p>
+            <div class="text-center mb-8">
+                <div class="mb-4">
+                    <img src="{{ asset('images/logo.png') }}" alt="شعار المؤسسة"
+                        class="w-28 h-28 mx-auto object-contain">
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800">نظام تسجيل بيانات الوقود</h1>
+                <p class="text-gray-600 mt-2">اختر محطة الوقود للمتابعة</p>
             </div>
 
             @if (auth()->user()->type == 0)
-                <div class="flex justify-end mb-6">
+                <div class="flex justify-start mb-6">
                     <button id="openModal"
-                        class="px-6 py-2 rounded-xl text-white font-semibold shadow
-                                 bg-gradient-to-r from-[#7F1D1D] to-[#B91C1C]
-                                hover:from-[#B91C1C] hover:to-[#7F1D1D] transition">
-                        + إضافة طرمبة جديدة
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 transition">
+                        + إضافة محطة جديدة
                     </button>
                 </div>
             @endif
 
-            <!-- Stations -->
-            <div class="space-y-4">
+            <!-- شبكة Bento -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- بطاقة إحصائيات -->
+                <div class="bg-gray-900 rounded-xl shadow-lg p-6 flex flex-col items-center justify-center text-center min-h-[130px]">
+                    <span id="stationCount" class="text-7xl font-bold text-amber-400 leading-none">0</span>
+                    <span class="text-gray-300 mt-3 text-xs font-medium opacity-60">عدد المحطات</span>
+                </div>
 
                 @foreach ($stations as $station)
                     @if (in_array($station->id, auth()->user()->stations()->pluck('station_id')->toArray()))
-                        <div
-                            class="flex items-center justify-between bg-white rounded-2xl shadow-md
-                        hover:shadow-xl transition px-6 py-4 group border border-gray-100">
+                        <div class="station-card relative p-5"
+                            style="border-bottom: 3px solid var(--color-primary); background-color: var(--color-surface-2);">
 
-                            <!-- Info -->
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow
-                                bg-gradient-to-br from-[#7F1D1D] to-[#B91C1C]">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M14 6h4l2 3v9a2 2 0 0 1-2 2h-2" />
-                                    </svg>
-                                </div>
+                            <!-- زر التلاتة نقاط -->
+                            <div class="flex items-center justify-between mb-5">
+                                <div x-data="{ open: false }" class="relative inline-block text-left">
+                                    <button @click="open = !open"
+                                        class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 6h.01M12 12h.01M12 18h.01" />
+                                        </svg>
+                                    </button>
 
-                                <div>
-                                    <h3
-                                        class="text-lg font-bold text-[#2E2A6F]
-                                    group-hover:text-[#7F1D1D] transition">
-                                        {{ $station->name }}
-                                    </h3>
-                                </div>
-                            </div>
-
-                            <!-- Menu -->
-                            <div x-data="{ open: false }" class="relative">
-                                <button @click="open = !open" class="text-3xl text-[#7F1D1D] hover:text-[#B91C1C]">
-                                    ⋮
-                                </button>
-
-                                <div x-show="open" @click.away="open = false" x-transition
-                                    class="absolute left-0 mt-2 bg-white border rounded-xl shadow-lg w-52 z-50 overflow-hidden">
-
-                                    @if (auth()->user()->type == 0 || auth()->user()->type == 1)
-                                        <!-- تعديل -->
-                                        <button @click="open = false"
-                                            class="edit-btn block w-full text-right px-4 py-3 hover:bg-gray-100 text-sm font-semibold"
-                                            data-id="{{ $station->id }}" data-name="{{ $station->name }}">
-                                            ✏️ تعديل
-                                        </button>
-
-                                        <!-- حذف -->
-                                        <form method="POST" action="{{ route('station.destroy', $station->id) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button"
-                                                class="delete-btn block w-full text-right px-4 py-3 hover:bg-red-50 text-red-600 text-sm font-semibold">
-                                                🗑️ حذف
+                                    <div x-show="open" @click.away="open = false" x-transition
+                                        class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2 text-sm">
+                                        @if (auth()->user()->type == 0 || auth()->user()->type == 1)
+                                            <button @click="open = false"
+                                                class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
+                                                data-id="{{ $station->id }}" data-name="{{ $station->name }}">
+                                                تعديل
                                             </button>
-                                        </form>
-
-                                        <hr>
-
-                                        <a href="{{ route('client.station', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            إدارة الحسابات لدى المحطة
-                                        </a>
-
-                                        <a href="{{ route('tuncker.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة التناكر لدى المحطة
-                                        </a>
-                                        <a href="{{ route('machine_detail.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة العدادات لدى المحطة
-                                        </a>
-                                        <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة التوريدات لدى المحطة
-                                        </a>
-                                    @elseif (auth()->user()->type == 2)
-                                        <button @click="open = false"
-                                            class="edit-btn block w-full text-right px-4 py-3 hover:bg-gray-100 text-sm font-semibold"
-                                            data-id="{{ $station->id }}" data-name="{{ $station->name }}">
-                                            ✏️ تعديل
-                                        </button>
-
-                                        <!-- حذف -->
-                                        <form method="POST" action="{{ route('station.destroy', $station->id) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button"
-                                                class="delete-btn block w-full text-right px-4 py-3 hover:bg-red-50 text-red-600 text-sm font-semibold">
-                                                🗑️ حذف
+                                            <form method="POST" action="{{ route('station.destroy', $station->id) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                                                    حذف
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('tuncker.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                كل التناكر التي تم شحنها
+                                            </a>
+                                            <a href="{{ route('client.station', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                ادارة الحسابات لدى المحطة
+                                            </a>
+                                        @endif
+                                        @if (auth()->user()->type == 2)
+                                            <button @click="open = false"
+                                                class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
+                                                data-id="{{ $station->id }}" data-name="{{ $station->name }}">
+                                                تعديل
                                             </button>
-                                        </form>
-                                        @if ($station->id == 1)
+                                            <form method="POST" action="{{ route('station.destroy', $station->id) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                                                    حذف
+                                                </button>
+                                            </form>
+                                            @if ($station->id == 1)
+                                                <a href="{{ route('employee.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة الموظفين
+                                                </a>
+                                                <a href="{{ route('stock.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة الابار
+                                                </a>
+                                                <a href="{{ route('tuncker.create', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    تسجيل التنكر
+                                                </a>
+                                                <a href="{{ route('machine_detail.create', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    تسجيل العدادات
+                                                </a>
+                                                <a href="{{ route('deposit_detail.create', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    تسجيل التوريدات
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('client.station', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                ادارة الحسابات لدى المحطة
+                                            </a>
+                                            <a href="{{ route('tuncker.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                قائمة التناكر لدى المحطة
+                                            </a>
+                                            <a href="{{ route('machine_detail.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                قائمة العدادات لدى المحطة
+                                            </a>
+                                            <a href="{{ route('deposit_detail.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                قائمة التوريدات لدى المحطة
+                                            </a>
+                                        @endif
+                                        @if (auth()->user()->type != 0 && auth()->user()->type != 1 && auth()->user()->type != 2)
+                                            <a href="{{ route('tuncker.create', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                تسجيل التنكر
+                                            </a>
+                                            <a href="{{ route('tuncker.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                قائمة التناكر لدى المحطة
+                                            </a>
+                                            <a href="{{ route('machine_detail.create', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                تسجيل العدادات
+                                            </a>
+                                            <a href="{{ route('machine_detail.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                قائمة العدادات لدى المحطة
+                                            </a>
+                                            <a href="{{ route('deposit_detail.create', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                تسجيل التوريدات
+                                            </a>
+                                            <a href="{{ route('deposit_detail.index', $station->id) }}"
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                قائمة التوريدات لدى المحطة
+                                            </a>
                                             <a href="{{ route('employee.index', $station->id) }}"
-                                                class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                 قائمة الموظفين
                                             </a>
                                             <a href="{{ route('stock.index', $station->id) }}"
-                                                class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
+                                                class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                 قائمة الابار
                                             </a>
-                                            <a href="{{ route('tuncker.create', $station->id) }}"
-                                                class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                                تسجيل التنكر
-                                            </a>
-                                            <a href="{{ route('machine_detail.create', $station->id) }}"
-                                                class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                                تسجيل العدادات
-                                            </a>
-                                            <a href="{{ route('deposit_detail.create', $station->id) }}"
-                                                class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                                تسجيل التوريدات
-                                            </a>
                                         @endif
-                                        <a href="{{ route('client.station', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            إدارة الحسابات لدى المحطة
-                                        </a>
-
-                                        <a href="{{ route('tuncker.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة التناكر لدى المحطة
-                                        </a>
-                                        <a href="{{ route('machine_detail.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة العدادات لدى المحطة
-                                        </a>
-                                        <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة التوريدات لدى المحطة
-                                        </a>
-                                    @else
-                                        <a href="{{ route('tuncker.create', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            تسجيل التنكر
-                                        </a>
-
-                                        <a href="{{ route('tuncker.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة التناكر لدى المحطة
-                                        </a>
-
-                                        <a href="{{ route('machine_detail.create', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            تسجيل العدادات
-                                        </a>
-                                        <a href="{{ route('machine_detail.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة العدادات لدى المحطة
-                                        </a>
-                                        <a href="{{ route('deposit_detail.create', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            تسجيل التوريدات
-                                        </a>
-                                        <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة التوريدات لدى المحطة
-                                        </a>
-                                        <a href="{{ route('employee.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة الموظفين
-                                        </a>
-                                        <a href="{{ route('stock.index', $station->id) }}"
-                                            class="block px-4 py-3 hover:bg-gray-100 text-sm font-semibold">
-                                            قائمة الابار
-                                        </a>
-                                    @endif
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- الاسم + مؤشر الحالة -->
+                            <div class="mb-5">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5 shrink-0 text-green-600" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M6 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M14 6h4l2 3v9a2 2 0 0 1-2 2h-2" />
+                                        <circle cx="10" cy="8" r="2" />
+                                    </svg>
+                                    <h2 class="text-lg font-bold text-gray-800 leading-snug">{{ $station->name }}</h2>
+                                </div>
+                                <span class="inline-flex items-center gap-1.5 mt-1.5 text-sm text-gray-600">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                    نشطة
+                                </span>
+                            </div>
+
+                            <!-- زر التسجيل -->
+                            @if (auth()->user()->type == 0 || auth()->user()->type == 1)
+                                <a href="{{ route('tuncker.create', $station->id) }}"
+                                    class="block text-center text-green-600 font-bold text-sm hover:underline transition">
+                                    تسجيل التناكر التي تم شحنها ←
+                                </a>
+                            @else
+                                <a href="{{ route('tuncker.create', $station->id) }}"
+                                    class="block text-center text-green-600 font-bold text-sm hover:underline transition">
+                                     تسجيل التناكر ←
+                                </a>
+                            @endif
                         </div>
                     @endif
                 @endforeach
@@ -221,37 +224,26 @@
             </div>
         </div>
     </div>
+
     <!-- مودال إضافة / تعديل الطرمبة -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-center text-[#2E2A6F]">
-                إضافة طرمبة جديدة
-            </h2>
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 text-center" id="modalTitle">إضافة طرمبة جديدة</h2>
 
             <form id="stationForm" method="POST" action="{{ route('station.store') }}">
                 @csrf
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        اسم الطرمبة
-                    </label>
-                    <input type="text" id="stationName" name="name" required
-                        class="w-full p-3 border border-gray-300 rounded-xl
-                    focus:outline-none focus:border-[#7F1D1D] focus:ring focus:ring-[#7F1D1D]/30">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">اسم الطرمبة</label>
+                    <input type="text" id="stationName" name="name"
+                        class="w-full p-2 border border-gray-300 rounded-lg" required>
                 </div>
 
-                <div class="flex justify-between mt-8">
+                <div class="flex justify-between mt-6">
                     <button type="button" id="closeModal"
-                        class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition">
-                        إلغاء
-                    </button>
-
+                        class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition">إلغاء</button>
                     <button type="submit" id="submitBtn"
-                        class="px-6 py-2 rounded-xl text-white font-semibold shadow
-                    bg-gradient-to-r from-[#7F1D1D] to-[#B91C1C]
-                    hover:from-[#B91C1C] hover:to-[#7F1D1D] transition">
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">
                         حفظ
                     </button>
                 </div>
@@ -259,41 +251,37 @@
         </div>
     </div>
 
-
     <!-- مودال الملف التعريفي -->
-    <div x-data="{ show: false }" x-on:open-modal.window="if($event.detail.id === 'profileModal') show = true"
+    <div x-data="{ show: false }" x-cloak x-on:open-modal.window="if($event.detail.id === 'profileModal') show = true"
         x-show="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
         x-transition>
 
         <div @click.away="show = false" class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 space-y-4">
-
             <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">الملف التعريفي</h2>
 
-            <!-- اسم المستخدم -->
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-medium mb-1">اسم المستخدم</label>
                 <input type="text" value="{{ auth()->user()->name }}" readonly
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed">
             </div>
 
-            <!-- نموذج تغيير كلمة السر -->
             <form action="{{ route('user.update-password') }}" method="POST">
                 @csrf
                 <div class="space-y-3">
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-green-500 focus:ring-green-500">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-green-500 focus:ring-green-500">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-green-500 focus:ring-green-500">
                     </div>
                 </div>
 
@@ -302,14 +290,13 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
                         حفظ
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
 
     <!-- Sweet Alert.js -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -318,7 +305,7 @@
     @include('messages')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const openModalBtn = document.getElementById('openModal'); // زر إضافة جديد (إن وجد)
+            const openModalBtn = document.getElementById('openModal');
             const closeModalBtn = document.getElementById('closeModal');
             const modal = document.getElementById('modal');
             const stationForm = document.getElementById('stationForm');
@@ -329,13 +316,10 @@
             const storeUrl = "{{ route('station.store') }}";
             const updateUrlTemplate = "{{ url('station') }}/";
 
-            // فتح المودال للإضافة
             function openAddModal() {
                 stationForm.action = storeUrl;
                 const prevMethod = stationForm.querySelector('input[name="_method"]');
                 if (prevMethod) prevMethod.remove();
-
-
                 stationForm.reset();
                 modalTitle.textContent = 'إضافة طرمبة جديدة';
                 submitBtn.textContent = 'حفظ';
@@ -348,10 +332,8 @@
                 if (e.target === modal) modal.classList.add('hidden');
             });
 
-            // فتح المودال للتعديل
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', function() {
-
                     let id = this.dataset.id;
                     let name = this.dataset.name;
 
@@ -368,14 +350,12 @@
                     stationName.value = name;
                     modalTitle.textContent = 'تعديل بيانات الطرمبة';
                     submitBtn.textContent = 'تحديث';
-
                     modal.classList.remove('hidden');
                 });
             });
 
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', function() {
-
                     let form = this.closest('form');
 
                     Swal.fire({
@@ -395,45 +375,6 @@
                 });
             });
 
-            document.querySelectorAll(".menu-btn").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    let menu = btn.parentElement.querySelector(".menu");
-
-                    document.querySelectorAll(".menu").forEach(m => {
-                        if (m !== menu) m.classList.add("hidden");
-                    });
-
-                    menu.classList.toggle("hidden");
-                });
-            });
-
-            window.addEventListener("click", () => {
-                document.querySelectorAll(".menu").forEach(m => m.classList.add("hidden"));
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    let form = this.closest('form'); // نحصل على الفورم التابع للزر
-
-                    Swal.fire({
-                        title: 'هل أنت متأكد؟',
-                        text: "لن تتمكن من التراجع عن هذه العملية!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'نعم، احذفها',
-                        cancelButtonText: 'إلغاء'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit(); // ينفذ الحذف
-                        }
-                    })
-                });
-            });
-
-            // قائمة الموبايل (الهامبرجر)
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
 
@@ -441,42 +382,23 @@
                 mobileMenuBtn.addEventListener('click', function() {
                     mobileMenu.classList.toggle('hidden');
                 });
-
-                // إغلاق القائمة لو ضغطت خارجها
                 window.addEventListener('click', function(e) {
                     if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
                         mobileMenu.classList.add('hidden');
                     }
                 });
             }
-
-            // مودال العمليات
-            const operationsModal = document.getElementById('operationsModal');
-            const closeOperationsModal = document.getElementById('closeOperationsModal');
-
-            // أزرار فتح المودال
-            document.querySelectorAll('.openOperationsModal').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    operationsModal.classList.remove('hidden');
-                });
-            });
-
-            // زر إغلاق المودال
-            if (closeOperationsModal) {
-                closeOperationsModal.addEventListener('click', () => {
-                    operationsModal.classList.add('hidden');
-                });
-            }
-
-            // إغلاق عند الضغط برة
-            window.addEventListener('click', (e) => {
-                if (e.target === operationsModal) {
-                    operationsModal.classList.add('hidden');
-                }
-            });
-
         });
     </script>
+
+    <!-- عدّاد الطرمبات -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var el = document.getElementById('stationCount');
+            if (el) el.textContent = document.querySelectorAll('.station-card').length;
+        });
+    </script>
+
 </body>
 
 </html>

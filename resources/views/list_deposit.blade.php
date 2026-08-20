@@ -68,7 +68,7 @@
             @forelse ($deposits as $date => $dayDeposits)
                 <div class="border rounded-lg overflow-hidden">
                     <button type="button"
-                        class="w-full bg-[#4A0F18] text-white text-right px-4 py-3 font-semibold flex justify-between items-center"
+                        class="w-full bg-primary-strong text-white text-right px-4 py-3 font-semibold flex justify-between items-center"
                         onclick="toggleCollapse('{{ $date }}')">
                         <span>{{ $date }}</span>
                         <svg id="icon-{{ $date }}" xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +115,7 @@
                                                 @if (auth()->user()->type == 3 || (auth()->user()->type == 2 && $station->id == 1))
                                                     <td class="px-4 py-3 flex gap-2">
                                                         <a href="{{ route('deposit_detail.edit', $depositItem->id) }}"
-                                                            class="bg-[#4A0F18] text-white px-3 py-1 rounded-lg hover:bg-[#B91C1C]">تعديل</a>
+                                                            class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
                                                         <form action="{{ route('deposit_detail.delete', $depositItem->id) }}"
                                                             method="POST">
                                                             @csrf
@@ -167,17 +167,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -186,7 +186,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>

@@ -139,6 +139,7 @@
 </head>
 
 <body>
+    @include('partials.theme')>
 
     <!-- شريط علوي فيه اللوجو -->
     <div class="top-bar">

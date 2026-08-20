@@ -11,6 +11,7 @@
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -39,14 +40,14 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">طلب وقود</h2>
             <button @click="openAdd = true"
-                class="bg-[#7F1D1D] text-white px-5 py-2 rounded-lg shadow hover:bg-[#5F1515] transition">
+                class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                 + إضافة طلب جديد
             </button>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full border-collapse rounded-lg overflow-hidden">
-                <thead class="bg-[#4A0F18] text-white">
+                <thead class="bg-primary-strong text-white">
                     <tr>
                         <th class="px-4 py-3 text-right">#</th>
                         <th class="px-4 py-3 text-right">التاريخ</th>
@@ -97,16 +98,16 @@
                 <div>
                     <label class="block text-gray-700 mb-1">التاريخ</label>
                     <input type="date" name="date" required
-                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7F1D1D] focus:outline-none">
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-1">الكمية</label>
                     <input type="text" name="quantity" required
-                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7F1D1D] focus:outline-none">
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
                 </div>
                 <div class="flex justify-end">
                     <button type="submit"
-                        class="bg-[#7F1D1D] text-white px-5 py-2 rounded-lg shadow hover:bg-[#5F1515] transition">
+                        class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                         حفظ
                     </button>
                 </div>
@@ -129,16 +130,16 @@
                 <div>
                     <label class="block text-gray-700 mb-1">التاريخ</label>
                     <input type="text" name="date" :value="editsupplier.date" required
-                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7F1D1D] focus:outline-none">
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-1"> الكمية</label>
                     <input type="text" name="quantity" :value="editsupplier.quantity"
-                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#7F1D1D] focus:outline-none">
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
                 </div>
                 <div class="flex justify-end">
                     <button type="submit"
-                        class="bg-[#7F1D1D] text-white px-5 py-2 rounded-lg shadow hover:bg-[#5F1515] transition">
+                        class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                         تحديث
                     </button>
                 </div>
@@ -168,17 +169,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -187,7 +188,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>

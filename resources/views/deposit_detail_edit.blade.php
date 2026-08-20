@@ -59,13 +59,13 @@
                 <div class="flex justify-end items-center mb-4">
                     {{-- <h2 class="text-xl font-semibold text-gray-800">بنود التوريد</h2> --}}
                     <button id="addDepositBtn" type="button"
-                        class="flex items-center bg-[#7F1D1D] text-white px-3 py-1 rounded-lg hover:bg-[#5F1515]">
+                        class="flex items-center bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">
                         إضافة توريد
                     </button>
                 </div>
 
                 <div id="depositContainer" class="space-y-3">
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#FDE8E8] rounded-lg relative">
+                    <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
                             <select name="employee_id" id="employee_id">
@@ -79,7 +79,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> التاريخ</label>
                             <input type="date" name="date"
-                                class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="{{ $deposit->date }}">
                         </div>
 
@@ -87,13 +87,13 @@
                     <!-- الصف الأساسي -->
                     @foreach ($deposit->deposit_details as $deposit_detail)
                         <div
-                            class="deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative ">
+                            class="deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative ">
                             <!-- مبلغ التوريد -->
                             <div>
                                 <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
                                 <input type="text" name="deposit_amount[0]" id="deposit_amount_0" placeholder="0.00"
                                     value="{{ number_format($deposit_detail->deposit_amount) }}"
-                                    class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                    class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                             </div>
 
                             <!-- بيان التوريد -->
@@ -101,7 +101,7 @@
                                 <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
                                 <input type="text" name="deposit_desc[0]" id="deposit_desc_0"
                                     placeholder="مثال: توريد يوم الأحد" value="{{ $deposit_detail->deposit_desc }}"
-                                    class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                    class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                             </div>
                             @if ($loop->index != 0)
                                 <button type="button"
@@ -114,7 +114,7 @@
 
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">التصفية</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">المطلوب من العداد القديم</label>
                         <input id="total_old_machine" type="text" name="total_old_machine"
@@ -140,7 +140,7 @@
             <div class="flex justify-start space-x-3 space-x-reverse mt-6">
                 <!-- زر حفظ -->
                 <button type="submit"
-                    class="flex items-center bg-[#4A0F18] text-white px-6 py-2 rounded-lg hover:bg-[#7F1D1D] transition-colors">
+                    class="flex items-center bg-primary-strong text-white px-6 py-2 rounded-lg hover:bg-primary-strong transition-colors">
                     حفظ
                 </button>
             </div>
@@ -169,17 +169,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -188,7 +188,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>
@@ -370,18 +370,18 @@
                 let index = depositContainer.querySelectorAll('.deposit-item').length;
                 const row = document.createElement('div');
                 row.className =
-                    "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative";
+                    "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
                 row.innerHTML = `
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
                         <input type="text" name="deposit_amount[${index}]" id="deposit_amount_${index}" placeholder="0.00"
-                            class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                            class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
                         <input type="text" name="deposit_desc[${index}]" id="deposit_desc_${index}" placeholder="مثال: توريد إضافي"
-                            class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                            class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 
                     <button type="button" class="remove-deposit-row text-red-600 font-bold text-lg mt-6">✖</button>

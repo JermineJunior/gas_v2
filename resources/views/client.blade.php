@@ -35,7 +35,7 @@
             @if (!isset($station))
                 <div class="flex gap-1">
                     <button @click="showAddModal = true"
-                        class="bg-[#7F1D1D] text-white px-5 py-2 rounded-lg shadow hover:bg-[#B91C1C] transition">
+                        class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                         + إضافة عميل جديد
                     </button>
                 </div>
@@ -46,7 +46,7 @@
         @if (!isset($station))
             <div class="mb-6">
                 <input type="text" id="searchInput" placeholder="ابحث عن العميل..."
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-[#B91C1C]">
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-primary">
             </div>
         @endif
 
@@ -103,7 +103,7 @@
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $client->name }}</h3>
                         <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
                         <p
-                            class="text-2xl font-bold {{ $client->details()->sum('total') - $client->details()->sum('amount') >= 0 ? 'text-[#7F1D1D]' : 'text-red-600' }} mb-3">
+                            class="text-2xl font-bold {{ $client->details()->sum('total') - $client->details()->sum('amount') >= 0 ? 'text-primary-strong' : 'text-red-600' }} mb-3">
                             {{ number_format($client->details()->sum('total') - $client->details()->sum('amount')) }}
                             ج.س
                         </p>
@@ -114,7 +114,7 @@
 
                         <!-- زر المديونيات -->
                         <a href="{{ route('client.show', $client->id) }}"
-                            class="w-1/2 text-center bg-[#7F1D1D] text-white py-2 rounded-lg hover:bg-[#B91C1C] transition font-semibold">
+                            class="w-1/2 text-center bg-primary-strong text-white py-2 rounded-lg hover:bg-primary-strong transition font-semibold">
                             المديونيات
                         </a>
 
@@ -145,12 +145,12 @@
                         <div>
                             <label class="block text-gray-700 text-sm font-medium mb-1">اسم العميل</label>
                             <input type="text" name="name" required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-medium mb-1">نوع العميل</label>
                             <select name="type" required
-                                class="type w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                                class="type w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                                 <option value="1">عميل</option>
                                 <option value="2">باص</option>
                             </select>
@@ -158,7 +158,7 @@
                         <div>
                             <label class="block text-gray-700 text-sm font-medium mb-1">رقم الهاتف</label>
                             <input type="text" name="phone"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring"
                                 placeholder="مثلاً: 0912345678">
                         </div>
                     </div>
@@ -168,7 +168,7 @@
                             class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                             إلغاء
                         </button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-[#7F1D1D] hover:bg-[#B91C1C] text-white">
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary-strong hover:bg-primary-strong text-white">
                             حفظ
                         </button>
                     </div>
@@ -197,7 +197,7 @@
                         <div>
                             <label class="block text-gray-700 text-sm font-medium mb-1">نوع العميل</label>
                             <select name="type" x-model="type"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                                 <option :value="1">عميل</option>
                                 <option :value="2">باص</option>
                             </select>
@@ -207,7 +207,7 @@
                         <div>
                             <label class="block text-gray-700 text-sm font-medium mb-1">رقم الهاتف</label>
                             <input type="text" name="phone" x-model="phone"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                         </div>
                     </div>
 
@@ -217,7 +217,7 @@
                             إلغاء
                         </button>
 
-                        <button class="px-4 py-2 bg-[#7F1D1D] text-white rounded-lg hover:bg-[#B91C1C]">
+                        <button class="px-4 py-2 bg-primary-strong text-white rounded-lg hover:bg-primary-strong">
                             حفظ التعديلات
                         </button>
                     </div>
@@ -254,17 +254,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -273,7 +273,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7F1D1D] hover:bg-[#B91C1C] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary-strong hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>
@@ -351,7 +351,7 @@
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-2">${client.name}</h3>
                                 <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
-                                <p class="text-2xl font-bold text-[#7F1D1D] mb-3">
+                                <p class="text-2xl font-bold text-primary-strong mb-3">
                                     ${balance} ج.س
                                 </p>
                             </div>
@@ -360,7 +360,7 @@
                             <div class="flex justify-between gap-2 mt-4">
 
                                 <a href="/client/${client.id}"
-                                    class="w-1/2 text-center bg-[#7F1D1D] text-white py-2 rounded-lg hover:bg-[#B91C1C] transition font-semibold">
+                                    class="w-1/2 text-center bg-primary-strong text-white py-2 rounded-lg hover:bg-primary-strong transition font-semibold">
                                     المديونيات
                                 </a>
 

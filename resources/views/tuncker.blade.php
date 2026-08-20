@@ -56,7 +56,7 @@
             <div class="flex justify-between items-start mb-6">
                 <div class="flex items-center">
                     <div
-                        class="w-12 h-12 bg-gradient-to-r from-[#7F1D1D] to-[#B91C1C] rounded-xl flex items-center justify-center mr-3">
+                        class="w-12 h-12 bg-gradient-to-r bg-primary-strong rounded-xl flex items-center justify-center mr-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
@@ -74,7 +74,7 @@
             </div>
 
             <!-- معلومات عامة -->
-            <div class="space-y-6 p-4 bg-[#FDE8E8] rounded-lg mb-6">
+            <div class="space-y-6 p-4 bg-primary-soft rounded-lg mb-6">
 
                 <input type="hidden" name="station_id" value="{{ $station->id }}">
 
@@ -84,7 +84,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">التاريخ</label>
                         <input type="date" name="date"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             value="{{ old('date', now()->toDateString()) }}">
                     </div>
 
@@ -92,7 +92,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">رقم التنكر</label>
                         <input type="text" name="tuncker_no"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             value="{{ old('tuncker_no') }}">
                     </div>
 
@@ -100,7 +100,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">اسم السائق</label>
                         <input type="text" name="driver_name"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             value="{{ old('driver_name') }}">
                     </div>
                 </div>
@@ -111,7 +111,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">نوع الوقود</label>
                         <select name="fuel_type" id="fuel_type"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                             <option value="">اختر نوع الوقود</option>
                             <option value="1" {{ old('fuel_type') == 1 ? 'selected' : '' }}>جازولين</option>
                             <option value="2" {{ old('fuel_type') == 2 ? 'selected' : '' }}>بنزين</option>
@@ -122,7 +122,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">كمية الوقود (لتر)</label>
                         <input type="text" name="fuel_quantity"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             placeholder="ادخل كمية الوقود" value="{{ old('fuel_quantity') }}">
                     </div>
 
@@ -130,7 +130,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">المورد </label>
                         <select name="supplier_id" id="supplier_id"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                             @foreach ($suppliers as $supplier)
                                 <option value="">من فضلك قم باختيار المورد</option>
                                 <option value="{{ $supplier->id }}"
@@ -147,18 +147,18 @@
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800">الابار</h2>
                     <button id="addDepositBtn" type="button"
-                        class="flex items-center bg-[#7F1D1D] text-white px-3 py-1 rounded-lg hover:bg-[#5F1515]">
+                        class="flex items-center bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">
                         إضافة الوقود للبير
                     </button>
                 </div>
 
                 <div id="depositContainer" class="space-y-3">
                     <div
-                        class="deposit-item grid grid-cols-[1fr,1.5fr] gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative">
+                        class="deposit-item grid grid-cols-[1fr,1.5fr] gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">كمية الوقود</label>
                             <input type="text" name="qty[0]" id="qty_0" placeholder="0.00" required
-                                class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">البير</label>
@@ -169,7 +169,7 @@
             </div>
 
             <button type="submit"
-                class="flex items-center bg-[#7F1D1D] text-white px-4 py-2 rounded-lg hover:bg-[#5F1515] transition-colors">
+                class="flex items-center bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition-colors">
                 حفظ
             </button>
         </form>
@@ -199,17 +199,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -218,7 +218,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>
@@ -324,12 +324,12 @@
                 let index = depositContainer.querySelectorAll('.deposit-item').length;
                 const row = document.createElement('div');
                 row.className =
-                    "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative";
+                    "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
                 row.innerHTML = `
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">كمية الوقود</label>
                         <input type="text" name="qty[${index}]" id="qty_${index}" placeholder="0.00" required
-                            class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                            class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 
                     <div>

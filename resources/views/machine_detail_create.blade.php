@@ -57,14 +57,14 @@
             <div class="mb-6">
                 <div class="flex justify-end items-center mb-4"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
                     <button type="button" id="addFuelInvoiceBtn"
-                        class="flex items-center bg-[#7F1D1D] text-white px-3 py-2 rounded-lg hover:bg-[#5F1515]">
+                        class="flex items-center bg-primary-strong text-white px-3 py-2 rounded-lg hover:bg-primary-strong">
                         إضافة عداد جديد
                     </button>
                 </div>
 
                 <!-- الفواتير -->
                 <div id="fuelInvoicesContainer" class="space-y-4">
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#FDE8E8] rounded-lg relative">
+                    <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
                             <select name="employee_id" id="employee_id">
@@ -77,19 +77,19 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> التاريخ</label>
                             <input type="date" name="date"
-                                class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                     </div>
 
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 bg-[#FDE8E8] rounded-lg relative">
+                    <div class="fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 bg-primary-soft rounded-lg relative">
 
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">الماكينات</label>
                             <div class="flex items-center">
                                 <!-- زر الإضافة -->
                                 <button type="button"
-                                    class="add-machine-btn flex items-center justify-center bg-[#7F1D1D] text-white rounded-lg p-2 hover:bg-[#5F1515] transition">
+                                    class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -110,7 +110,7 @@
                             <div class="flex items-center">
                                 <!-- زر الإضافة -->
                                 <button type="button"
-                                    class="add-gun-btn flex items-center justify-center bg-[#7F1D1D] text-white rounded-lg p-2 hover:bg-[#5F1515] transition">
+                                    class="add-gun-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -126,13 +126,13 @@
                         <div class="mr-5">
                             <label class="block mb-1 text-sm font-medium text-gray-700">عداد البداية</label>
                             <input type="text" name="start_counter[0]" placeholder="0"
-                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">عداد النهاية</label>
                             <input type="text" name="end_counter[0]" placeholder="0"
-                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                         <div>
@@ -144,7 +144,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">سعر اللتر</label>
                             <input type="text" name="price[0]" placeholder="0.00"
-                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                         <div>
@@ -158,7 +158,7 @@
 
 
                 <!-- الإجماليات -->
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#FDE8E8] rounded-lg">
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg">
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">إجمالي اللترات</label>
                         <input type="text" id="grandLiters" readonly
@@ -175,7 +175,7 @@
             <div class="flex justify-start space-x-3 space-x-reverse mt-6">
                 <!-- زر حفظ -->
                 <button type="submit"
-                    class="flex items-center bg-[#4A0F18] text-white px-6 py-2 rounded-lg hover:bg-[#7F1D1D] transition-colors">
+                    class="flex items-center bg-primary-strong text-white px-6 py-2 rounded-lg hover:bg-primary-strong transition-colors">
                     حفظ
                 </button>
             </div>
@@ -205,17 +205,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -224,7 +224,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>
@@ -244,7 +244,7 @@
                 <div class="mb-3">
                     <label class="block mb-1 text-sm font-medium text-gray-700">اسم الماكينة</label>
                     <input type="text" name="name" id="machineName" required
-                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                 </div>
 
                 <div class="mb-3">
@@ -261,7 +261,7 @@
 
                 <div class="flex justify-end mt-4">
                     <button type="submit"
-                        class="bg-[#7F1D1D] text-white px-4 py-2 rounded-lg hover:bg-[#5F1515] transition">
+                        class="bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition">
                         حفظ
                     </button>
                 </div>
@@ -280,17 +280,17 @@
                 <div class="mb-3">
                     <label class="block mb-1 text-sm font-medium text-gray-700">اسم المسدس</label>
                     <input type="text" name="name" id="gunName" required
-                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                 </div>
 
                 <!-- العملية (مخفي) -->
                 <input type="hidden" name="station_id" id="stationId" value="{{ $station->id ?? '' }}">
                 <input type="hidden" name="machine_id" id="machineId"
-                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
 
                 <div class="flex justify-end mt-4">
                     <button type="submit"
-                        class="bg-[#7F1D1D] text-white px-4 py-2 rounded-lg hover:bg-[#5F1515] transition">
+                        class="bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition">
                         حفظ
                     </button>
                 </div>
@@ -566,7 +566,7 @@
                     const newItem = document.createElement('div');
                     let index = document.querySelectorAll('.fuel-item').length;
                     newItem.className =
-                        "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 pt-4 bg-[#FDE8E8] rounded-lg relative";
+                        "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 pt-4 bg-primary-soft rounded-lg relative";
                     newItem.innerHTML = `
                         <button type="button" class="remove-btn absolute top-2 left-2 text-red-500">✖</button>
 
@@ -575,7 +575,7 @@
                             <div class="flex items-center">
                                 <!-- زر الإضافة بجانب select -->
                                 <button type="button"
-                                    class="add-machine-btn flex items-center justify-center bg-[#7F1D1D] text-white rounded-lg p-2 hover:bg-[#5F1515] transition">
+                                    class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -593,7 +593,7 @@
                             <div class="flex items-center">
                                 <!-- زر الإضافة بجانب select -->
                                 <button type="button"
-                                    class="add-gun-btn flex items-center justify-center bg-[#7F1D1D] text-white rounded-lg p-2 hover:bg-[#5F1515] transition">
+                                    class="add-gun-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />

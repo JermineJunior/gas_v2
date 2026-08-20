@@ -60,14 +60,15 @@
 
 </head>
 
-<body class="bg-gray-100 p-6">
+<body>
+    @include('partials.theme') class="bg-gray-100 p-6">
 
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 no-print-shadow">
 
         <!-- زر الطباعة -->
         <div class="flex justify-end mb-4">
             <button onclick="window.print()"
-                class="bg-[#7A1E2C] hover:bg-[#4A0F18] text-white px-6 py-2 rounded-lg shadow">
+                class="bg-primary hover:bg-primary-strong text-white px-6 py-2 rounded-lg shadow">
                 طباعة
             </button>
         </div>
@@ -134,7 +135,7 @@
             <!-- الفواتير -->
             @forelse ($operation->fuel_details as $fuel)
                 <div id="fuelInvoicesContainer" class="space-y-4">
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-[#FDE8E8] rounded-lg relative">
+                    <div class="fuel-item grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-primary-soft rounded-lg relative">
 
                         <!-- الماكينات + زر الإضافة -->
                         <div>
@@ -142,7 +143,7 @@
                             <div class="flex items-center gap-2">
                                 @if (auth()->user()->type == 3 && $operation->status == 0)
                                     <button type="button"
-                                        class="add-machine-btn flex items-center justify-center bg-[#7F1D1D] text-white rounded-lg p-2 hover:bg-[#5F1515] transition">
+                                        class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -151,7 +152,7 @@
                                 @endif
                                 <select name="machine_id[{{ $loop->index }}]"
                                     {{ auth()->user()->type == 1 || $operation->status == 1 ? 'disabled' : '' }}
-                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2 focus:ring-2 focus:ring-[#B91C1C]">
+                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2 focus:ring-2 focus:ring-primary">
                                     <option value="">اختر الماكينة</option>
                                     @foreach ($machines as $machine)
                                         <option @selected($machine->id == $fuel->machine_id) value="{{ $machine->id }}">
@@ -172,7 +173,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">عداد البداية</label>
                             <input type="text" name="start_counter[{{ $loop->index }}]" placeholder="0" readonly
-                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="{{ number_format($fuel->start_counter) }}">
                         </div>
 
@@ -180,7 +181,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">عداد النهاية</label>
                             <input type="text" name="end_counter[{{ $loop->index }}]" placeholder="0" readonly
-                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="{{ number_format($fuel->end_counter) }}">
                         </div>
 
@@ -196,7 +197,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">السعر</label>
                             <input type="text" name="price[{{ $loop->index }}]" placeholder="0.00" readonly
-                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="{{ number_format($fuel->price) }}">
                         </div>
 
@@ -212,7 +213,7 @@
                 </div>
             @empty
                 <div id="fuelInvoicesContainer" class="space-y-4">
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-[#FDE8E8] rounded-lg relative">
+                    <div class="fuel-item grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-primary-soft rounded-lg relative">
 
                         <!-- الماكينات + زر الإضافة -->
                         <div>
@@ -220,7 +221,7 @@
                             <div class="flex items-center gap-2">
                                 @if (auth()->user()->type == 3 && $operation->status == 0)
                                     <button type="button"
-                                        class="add-machine-btn flex items-center justify-center bg-[#7F1D1D] text-white rounded-lg p-2 hover:bg-[#5F1515] transition">
+                                        class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -229,7 +230,7 @@
                                 @endif
                                 <select name="machine_id[0]"
                                     {{ auth()->user()->type == 1 || $operation->status == 1 ? 'disabled' : '' }}
-                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2 focus:ring-2 focus:ring-[#B91C1C]">
+                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2 focus:ring-2 focus:ring-primary">
                                     <option value="">اختر الماكينة</option>
                                     @foreach ($machines as $machine)
                                         <option value="{{ $machine->id }}">
@@ -248,14 +249,14 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">عداد البداية</label>
                             <input type="text" name="start_counter[0]" placeholder="0" readonly
-                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                         <!-- عداد النهاية -->
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">عداد النهاية</label>
                             <input type="text" name="end_counter[0]" placeholder="0" readonly
-                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                         <!-- الصافي -->
@@ -269,7 +270,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">السعر</label>
                             <input type="text" name="price[0]" placeholder="0.00" readonly
-                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
 
                         <!-- الإجمالي -->
@@ -284,7 +285,7 @@
             @endforelse
 
             <!-- الإجماليات -->
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#FDE8E8] rounded-lg">
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg">
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700">إجمالي اللترات</label>
                     <input type="text" id="grandLiters" readonly name="grand_litters"
@@ -302,12 +303,12 @@
 
 
             <!-- الخصم والصافي -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#FDE8E8] rounded-lg">
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg">
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700">خصم العمولة</label>
                     <input type="text" id="discount" name="discount" readonly
                         value="{{ number_format($operation->discount) }}"
-                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                 </div>
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700">الصافي</label>
@@ -326,12 +327,12 @@
                     <div>
                         <input type="text" name="expense_amount[{{ $loop->index }}]" placeholder="المبلغ"
                             readonly
-                            class="expense-amount w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-[#B91C1C]"
+                            class="expense-amount w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-primary"
                             value="{{ number_format($expense->expense_amount) }}">
                     </div>
                     <div>
                         <input type="text" placeholder="البيان" name="expense_desc[{{ $loop->index }}]"
-                            class="w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-primary"
                             value="{{ $expense->expense_desc }}" readonly>
                     </div>
                 </div>
@@ -339,12 +340,12 @@
                 <div class="grid gap-3 items-start relative grid-cols-[1fr,2fr]">
                     <div>
                         <input type="text" name="expense_amount[0]" placeholder="المبلغ" readonly
-                            class="expense-amount w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-[#B91C1C]"
+                            class="expense-amount w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-primary"
                             value="">
                     </div>
                     <div>
                         <input type="text" placeholder="البيان" name="expense_desc[0]"
-                            class="w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-primary"
                             readonly>
                     </div>
                 </div>
@@ -359,14 +360,14 @@
             <div id="depositContainer" class="space-y-3">
                 @forelse ($operation->deposit_details as $deposit)
                     <div
-                        class="deposit-item grid grid-cols-[1fr,2fr] gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative">
+                        class="deposit-item grid grid-cols-[1fr,2fr] gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
                         <!-- مبلغ التوريد -->
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
                             <input type="text" name="deposit_amount[{{ $loop->index }}]"
                                 id="deposit_amount_{{ $loop->index }}" placeholder="0.00"
                                 {{ auth()->user()->type == 1 || $operation->statsu == 1 ? 'readonly' : '' }}
-                                class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="{{ number_format($deposit->deposit_amount) }}">
 
                         </div>
@@ -376,19 +377,19 @@
                             <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
                             <input type="text" name="deposit_desc[{{ $loop->index }}]"
                                 id="deposit_desc_{{ $loop->index }}" placeholder="مثال: توريد يوم الأحد" readonly
-                                class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="{{ $deposit->deposit_desc }}">
                         </div>
                     </div>
                 @empty
                     <div
-                        class="deposit-item grid grid-cols-[1fr,2fr] gap-3 items-start p-4 bg-[#FDE8E8] rounded-lg relative">
+                        class="deposit-item grid grid-cols-[1fr,2fr] gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
                         <!-- مبلغ التوريد -->
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
                             <input type="text" name="deposit_amount[0]" id="deposit_amount_0" placeholder="0.00"
                                 {{ auth()->user()->type == 1 || $operation->statsu == 1 ? 'readonly' : '' }}
-                                class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                                class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                 value="0">
                         </div>
 
@@ -397,7 +398,7 @@
                             <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
                             <input type="text" name="deposit_desc[0]" id="deposit_desc_0"
                                 placeholder="مثال: توريد يوم الأحد" readonly
-                                class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]">
+                                class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
                     </div>
                 @endforelse
@@ -406,7 +407,7 @@
         <!-- الملاحظات -->
         <div class="mt-6">
             <label class="block mb-1 text-sm font-medium text-gray-700">ملاحظات</label>
-            <textarea rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+            <textarea rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 readonly>{{ $operation->note }}</textarea>
         </div>
 
@@ -432,7 +433,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">الحالة</label>
                     <div id="status"
-                        class="w-full p-2 border border-gray-300 rounded-lg font-medium text-[#7A1E2C] bg-[#FDE8E8]">
+                        class="w-full p-2 border border-gray-300 rounded-lg font-medium text-primary bg-primary-soft">
                         @if (
                             $operation->grand_total -
                                 $operation->expense_details()->sum('expense_amount') -
@@ -455,7 +456,7 @@
 
         @if (auth()->user()->type == 1)
             <!-- ملخص الفاتورة -->
-            <div class="bg-gradient-to-r from-[#7F1D1D] to-[#B91C1C] text-white p-6 rounded-lg">
+            <div class="bg-gradient-to-r bg-primary-strong text-white p-6 rounded-lg">
                 <h3 class="text-xl font-bold mb-4 text-center">ملخص الفاتورة</h3>
                 <div class="space-y-2">
 

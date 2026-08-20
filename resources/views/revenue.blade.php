@@ -58,7 +58,7 @@
                     <!-- إضافة (لون شعار الفجر #00AEEF) -->
                     @if (auth()->id() == $client->user_id)
                         <button onclick="openAddModal()"
-                            class="flex items-center gap-2 bg-[#7F1D1D] hover:bg-[#B91C1C] text-white px-4 py-2 rounded-lg shadow">
+                            class="flex items-center gap-2 bg-primary-strong hover:bg-primary-strong text-white px-4 py-2 rounded-lg shadow">
                             + إضافة ايراد
                         </button>
                     @endif
@@ -68,7 +68,7 @@
             <!-- Content -->
             <div class="p-6">
                 <!-- Client info (على يسار الكارد في الصورة، هنا مبسط) -->
-                <div class="mb-6 bg-[#FDE8E8] border border-[#7F1D1D]/30 rounded-lg p-4">
+                <div class="mb-6 bg-primary-soft border border-primary-strong/30 rounded-lg p-4">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div>
                             <div class="text-lg font-semibold">اسم العميل: <span
@@ -82,7 +82,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[900px] table-auto border-collapse">
                         <thead>
-                            <tr class="bg-[#4A0F18] text-white">
+                            <tr class="bg-primary-strong text-white">
                                 <th class="px-4 py-3 text-right">#</th>
                                 <th class="px-4 py-3 text-right">التاريخ</th>
                                 <th class="px-4 py-3 text-right">الايراد</th>
@@ -130,7 +130,7 @@
                             @endforelse
                             <tr>
                                 <td colspan="2" class="px-4 py-4 text-center font-bold">الاجمالي</td>
-                                <td class="px-4 py-4 text-[#B91C1C] font-bold">
+                                <td class="px-4 py-4 text-primary-strong font-bold">
                                     {{ number_format($client->details()->sum('amount')) }}</td>
                             </tr>
                         </tbody>
@@ -144,7 +144,7 @@
     <div id="addModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
         <div class="bg-white rounded-xl w-full max-w-lg p-6 shadow-lg">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-semibold text-[#7F1D1D]">إضافة ايراد جديد</h3>
+                <h3 class="text-xl font-semibold text-primary-strong">إضافة ايراد جديد</h3>
                 <button onclick="closeAddModal()" class="text-gray-500 hover:text-gray-700">✖</button>
             </div>
 
@@ -171,7 +171,7 @@
                     <button type="button" onclick="closeAddModal()"
                         class="px-4 py-2 bg-gray-300 rounded-lg">إلغاء</button>
                     <button type="submit" id="addSubmitBtn"
-                        class="px-4 py-2 bg-[#7F1D1D] text-white rounded-lg">حفظ</button>
+                        class="px-4 py-2 bg-primary-strong text-white rounded-lg">حفظ</button>
                 </div>
             </form>
         </div>
@@ -181,7 +181,7 @@
     <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
         <div class="bg-white rounded-xl w-full max-w-lg p-6 shadow-lg">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-semibold text-[#7F1D1D]">تعديل ايراد</h3>
+                <h3 class="text-xl font-semibold text-primary-strong">تعديل ايراد</h3>
                 <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">✖</button>
             </div>
 

@@ -9,13 +9,17 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&amp;display=swap" rel="stylesheet">
     <style>
+        body { font-family: 'Cairo', sans-serif; }
+
         @media print {
             .no-print {
                 display: none !important;
             }
 
             body {
+
                 background: white !important;
             }
 
@@ -44,7 +48,8 @@
     </style>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body>
+    @include('partials.theme') class="bg-gray-100 font-sans">
 
     <div class="max-w-6xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6 print-card">
 
@@ -60,7 +65,7 @@
                     رجوع
                 </a>
                 <button onclick="window.print()"
-                    class="bg-[#4A0F18] text-white px-4 py-2 rounded-lg shadow hover:bg-[#B91C1C] transition">
+                    class="bg-primary-strong text-white px-4 py-2 rounded-lg shadow hover:bg-primary-strong transition">
                     طباعة
                 </button>
             </div>
@@ -86,7 +91,7 @@
         <div class="overflow-x-auto">
             <table class="w-full border-collapse rounded-lg overflow-hidden shadow">
                 <thead>
-                    <tr class="bg-[#4A0F18] text-white text-sm">
+                    <tr class="bg-primary-strong text-white text-sm">
                         <th class="p-3 text-center">#</th>
                         <th class="p-3 text-center">التاريخ</th>
                         @if (!$station)

@@ -56,7 +56,7 @@
             <div class="flex justify-between items-start mb-6">
                 <div class="flex items-center">
                     <div
-                        class="w-12 h-12 bg-gradient-to-r from-[#7F1D1D] to-[#B91C1C] rounded-xl flex items-center justify-center mr-3">
+                        class="w-12 h-12 bg-gradient-to-r bg-primary-strong rounded-xl flex items-center justify-center mr-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
@@ -73,7 +73,7 @@
             </div>
 
             <!-- معلومات عامة -->
-            <div class="space-y-6 p-4 bg-[#FDE8E8] rounded-lg mb-6">
+            <div class="space-y-6 p-4 bg-primary-soft rounded-lg mb-6">
 
 
                 <!-- الصف الأول -->
@@ -82,7 +82,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">سعر اللتر للعملاء</label>
                         <input type="text" name="price_customer"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             value="{{ old('price_customer',auth()->user()->price_customer) }}">
                     </div>
 
@@ -90,7 +90,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">سعر اللتر للبص</label>
                         <input type="text" name="price_bus"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B91C1C]"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                             value="{{ old('price_bus',auth()->user()->price_bus) }}">
                     </div>
                 </div>
@@ -98,7 +98,7 @@
             </div>
 
             <button type="submit"
-                class="flex items-center bg-[#7F1D1D] text-white px-4 py-2 rounded-lg hover:bg-[#5F1515] transition-colors">
+                class="flex items-center bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition-colors">
                 حفظ
             </button>
         </form>
@@ -127,17 +127,17 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
                         <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
                         <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
                         <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-[#B91C1C] focus:ring">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
                     </div>
                 </div>
 
@@ -146,7 +146,7 @@
                         class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
                         إغلاق
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-[#7A1E2C] hover:bg-[#4A0F18] text-white">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
                         حفظ
                     </button>
                 </div>
