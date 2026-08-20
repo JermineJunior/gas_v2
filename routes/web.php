@@ -1,0 +1,117 @@
+<?php
+
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DepositDetailController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FuelOrderController;
+use App\Http\Controllers\GunContorller;
+use App\Http\Controllers\MachineController;
+use App\Http\Controllers\MachineDetailController;
+use App\Http\Controllers\PriceController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RevenueController;
+use App\Http\Controllers\StationController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TunckerController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+
+Auth::routes();
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/', [StationController::class, 'index'])->name('station.index');
+    Route::post('/', [StationController::class, 'store'])->name('station.store');
+    Route::put('station/{station}', [StationController::class, 'update'])->name('station.update');
+    Route::delete('station/{station}', [StationController::class, 'destroy'])->name('station.destroy');
+
+    Route::get('users', [UserController::class, 'index'])->name('user.index');
+    Route::post('users', [UserController::class, 'store'])->name('user.store');
+    Route::put('users', [UserController::class, 'update'])->name('user.update');
+    Route::delete('users/{user}', [UserController::class, 'delete'])->name('user.delete');
+    Route::post('users/{user}', [UserController::class, 'reset'])->name('user.reset');
+    Route::post('/user/update-password', [UserController::class, 'updatePassword'])->name('user.update-password');
+
+    Route::get('report/deposit_detail', [ReportController::class, 'deposit_detail'])->name('reports.deposit_detail');
+    Route::post('report/deposit_detail', [ReportController::class, 'deposit_detail_result'])->name('reports.deposit_detail.result');
+    Route::get('report/machine_detail', [ReportController::class, 'machine_detail'])->name('reports.machine_detail');
+    Route::post('report/machine_detail', [ReportController::class, 'machine_detail_result'])->name('reports.machine_detail.result');
+    Route::get('/reports/tuncker', [ReportController::class, 'tuncker'])->name('reports.tuncker');
+    Route::post('report/tuncker', [ReportController::class, 'tuncker_result'])->name('reports.tuncker.result');
+    Route::get('/reports/supplier', [ReportController::class, 'supplier'])->name('reports.supplier');
+    Route::post('report/supplier', [ReportController::class, 'supplier_result'])->name('reports.supplier.result');
+    Route::get('/reports/debt', [ReportController::class, 'debt'])->name('reports.debt');
+    Route::post('report/debt', [ReportController::class, 'debt_result'])->name('reports.debt.result');
+
+    
+    Route::post('/machines/store', [MachineController::class, 'storeAjax'])->name('machines.store.ajax');
+
+    
+    Route::get('gen/get_machine',[GunContorller::class,'get_machine'])->name('gun.getMachien');
+    Route::get('gen/get_gun',[GunContorller::class,'get_gun'])->name('gun.getGun');
+    Route::post('/gun/store', [GunContorller::class, 'storeAjax'])->name('gun.store.ajax');
+
+
+    Route::get('tuncker/station/{station}', [TunckerController::class, 'index'])->name('tuncker.index');
+    Route::get('tuncker/{station}/create', [TunckerController::class, 'create'])->name('tuncker.create');
+    Route::post('tuncker', [TunckerController::class, 'store'])->name('tuncker.store');
+    Route::get('tuncker/{tuncker}', [TunckerController::class, 'edit'])->name('tuncker.edit');
+    Route::put('tuncker/{tuncker}', [TunckerController::class, 'update'])->name('tuncker.update');
+    Route::delete('tuncker/{tuncker}', [TunckerController::class, 'delete'])->name('tuncker.delete');
+
+    Route::get('client', [ClientController::class, 'index'])->name('client.index');
+    Route::get('client/{station}/station', [ClientController::class, 'station'])->name('client.station');
+    Route::post('client', [ClientController::class, 'store'])->name('client.store');
+    Route::put('client/{client}', [ClientController::class, 'update'])->name('client.update');
+    Route::delete('client/{client}', [ClientController::class, 'delete'])->name('client.delete');
+    Route::get('/client-search', [ClientController::class, 'search'])->name('client.search');
+    Route::get('/client/{client}', [ClientController::class, 'show'])->name('client.show');
+
+    Route::get('supplier', [SupplierController::class, 'index'])->name('supplier.index');
+    Route::post('supplier', [SupplierController::class, 'store'])->name('supplier.store');
+    Route::put('supplier', [SupplierController::class, 'update'])->name('supplier.update');
+    Route::delete('supplier/{supplier}', [SupplierController::class, 'destroy'])->name('supplier.delete');
+
+    Route::get('revenue/{client}', [RevenueController::class, 'index'])->name('revenue.index');
+    Route::post('revenue', [RevenueController::class, 'store'])->name('revenue.store');
+    Route::put('revenue/{detail}', [RevenueController::class, 'update'])->name('revenue.update');
+    Route::delete('revenue/{detail}', [RevenueController::class, 'delete'])->name('revenue.delete');
+
+    Route::post('/client/details', [ClientController::class, 'store_detail'])->name('client.details.store');
+    Route::put('/client/details/{detail}', [ClientController::class, 'update_detail'])->name('client.details.update');
+    Route::delete('/client/details/{detail}', [ClientController::class, 'delete_detail'])->name('client.details.delete');
+
+    Route::get('supplier/order/{supplier}', [FuelOrderController::class, 'index'])->name('fuel_order.index');
+    Route::post('supplier/order', [FuelOrderController::class, 'store'])->name('fuel_order.store');
+    Route::put('supplier/order', [FuelOrderController::class, 'update'])->name('fuel_order.update');
+    Route::delete('supplier/order/{fuel_order}', [FuelOrderController::class, 'destroy'])->name('fuel_order.delete');
+
+    Route::get('machine_detail/{station}', [MachineDetailController::class, 'index'])->name('machine_detail.index');
+    Route::get('machine_detail/{station}/create', [MachineDetailController::class, 'create'])->name('machine_detail.create');
+    Route::post('machine_detail', [MachineDetailController::class, 'store'])->name('machine_detail.store');
+    Route::get('machine_detail/{machine_detail}/edit', [MachineDetailController::class, 'edit'])->name('machine_detail.edit');
+    Route::put('machine_detail/{machine_detail}', [MachineDetailController::class, 'update'])->name('machine_detail.update');
+    Route::delete('machine_detail/{machine_detail}', [MachineDetailController::class, 'destroy'])->name('machine_detail.delete');
+
+    Route::get('deposit_detail/{station}', [DepositDetailController::class, 'index'])->name('deposit_detail.index');
+    Route::get('deposit_detail/{station}/create', [DepositDetailController::class, 'create'])->name('deposit_detail.create');
+    Route::post('deposit_detail', [DepositDetailController::class, 'store'])->name('deposit_detail.store');
+    Route::get('deposit_detail/{deposit}/edit', [DepositDetailController::class, 'edit'])->name('deposit_detail.edit');
+    Route::put('deposit_detail/{deposit}', [DepositDetailController::class, 'update'])->name('deposit_detail.update');
+    Route::delete('deposit_detail/{deposit_detail}', [DepositDetailController::class, 'destroy'])->name('deposit_detail.delete');
+
+    Route::get('prices', [PriceController::class, 'create'])->name('price.create');
+    Route::post('prices', [PriceController::class, 'store'])->name('price.store');
+
+    Route::get('employee/{station}', [EmployeeController::class, 'index'])->name('employee.index');
+    Route::post('employee', [EmployeeController::class, 'store'])->name('employee.store');
+    Route::put('employee', [EmployeeController::class, 'update'])->name('employee.update');
+    Route::delete('employee/{employee}/delete', [EmployeeController::class, 'delete'])->name('employee.delete');
+    Route::get('employee-remaining', [EmployeeController::class, 'get_remaining'])->name('employee.get_remaining');
+
+    Route::get('stock/{station}',[StockController::class,'index'])->name('stock.index');
+    Route::post('stock', [StockController::class, 'store'])->name('stock.store');
+    Route::put('stock', [StockController::class, 'update'])->name('stock.update');
+    Route::delete('stock/{stock}/delete', [StockController::class, 'delete'])->name('stock.delete');
+    Route::get('/get-stocks-by-type', [StockController::class, 'getByType'])->name('stock.getByType');
+});
