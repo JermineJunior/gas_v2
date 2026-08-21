@@ -1,27 +1,18 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>تقرير المستودعات</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+@section('title', 'تقرير المستودعات')
+
+@section('styles')
+    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
-        body { font-family: 'Cairo', sans-serif; }
         .select2-container--default .select2-selection--single {
             height: 42px; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 5px 10px; font-size: 14px;
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 min-h-screen p-6">
-    @include('header')
-
+@section('content')
     <div class="max-w-3xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">تقرير المستودعات</h2>
 
@@ -70,11 +61,12 @@
             </div>
         </form>
     </div>
+@endsection
 
+@section('scripts')
+    <!-- jQuery + Select2 JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    @include('messages')
     <script>
         function setQuickDate(preset) {
             var today = new Date();
@@ -105,5 +97,4 @@
             $('.select2').select2({ placeholder: "اختر المستودع", allowClear: true, width: '100%' });
         });
     </script>
-</body>
-</html>
+@endsection

@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نتائج تقرير المصروفات</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&amp;display=swap" rel="stylesheet">
+@section('title', 'نتائج تقرير المصروفات')
+
+@section('body-class', 'bg-gray-100 font-sans')
+
+@section('no_header')
+@endsection
+
+@section('styles')
+    @include('partials.theme')
+
     <style>
-        body { font-family: 'Cairo', sans-serif; }
-
         @media print {
             .no-print {
                 display: none !important;
@@ -41,10 +39,9 @@
             }
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 font-sans">
-
+@section('content')
     <div class="max-w-6xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6 print-card">
 
         <!-- شعار + العنوان -->
@@ -141,7 +138,4 @@
         @endif
 
     </div>
-
-</body>
-
-</html>
+@endsection

@@ -1,23 +1,13 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>اضافة مستودع</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; }
-    </style>
-</head>
+@section('title', 'اضافة مستودع')
 
-<body class="bg-gray-100 min-h-screen p-6">
-    @include('header')
+@section('body-class', 'bg-gray-100 min-h-screen p-6')
 
+@section('styles')
+@endsection
+
+@section('content')
     <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">اضافة مستودع جديد</h2>
@@ -44,9 +34,9 @@
             </div>
         </form>
     </div>
+@endsection
 
+@section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    @include('messages')
-</body>
-</html>
+@endsection

@@ -18,10 +18,12 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
-        $exists = Client::where(['name' => $request->name, 'user_id' => Auth::id()])->exists();
-        if ($exists) {
-            return redirect()->back()->with('error', 'اسم العميل مستخدم من قيل في النظام ');
-        }
+        $request->validate([
+            'name' => 'required|string|max:255|unique:clients,name,NULL,id,user_id,' . Auth::id(),
+            'type' => 'required|in:1,2',
+            'phone' => 'nullable|string|max:255',
+        ]);
+
         Client::create([
             'name' => $request->name,
             'type' => $request->type,
@@ -37,12 +39,13 @@ class ClientController extends Controller
         if (Auth::id() != $client->user_id) {
             return back();
         }
-        $exists = Client::where(['name' => $request->name, 'user_id' => Auth::id()])
-            ->whereNot('id', $client->id)
-            ->exists();
-        if ($exists) {
-            return redirect()->back()->with('error', 'اسم العميل مستخدم من قيل في النظام ');
-        }
+
+        $request->validate([
+            'name' => 'required|string|max:255|unique:clients,name,' . $client->id . ',id,user_id,' . Auth::id(),
+            'type' => 'required|in:1,2',
+            'phone' => 'nullable|string|max:255',
+        ]);
+
         $client->update([
             'name' => $request->name,
             'type' => $request->type,

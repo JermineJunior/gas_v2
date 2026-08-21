@@ -38,7 +38,7 @@ class RolePermissionSeeder extends Seeder
         $admin->syncPermissions(Permission::all());
 
         // Create viewer role with view-only permissions
-        $viewer = Role::firstOrCreate(['name' => 'viewer']);
+        $viewer = Role::firstOrCreate(['name' => 'مدير المحطة']);
         $viewerPermissions = [
             'stations.view',
             'users.view',
@@ -56,12 +56,6 @@ class RolePermissionSeeder extends Seeder
             'reports.tuncker',
             'reports.machine_detail',
             'reports.deposit_detail',
-            'reports.supplier',
-            'reports.warehouse',
-            'warehouses.view',
-            'warehouse_withdrawals.view',
-            'warehouse_transactions.view',
-            'warehouse_transfers.view',
         ];
         $viewer->syncPermissions($viewerPermissions);
 

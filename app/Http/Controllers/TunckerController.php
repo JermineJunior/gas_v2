@@ -73,7 +73,7 @@ class TunckerController extends Controller
                 'user_id' => Auth::id(),
             ]);
             $data = [];
-
+            //عند التفريغ في بير واحد اواكثر
             foreach ($request->stock_id as $index => $stock_id) {
                 $data[] = [
                     'tuncker_id' => $tuncker->id,

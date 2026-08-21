@@ -1,30 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>تفاصيل العميل — {{ $client->name }}</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@section('title', 'تفاصيل العميل — ' . $client->name)
+
+@section('body-class', 'bg-gray-100 min-h-screen p-6')
+
+@section('styles')
+    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
-
 
     <style>
-        /* ظبط صغير لمساحة المحتوى */
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-
         .select2-container .select2-selection--single {
             height: 42px !important;
             display: flex;
@@ -39,11 +23,9 @@
             right: 8px;
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 min-h-screen p-6">
-    @include('header')
-
+@section('content')
     <div class="max-w-6xl mx-auto p-6">
         <!-- Card -->
         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
@@ -247,8 +229,14 @@
             </form>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <!-- jQuery + Select2 + SweetAlert2 JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @include('messages')
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
         $(document).ready(function() {
 
@@ -421,8 +409,4 @@
             });
         });
     </script>
-
-
-</body>
-
-</html>
+@endsection

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->bigInteger('qty')->nullable();
             $table->foreignId('station_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('type')->default(1)->comment('اتنين عبارة عن بنزين واحد عبارة عن جاز'); 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique(); // TODO: should be unique
             $table->tinyInteger('type')->default(1);
             $table->string('phone')->nullable();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();

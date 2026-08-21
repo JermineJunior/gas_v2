@@ -1,30 +1,12 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>تفاصيل العميل — {{ $client->name }}</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@section('title', 'تفاصيل العميل — ' . $client->name)
+
+@section('body-class', 'bg-gray-100 min-h-screen p-6')
+
+@section('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
-
-
     <style>
-        /* ظبط صغير لمساحة المحتوى */
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-
         .select2-container .select2-selection--single {
             height: 42px !important;
             display: flex;
@@ -39,11 +21,9 @@
             right: 8px;
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 min-h-screen p-6">
-    @include('header')
-
+@section('content')
     <div class="max-w-6xl mx-auto p-6">
         <!-- Card -->
         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
@@ -133,11 +113,11 @@
                                                     </button>
                                                 </form>
                                             @else
-                                                @if (auth()->user()->type == 0)
+                                                @can('clients.edit')
                                                     <a href="{{ route('client.notoky', $cus->id) }}"
                                                         class="bg-gray-600 text-white px-5 py-2 rounded-lg transition hover:bg-gray-700">الغاء
                                                         الاعتماد</a>
-                                                @endif
+                                                @endcan
                                             @endif
                                         </div>
                                     </td>
@@ -265,8 +245,23 @@
             </form>
         </div>
     </div>
-    @include('messages')
+@endsection
+
+@section('scripts')
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- form_validation scripts -->
+    <script src="{{ URL::asset('form_validation/jquery.form.js') }}"></script>
+    <script src="{{ URL::asset('form_validation/jquery.validate.min.js') }}"></script>
+    <script src="{{ URL::asset('form_validation/additional-methods.min.js') }}"></script>
+    <script src="{{ URL::asset('form_validation/messages_ar.js') }}"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    @include('messages')
     <script>
         $(document).ready(function() {
 
@@ -396,11 +391,11 @@
 
                 // تغيير شكل الزر + إظهار اللودنج
                 btn.innerHTML = `
-                                    <svg xmlns="http://www.w3.org/2000/svg" 
-                                        class="w-5 h-5 inline-block mr-2 animate-spin" 
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-5 h-5 inline-block mr-2 animate-spin"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" 
+                                        <path class="opacity-75" fill="currentColor"
                                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                                     </svg>
                                     جاري الحفظ...
@@ -430,8 +425,4 @@
 
         });
     </script>
-
-
-</body>
-
-</html>
+@endsection

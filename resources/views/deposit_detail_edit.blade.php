@@ -1,27 +1,12 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
-<head>
-    <meta charset="UTF-8">
-    <title>{{ $deposit->station->name }} - تعديل التوريدات</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- استدعاء خط عربي (Cairo) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+@extends('layouts.app')
+@section('title', $deposit->station->name . ' — تعديل التوريدات')
+@section('body-class', 'bg-gray-100 p-6')
+@section('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-
         .text-danger {
             color: red !important;
             font-size: 0.875rem;
-            /* نفس حجم النص الصغير */
             margin-top: 4px;
             display: block;
         }
@@ -40,14 +25,9 @@
             right: 8px;
         }
     </style>
+@endsection
 
-</head>
-
-<body class="bg-gray-100 p-6">
-
-    <!-- شريط علوي أفقي (خفيف، خارجي عن الكارد) -->
-    @include('header')
-
+@section('content')
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6">
 
         <form action="{{ route('deposit_detail.update',$deposit->id) }}" method="POST" id="storeForm">
@@ -147,55 +127,9 @@
 
         </form>
     </div>
-    <!-- مودال الملف التعريفي -->
-    <div x-data="{ show: false }" x-on:open-modal.window="if($event.detail.id === 'profileModal') show = true"
-        x-show="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" x-transition>
+@endsection
 
-        <div @click.away="show = false" class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 space-y-4">
-
-            <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">الملف التعريفي</h2>
-
-            <!-- اسم المستخدم -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-medium mb-1">اسم المستخدم</label>
-                <input type="text" value="{{ auth()->user()->name }}" readonly
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed">
-            </div>
-
-            <!-- نموذج تغيير كلمة السر -->
-            <form action="{{ route('user.update-password') }}" method="POST">
-                @csrf
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
-                        <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
-                        <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
-                        <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                    </div>
-                </div>
-
-                <div class="flex justify-end mt-4 gap-2">
-                    <button type="button" @click="show = false"
-                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
-                        إغلاق
-                    </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
-                        حفظ
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+@section('scripts')
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -205,7 +139,6 @@
     <script src="{{ URL::asset('form_validation/jquery.validate.min.js') }}"></script>
     <script src="{{ URL::asset('form_validation/additional-methods.min.js') }}"></script>
     <script src="{{ URL::asset('form_validation/messages_ar.js') }}"></script>
-    @include('messages')
 
     <script>
         $(document).ready(function() {
@@ -290,16 +223,16 @@
                     submitBtn.disabled = true;
 
                     submitBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" 
-                            class="w-5 h-5 mr-2 animate-spin" 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="w-5 h-5 mr-2 animate-spin"
+                            fill="none"
+                            viewBox="0 0 24 24"
                             stroke="currentColor">
-                            <circle class="opacity-25" 
-                                    cx="12" cy="12" r="10" 
+                            <circle class="opacity-25"
+                                    cx="12" cy="12" r="10"
                                     stroke-width="4"></circle>
-                            <path class="opacity-75" 
-                                fill="currentColor" 
+                            <path class="opacity-75"
+                                fill="currentColor"
                                 d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                         </svg>
                         جاري حفظ البيانات...
@@ -421,8 +354,4 @@
             }
         });
     </script>
-
-
-</body>
-
-</html>
+@endsection

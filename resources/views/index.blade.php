@@ -1,28 +1,8 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>اختيار الطرمبة</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+@section('title', 'اختيار الطرمبة')
 
-    <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-    </style>
-
-</head>
-
-<body class="bg-gray-100 min-h-screen p-6">
-
-    @include('header')
-
+@section('content')
     <!-- البطاقة الرئيسية -->
     <div class="min-h-[70vh] flex items-center justify-center">
         <div class="max-w-6xl w-full bg-white rounded-2xl shadow-2xl p-8">
@@ -71,7 +51,6 @@
 
                                     <div x-show="open" @click.away="open = false" x-transition
                                         class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2 text-sm">
-                                        @if (auth()->user()->type == 0 || auth()->user()->type == 1)
                                             @can('stations.edit')
                                                 <button @click="open = false"
                                                     class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
@@ -89,10 +68,16 @@
                                                     </button>
                                                 </form>
                                             @endcan
+                                            @can('tunckers.create')
+                                                <a href="{{ route('tuncker.create', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    تسجيل التنكر
+                                                </a>
+                                            @endcan
                                             @can('tunckers.view')
                                                 <a href="{{ route('tuncker.index', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    كل التناكر التي تم شحنها
+                                                    قائمة التناكر لدى المحطة
                                                 </a>
                                             @endcan
                                             @can('clients.view')
@@ -111,107 +96,6 @@
                                                 <a href="{{ route('stock.index', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     قائمة الابار
-                                                </a>
-                                            @endcan
-                                            @can('machine_details.view')
-                                                <a href="{{ route('machine_detail.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة العدادات لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('deposit_details.view')
-                                                <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة التوريدات لدى المحطة
-                                                </a>
-                                            @endcan
-                                        @endif
-                                        @if (auth()->user()->type == 2)
-                                            @can('stations.edit')
-                                                <button @click="open = false"
-                                                    class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
-                                                    data-id="{{ $station->id }}" data-name="{{ $station->name }}">
-                                                    تعديل
-                                                </button>
-                                            @endcan
-                                            @can('stations.delete')
-                                                <form method="POST" action="{{ route('station.destroy', $station->id) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button"
-                                                        class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                                                        حذف
-                                                    </button>
-                                                </form>
-                                            @endcan
-                                            @if ($station->id == 1)
-                                                @can('employees.view')
-                                                    <a href="{{ route('employee.index', $station->id) }}"
-                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                        قائمة الموظفين
-                                                    </a>
-                                                @endcan
-                                                @can('stocks.view')
-                                                    <a href="{{ route('stock.index', $station->id) }}"
-                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                        قائمة الابار
-                                                    </a>
-                                                @endcan
-                                                @can('tunckers.create')
-                                                    <a href="{{ route('tuncker.create', $station->id) }}"
-                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                        تسجيل التنكر
-                                                    </a>
-                                                @endcan
-                                                @can('machine_details.create')
-                                                    <a href="{{ route('machine_detail.create', $station->id) }}"
-                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                        تسجيل العدادات
-                                                    </a>
-                                                @endcan
-                                                @can('deposit_details.create')
-                                                    <a href="{{ route('deposit_detail.create', $station->id) }}"
-                                                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                        تسجيل التوريدات
-                                                    </a>
-                                                @endcan
-                                            @endif
-                                            @can('clients.view')
-                                                <a href="{{ route('client.station', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    ادارة الحسابات لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('tunckers.view')
-                                                <a href="{{ route('tuncker.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة التناكر لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('machine_details.view')
-                                                <a href="{{ route('machine_detail.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة العدادات لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('deposit_details.view')
-                                                <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة التوريدات لدى المحطة
-                                                </a>
-                                            @endcan
-                                        @endif
-                                        @if (auth()->user()->type != 0 && auth()->user()->type != 1 && auth()->user()->type != 2)
-                                            @can('tunckers.create')
-                                                <a href="{{ route('tuncker.create', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    تسجيل التنكر
-                                                </a>
-                                            @endcan
-                                            @can('tunckers.view')
-                                                <a href="{{ route('tuncker.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة التناكر لدى المحطة
                                                 </a>
                                             @endcan
                                             @can('machine_details.create')
@@ -238,19 +122,6 @@
                                                     قائمة التوريدات لدى المحطة
                                                 </a>
                                             @endcan
-                                            @can('employees.view')
-                                                <a href="{{ route('employee.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة الموظفين
-                                                </a>
-                                            @endcan
-                                            @can('stocks.view')
-                                                <a href="{{ route('stock.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة الابار
-                                                </a>
-                                            @endcan
-                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -276,17 +147,10 @@
 
                             <!-- زر التسجيل -->
                             @can('tunckers.create')
-                                @if (auth()->user()->type == 0 || auth()->user()->type == 1)
-                                    <a href="{{ route('tuncker.create', $station->id) }}"
-                                        class="block text-center text-green-600 font-bold text-sm hover:underline transition">
-                                        تسجيل التناكر التي تم شحنها ←
-                                    </a>
-                                @else
                                     <a href="{{ route('tuncker.create', $station->id) }}"
                                         class="block text-center text-green-600 font-bold text-sm hover:underline transition">
                                          تسجيل التناكر ←
                                     </a>
-                                @endif
                             @endcan
                         </div>
                     @endif
@@ -368,12 +232,9 @@
             </form>
         </div>
     </div>
+@endsection
 
-    <!-- Sweet Alert.js -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Alpine.js -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    @include('messages')
+@section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const openModalBtn = document.getElementById('openModal');
@@ -469,7 +330,4 @@
             if (el) el.textContent = document.querySelectorAll('.station-card').length;
         });
     </script>
-
-</body>
-
-</html>
+@endsection

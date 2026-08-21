@@ -17,10 +17,12 @@ class StockController extends Controller
 
     public function store(Request $request)
     {
-        $exists = Stock::where('station_id', $request->station_id)->where('name', $request->name)->exists();
-        if ($exists) {
-            return back()->withErrors('قيمة الاسم مستخدمة من قبل في النظام');
-        }
+        $request->validate([
+            'name' => 'required|string|max:255|unique:stocks,name,NULL,id,station_id,' . $request->station_id,
+            'station_id' => 'required|exists:stations,id',
+            'type' => 'required|in:1,2',
+        ]);
+
         Stock::create([
             'name' => $request->name,
             'station_id' => $request->station_id,
@@ -32,11 +34,13 @@ class StockController extends Controller
 
     public function update(Request $request)
     {
-        $stock = Stock::find($request->id);
-        $exists = Stock::where('station_id', $stock->station_id)->where('name', $request->name)->whereNot('id', $stock->id)->exists();
-        if ($exists) {
-            return back()->withErrors('قيمة الاسم مستخدمة من قبل في النظام');
-        }
+        $stock = Stock::findOrFail($request->id);
+
+        $request->validate([
+            'name' => 'required|string|max:255|unique:stocks,name,' . $stock->id . ',id,station_id,' . $stock->station_id,
+            'type' => 'required|in:1,2',
+        ]);
+
         $stock->update([
             'name' => $request->name,
             'type' => $request->type,

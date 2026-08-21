@@ -1,24 +1,19 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>حركات المستودع</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+@extends('layouts.app')
+
+@section('title', 'حركات المستودع')
+
+@section('body-class', 'bg-gray-100 min-h-screen p-6')
+
+@section('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
-        body { font-family: 'Cairo', sans-serif; }
         .select2-container--default .select2-selection--single {
             height: 42px; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 5px 10px; font-size: 14px;
         }
     </style>
-</head>
-<body class="bg-gray-100 min-h-screen p-6">
-    @include('header')
+@endsection
+
+@section('content')
     <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">حركات الاضافة - المستودع</h2>
@@ -102,6 +97,9 @@
         </div>
         <div class="mt-4">{{ $transactions->links() }}</div>
     </div>
+@endsection
+
+@section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -118,5 +116,4 @@
             });
         });
     </script>
-</body>
-</html>
+@endsection

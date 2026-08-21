@@ -1,33 +1,12 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة العدادات </title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+@section('title', 'إدارة العدادات')
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+@section('body-class', 'bg-gray-100 min-h-screen p-6')
 
-    <!-- Alpine.js -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
-    <!-- jQuery + Select2 -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@section('styles')
+    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- استدعاء خط عربي (Cairo) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-    </style>
 
     <style>
         /* تنسيق Select2 مع Tailwind */
@@ -52,153 +31,110 @@
             display: none !important;
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 min-h-screen p-6" x-data="{ openAdd: false, openEdit: false, editUser: { id: '', name: '', username: '', stations: [] } }">
-    <!-- شريط علوي أفقي (خفيف، خارجي عن الكارد) -->
-    @include('header')
-
-    <!-- جدول التناكر التي تم شحنها -->
-    <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">قائمة العدادات</h2>
-        </div>
-
-        <div class="space-y-4">
-            @forelse ($machines as $date => $dayMachines)
-                <div class="border rounded-lg overflow-hidden">
-                    <button type="button"
-                        class="w-full bg-primary-strong text-white text-right px-4 py-3 font-semibold flex justify-between items-center"
-                        onclick="toggleCollapse('{{ $date }}')">
-                        <span>{{ $date }}</span>
-                        <svg id="icon-{{ $date }}" xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.25 8.27a.75.75 0 01-.02-1.06z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-
-                    <div id="collapse-{{ $date }}" class="hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full border-collapse">
-                                <thead class="bg-gray-100 text-gray-700">
-                                    <tr>
-                                        <th class="px-4 py-3 text-right">#</th>
-                                        <th class="px-4 py-3 text-right">الموظف</th>
-                                        <th class="px-4 py-3 text-right">الماكينة</th>
-                                        <th class="px-4 py-3 text-right">المسدس</th>
-                                        <th class="px-4 py-3 text-right">عداد البداية</th>
-                                        <th class="px-4 py-3 text-right">عداد النهاية</th>
-                                        <th class="px-4 py-3 text-right"> صافي العداد</th>
-                                        <th class="px-4 py-3 text-right">سعر اللتر</th>
-                                        <th class="px-4 py-3 text-right">اجمالي المبلغ</th>
-                                        @canany(['machine_details.edit', 'machine_details.delete'])
-                                            <th class="px-4 py-3 text-right">الإجراءات</th>
-                                        @endcanany
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($dayMachines as $machine)
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="px-4 py-3">{{ $loop->iteration }}</td>
-                                            <td class="px-4 py-3">{{ $machine->employee->name }}</td>
-                                            <td class="px-4 py-3">{{ $machine->machine->name }}</td>
-                                            <td class="px-4 py-3">{{ $machine->gun->name }}</td>
-                                            <td class="px-4 py-3">{{ number_format($machine->start_counter) }}</td>
-                                            <td class="px-4 py-3">{{ number_format($machine->end_counter) }}</td>
-                                            <td class="px-4 py-3">{{ number_format($machine->net) }}</td>
-                                            <td class="px-4 py-3">{{ number_format($machine->price) }}</td>
-                                            <td class="px-4 py-3">{{ number_format($machine->total) }}</td>
-                                            @canany(['machine_details.edit', 'machine_details.delete'])
-                                                <td class="px-4 py-3 flex gap-2">
-                                                    @can('machine_details.edit')
-                                                        <a href="{{ route('machine_detail.edit', $machine->id) }}"
-                                                            class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
-                                                    @endcan
-                                                    @can('machine_details.delete')
-                                                        <form action="{{ route('machine_detail.delete', $machine->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="button"
-                                                                class="delete-btn bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">حذف</button>
-                                                        </form>
-                                                    @endcan
-                                                </td>
-                                            @endcanany
-                                        </tr>
-                                    @endforeach
-                                    <tr class="border-b hover:bg-gray-200">
-                                        <td class="px-4 py-3 text-center" colspan="6">الاجماليات</td>
-                                        <td>{{ number_format($machine->sum('net')) }}</td>
-                                        <td></td>
-                                        <td>{{ number_format($machine->sum('total')) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="text-center bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-4 mt-4">
-                    لا توجد أي عمليات متاحة حاليًا.
-                </div>
-            @endforelse
-        </div>
-    </div>
-
-    <!-- مودال الملف التعريفي -->
-    <div x-data="{ show: false }" x-on:open-modal.window="if($event.detail.id === 'profileModal') show = true"
-        x-show="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" x-transition>
-
-        <div @click.away="show = false" class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 space-y-4">
-
-            <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">الملف التعريفي</h2>
-
-            <!-- اسم المستخدم -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-medium mb-1">اسم المستخدم</label>
-                <input type="text" value="{{ auth()->user()->name }}" readonly
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed">
+@section('content')
+    <div x-data="{ openAdd: false, openEdit: false, editUser: { id: '', name: '', username: '', stations: [] } }">
+        <!-- جدول التناكر التي تم شحنها -->
+        <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">قائمة العدادات</h2>
             </div>
 
-            <!-- نموذج تغيير كلمة السر -->
-            <form action="{{ route('user.update-password') }}" method="POST">
-                @csrf
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
-                        <input type="password" name="old_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
-                        <input type="password" name="new_password"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
-                        <input type="password" name="new_password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                    </div>
-                </div>
+            <div class="space-y-4">
+                @forelse ($machines as $date => $dayMachines)
+                    <div class="border rounded-lg overflow-hidden">
+                        <button type="button"
+                            class="w-full bg-primary-strong text-white text-right px-4 py-3 font-semibold flex justify-between items-center"
+                            onclick="toggleCollapse('{{ $date }}')">
+                            <span>{{ $date }}</span>
+                            <svg id="icon-{{ $date }}" xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.25 8.27a.75.75 0 01-.02-1.06z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
 
-                <div class="flex justify-end mt-4 gap-2">
-                    <button type="button" @click="show = false"
-                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
-                        إغلاق
-                    </button>
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
-                        حفظ
-                    </button>
-                </div>
-            </form>
+                        <div id="collapse-{{ $date }}" class="hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse">
+                                    <thead class="bg-gray-100 text-gray-700">
+                                        <tr>
+                                            <th class="px-4 py-3 text-right">#</th>
+                                            <th class="px-4 py-3 text-right">الموظف</th>
+                                            <th class="px-4 py-3 text-right">الماكينة</th>
+                                            <th class="px-4 py-3 text-right">المسدس</th>
+                                            <th class="px-4 py-3 text-right">عداد البداية</th>
+                                            <th class="px-4 py-3 text-right">عداد النهاية</th>
+                                            <th class="px-4 py-3 text-right"> صافي العداد</th>
+                                            <th class="px-4 py-3 text-right">سعر اللتر</th>
+                                            <th class="px-4 py-3 text-right">اجمالي المبلغ</th>
+                                            @canany(['machine_details.edit', 'machine_details.delete'])
+                                                <th class="px-4 py-3 text-right">الإجراءات</th>
+                                            @endcanany
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($dayMachines as $machine)
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="px-4 py-3">{{ $loop->iteration }}</td>
+                                                <td class="px-4 py-3">{{ $machine->employee->name }}</td>
+                                                <td class="px-4 py-3">{{ $machine->machine->name }}</td>
+                                                <td class="px-4 py-3">{{ $machine->gun->name }}</td>
+                                                <td class="px-4 py-3">{{ number_format($machine->start_counter) }}</td>
+                                                <td class="px-4 py-3">{{ number_format($machine->end_counter) }}</td>
+                                                <td class="px-4 py-3">{{ number_format($machine->net) }}</td>
+                                                <td class="px-4 py-3">{{ number_format($machine->price) }}</td>
+                                                <td class="px-4 py-3">{{ number_format($machine->total) }}</td>
+                                                @canany(['machine_details.edit', 'machine_details.delete'])
+                                                    <td class="px-4 py-3 flex gap-2">
+                                                        @can('machine_details.edit')
+                                                            <a href="{{ route('machine_detail.edit', $machine->id) }}"
+                                                                class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
+                                                        @endcan
+                                                        @can('machine_details.delete')
+                                                            <form action="{{ route('machine_detail.delete', $machine->id) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="button"
+                                                                    class="delete-btn bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">حذف</button>
+                                                            </form>
+                                                        @endcan
+                                                    </td>
+                                                @endcanany
+                                            </tr>
+                                        @endforeach
+                                        <tr class="border-b hover:bg-gray-200">
+                                            <td class="px-4 py-3 text-center" colspan="6">الاجماليات</td>
+                                            <td>{{ number_format($machine->sum('net')) }}</td>
+                                            <td></td>
+                                            <td>{{ number_format($machine->sum('total')) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-4 mt-4">
+                        لا توجد أي عمليات متاحة حاليًا.
+                    </div>
+                @endforelse
+            </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <!-- jQuery + Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @include('messages')
+
     <script>
         function toggleCollapse(id) {
             const content = document.getElementById(`collapse-${id}`);
@@ -246,7 +182,4 @@
             });
         });
     </script>
-
-</body>
-
-</html>
+@endsection

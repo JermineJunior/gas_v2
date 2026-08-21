@@ -1,17 +1,16 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>تقرير المستودع - {{ $warehouse->name }}</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+@section('title', 'تقرير المستودع - ' . $warehouse->name)
+
+@section('body-class', 'bg-gray-100 min-h-screen p-6')
+
+@section('no_header')
+@endsection
+
+@section('styles')
+    @include('partials.theme')
+
     <style>
-        body { font-family: 'Cairo', sans-serif; }
         @media print {
             .no-print { display: none !important; }
             body { background: white !important; }
@@ -20,10 +19,9 @@
             .print-inline > div { flex: 1; text-align: center; }
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 min-h-screen p-6">
-
+@section('content')
     <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6 print-card">
         <div class="flex items-center justify-between border-b pb-4 mb-6">
             <div class="flex items-center gap-4">
@@ -121,5 +119,4 @@
             </div>
         @endif
     </div>
-</body>
-</html>
+@endsection

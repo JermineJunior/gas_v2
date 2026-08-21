@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        //تسجيل التناكر
         Schema::create('stock_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tuncker_id')->constrained()->cascadeOnDelete();

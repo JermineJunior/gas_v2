@@ -1,28 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقرير الموردين</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    {{-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> --}}
-    <script src="https://cdn.tailwindcss.com"></script>
+@section('title', 'تقرير الموردين')
 
+@section('body-class', 'bg-gray-100 p-6')
 
+@section('styles')
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    <!-- استدعاء خط عربي (Cairo) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-
         .select2-container--default .select2-selection--single {
             height: 42px;
             border: 1px solid #d1d5db;
@@ -31,13 +17,9 @@
             font-size: 14px;
         }
     </style>
-</head>
+@endsection
 
-<body class="bg-gray-100 p-6">
-
-    <!-- شريط علوي أفقي (خفيف، خارجي عن الكارد) -->
-    @include('header')
-
+@section('content')
     <div class="max-w-6xl mx-auto bg-white p-6 mt-10 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold mb-6 text-gray-700">تقرير الموردين</h2>
 
@@ -133,10 +115,11 @@
             </form>
         </div>
     </div>
+@endsection
 
+@section('scripts')
     <!-- jQuery + Select2 JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         function setQuickDate(preset) {
@@ -189,6 +172,4 @@
             }
         });
     </script>
-</body>
-
-</html>
+@endsection
