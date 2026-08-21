@@ -37,6 +37,11 @@
                 flex: 1;
                 text-align: center;
             }
+
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
         }
     </style>
 @endsection

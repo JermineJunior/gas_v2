@@ -17,6 +17,7 @@
             .print-card { box-shadow: none !important; border: none !important; }
             .print-inline { display: flex !important; justify-content: space-between; gap: 20px; }
             .print-inline > div { flex: 1; text-align: center; }
+            @page { size: A4 landscape; margin: 10mm; }
         }
     </style>
 @endsection

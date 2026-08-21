@@ -52,8 +52,44 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/reports/debt', [ReportController::class, 'debt'])->name('reports.debt');
     Route::post('report/debt', [ReportController::class, 'debt_result'])->name('reports.debt.result');
 
+    Route::get('/reports/stock', [ReportController::class, 'machine_report'])->name('reports.machine_report');
+    Route::post('report/stock', [ReportController::class, 'machine_report_result'])->name('reports.machine_report.result');
+    Route::get('/reports/stock-time', [ReportController::class, 'machine_report_time'])->name('reports.machine_report_time');
+    Route::post('report/stock-time', [ReportController::class, 'machine_report_time_result'])->name('reports.machine_report_time.result');
+
+    Route::get('/reports/stock-general', [ReportController::class, 'stock_report'])->name('reports.stock_general');
+    Route::post('report/stock-general', [ReportController::class, 'stock_report_result'])->name('reports.stock_general.result');
+
     
     Route::post('/machines/store', [MachineController::class, 'storeAjax'])->name('machines.store.ajax');
+
+    Route::get('/api/stocks', function (\Illuminate\Http\Request $request) {
+        $query = \App\Models\Stock::query();
+        if ($request->station_id) $query->where('station_id', $request->station_id);
+        return $query->select('id', 'name', 'type')->get();
+    })->name('api.stocks');
+
+    Route::get('/api/machines', function (\Illuminate\Http\Request $request) {
+        $query = \App\Models\Machine::query();
+        if ($request->station_id) $query->where('station_id', $request->station_id);
+        return $query->select('id', 'name')->get();
+    })->name('api.machines');
+
+    Route::get('/machine/stock/{machine}', function (\App\Models\Machine $machine) {
+        $stock = $machine->stock;
+        if (!$stock) {
+            return response()->json(['stock' => null]);
+        }
+        return response()->json([
+            'stock' => [
+                'id' => $stock->id,
+                'name' => $stock->name,
+                'qty' => $stock->qty,
+                'type' => $stock->type,
+                'type_text' => $stock->type == 1 ? 'جازولين' : 'بنزين',
+            ],
+        ]);
+    })->name('api.machine-stock');
 
     
     Route::get('gen/get_machine',[GunContorller::class,'get_machine'])->name('gun.getMachien');

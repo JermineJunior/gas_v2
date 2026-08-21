@@ -110,7 +110,7 @@
                             @endif
                             <td class="p-3 text-center">{{ $tuncker->driver_name }}</td>
                             <td class="p-3 text-center">{{ $tuncker->tuncker_no }}</td>
-                            <td class="p-3 text-center">{{ number_format($tuncker->fuel_quantity) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($tuncker->fuel_quantity) }}</td>
                             <td class="p-3 text-center">{{ $tuncker->supplier->name }}</td>
                         </tr>
                     @empty

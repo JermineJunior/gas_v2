@@ -13,4 +13,9 @@ class Machine extends Model
     {
         return $this->belongsTo(Station::class);
     }
+
+    public function stock(): BelongsTo
+    {
+        return $this->belongsTo(Stock::class);
+    }
 }

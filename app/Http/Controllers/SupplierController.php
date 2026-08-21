@@ -11,7 +11,11 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::withSum('fuelOrders as total_orders', 'quantity' )->withSum('fuelDeliveries as total_deliveries', 'quantity')->orderByDesc('id')->get();
+        $suppliers = Supplier::withSum('fuelOrders as total_orders', 'quantity' )
+            ->withSum('fuelDeliveries as total_deliveries', 'quantity')
+            ->orderByDesc('id')
+            ->get();
+            
         return view('supplier', compact('suppliers'));
     }
 

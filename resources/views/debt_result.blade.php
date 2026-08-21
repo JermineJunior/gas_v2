@@ -108,10 +108,10 @@
                             @if (!$client)
                                 <td class="p-3 text-center">{{ $cli->client->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($cli->liter) }}</td>
-                            <td class="p-3 text-center">{{ number_format($cli->price) }}</td>
-                            <td class="p-3 text-center">{{ number_format($cli->total) }}</td>
-                            <td class="p-3 text-center">{{ number_format($cli->amount) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($cli->liter) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($cli->price) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($cli->total) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($cli->amount) }}</td>
                             <td class="p-3 text-center">{{ $cli->note }}</td>
                         </tr>
                     @empty

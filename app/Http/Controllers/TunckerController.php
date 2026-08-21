@@ -33,8 +33,8 @@ class TunckerController extends Controller
                 // نرتب بيانات كل شهر حسب رقم التنكر تصاعديًا
                 return $group->sortBy('tuncker_no');
             });
-
-        return view('list_tuncker', compact('tunckers', 'station'));
+            $total_amount = Tuncker::where('station_id',$station->id)->sum('fuel_quantity');
+        return view('list_tuncker', compact('tunckers', 'station','total_amount'));
     }
 
     public function create(Station $station)

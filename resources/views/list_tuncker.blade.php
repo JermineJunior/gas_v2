@@ -33,6 +33,7 @@
         <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">قائمة التناكر التي تم شحنها</h2>
+                <p>المجموع <span class="bg-green-500 p-1 rounded-lg text-gray-800">{{number_format($total_amount)}}</span></p>
             </div>
 
             @php

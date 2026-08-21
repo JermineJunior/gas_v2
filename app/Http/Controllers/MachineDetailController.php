@@ -44,6 +44,30 @@ class MachineDetailController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'employee_id' => 'required',
+            'date' => 'required|date',
+            'station_id' => 'required',
+        ]);
+
+        // Check stock for each machine before saving
+        foreach ($request->machine_id as $index => $machineId) {
+            $machine = Machine::find($machineId);
+            if (!$machine || !$machine->stock_id) {
+                continue;
+            }
+            $stock = Stock::find($machine->stock_id);
+            if (!$stock) {
+                continue;
+            }
+            $net = str_replace(',', '', $request->net[$index]);
+            if ($net > $stock->qty) {
+                return back()->withErrors(
+                    'الكمية المطلوبة (' . number_format($net) . ' لتر) تتجاوز رصيد البير "' . $stock->name . '" المتوفر (' . number_format($stock->qty) . ' لتر)'
+                );
+            }
+        }
+
         $data = [];
 
         foreach ($request->machine_id as $index => $machine) {
@@ -55,7 +79,7 @@ class MachineDetailController extends Controller
                 'gun_id' => $request->gun_id[$index],
                 'start_counter' => $request->start_counter[$index],
                 'end_counter' => $request->end_counter[$index],
-                'net' => $request->net[$index],
+                'net' => str_replace(',', '', $request->net[$index]),
                 'price' => $request->price[$index],
                 'total' => $request->total[$index],
             ];
@@ -64,9 +88,11 @@ class MachineDetailController extends Controller
 
             $stock = Stock::find($machine->stock_id);
 
-            $stock->update([
-                'qty' => $stock->qty - $request->net[$index],
-            ]);
+            if ($stock) {
+                $stock->update([
+                    'qty' => $stock->qty - str_replace(',', '', $request->net[$index]),
+                ]);
+            }
         }
 
         MachineDetail::insert($data);

@@ -46,6 +46,8 @@
                     </button>
                 </div>
 
+                <div id="stocksInfoContainer" class="mb-4 space-y-2"></div>
+
                 <div id="fuelInvoicesContainer" class="space-y-4">
                     <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
                         <div>
@@ -81,7 +83,7 @@
                                 </button>
 
                                 <select name="machine_id[0]"
-                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2" required>
+                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2" data-prev-machine="{{ $machine_detail->machine_id }}" required>
                                     <option value="">اختر العداد</option>
                                     @foreach ($machines as $machine)
                                         <option @selected($machine_detail->machine_id == $machine->id) value="{{ $machine->id }}">
@@ -89,6 +91,7 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
                         </div>
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">المسدسات</label>
@@ -307,6 +310,56 @@
             const container = document.getElementById('fuelInvoicesContainer');
             const addInvoiceBtn = document.getElementById('addFuelInvoiceBtn');
             let machines = @json($machines);
+            let stockMap = {};
+
+            function renderStocksInfo() {
+                const box = document.getElementById('stocksInfoContainer');
+                const keys = Object.keys(stockMap);
+                if (keys.length === 0) { box.innerHTML = ''; return; }
+                let html = '';
+                keys.forEach(mid => {
+                    const s = stockMap[mid];
+                    if (!s) return;
+                    html += `<div class="flex items-center gap-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <span class="text-sm font-semibold text-gray-700">البير:</span>
+                            <span class="text-sm text-gray-800 font-bold">${s.name}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-gray-700">النوع:</span>
+                            <span class="text-sm text-gray-800">${s.type_text}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-gray-700">الكمية:</span>
+                            <span class="text-sm font-bold text-amber-700">${formatWithCommas(s.qty)}</span>
+                            <span class="text-xs text-gray-500">لتر</span>
+                        </div>
+                    </div>`;
+                });
+                box.innerHTML = html;
+            }
+
+            // تحميل بيانات البير للماكينة المحددة مسبقاً
+            (function() {
+                let initialMachineId = '{{ $machine_detail->machine_id }}';
+                if (initialMachineId) {
+                    let initialLabel = $('.fuel-item:first .stock-label');
+                    $.ajax({
+                        url: '{{ url("/machine/stock") }}/' + initialMachineId,
+                        method: 'GET',
+                        success: function(data) {
+                            if (data.stock) {
+                                stockMap[initialMachineId] = data.stock;
+                                initialLabel.text('البير: ' + data.stock.name);
+                                renderStocksInfo();
+                            } else {
+                                initialLabel.text('بدون بير');
+                            }
+                        }
+                    });
+                }
+            })();
 
             $('#storeForm').validate({
                 rules: {
@@ -354,6 +407,37 @@
                     }
                 },
                 submitHandler: function(form) {
+
+                    // فحص الرصيد لكل بير على حدة
+                    let stockErrors = [];
+                    let stockTotals = {};
+                    document.querySelectorAll('.fuel-item').forEach(item => {
+                        let netVal = parseNumber(item.querySelector('.net')?.value);
+                        let machineSelect = item.querySelector('.machine');
+                        let machineId = machineSelect?.value;
+                        let machineName = machineSelect?.options[machineSelect.selectedIndex]?.text || '';
+                        if (!machineId || netVal <= 0) return;
+                        let stock = stockMap[machineId];
+                        if (!stock) return;
+                        if (!stockTotals[machineId]) stockTotals[machineId] = 0;
+                        stockTotals[machineId] += netVal;
+                    });
+                    Object.keys(stockTotals).forEach(mid => {
+                        let stock = stockMap[mid];
+                        if (!stock) return;
+                        if (stockTotals[mid] > stock.qty) {
+                            stockErrors.push(`${stock.name}: المطلوب ${formatWithCommas(stockTotals[mid])} لتر، المتوفر ${formatWithCommas(stock.qty)} لتر`);
+                        }
+                    });
+                    if (stockErrors.length > 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'الكمية تتجاوز رصيد الأبار',
+                            html: '<div style="text-align:right;direction:rtl">' + stockErrors.join('<br>') + '</div>',
+                            confirmButtonText: 'حسناً'
+                        });
+                        return false;
+                    }
 
                     const selectors = [
                         'input.start-counter',
@@ -516,6 +600,7 @@
                                     ${generateMachineOptions()}
                                 </select>
                             </div>
+                            <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
                         </div>
 
                         <div>
@@ -624,6 +709,31 @@
             $(document).on('change', '.machine', function() {
                 let machineId = $(this).val();
                 let stationId = {{ $machine_detail->station_id }};
+                let currentItem = $(this).closest('.fuel-item');
+                let prevId = this.dataset.prevMachine || '';
+                if (prevId && prevId !== machineId) delete stockMap[prevId];
+                this.dataset.prevMachine = machineId;
+
+                if (!machineId) {
+                    currentItem.find('.stock-label').text('');
+                    renderStocksInfo();
+                    return;
+                }
+
+                $.ajax({
+                    url: '{{ url("/machine/stock") }}/' + machineId,
+                    method: 'GET',
+                    success: function(data) {
+                        if (data.stock) {
+                            stockMap[machineId] = data.stock;
+                            currentItem.find('.stock-label').text('البير: ' + data.stock.name);
+                        } else {
+                            delete stockMap[machineId];
+                            currentItem.find('.stock-label').text('بدون بير');
+                        }
+                        renderStocksInfo();
+                    }
+                });
 
                 $.ajax({
                     url: '{{ route('gun.getGun') }}',
@@ -709,6 +819,9 @@
                                         true, true);
                                     $(currentSelectMachine).append(newOption).trigger('change');
                                 }
+
+                                // ✅ حفظ الماكينة في المصفوفة لتظهر في الصفوف الجديدة
+                                machines.push({id: data.machine.id, name: data.machine.name});
 
                                 // ✅ رسالة نجاح (toast في أسفل اليمين)
                                 Swal.fire({

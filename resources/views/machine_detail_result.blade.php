@@ -115,11 +115,11 @@
                             @endif
                             <td class="p-3 text-center">{{ $machine->machine->name ?? '-' }}</td>
                             <td class="p-3 text-center">{{ $machine->gun->name ?? '-' }}</td>
-                            <td class="p-3 text-center">{{ number_format($machine->start_counter) }} لتر</td>
-                            <td class="p-3 text-center">{{ number_format($machine->end_counter) }} لتر</td>
-                            <td class="p-3 text-center">{{ number_format($machine->net) }} لتر</td>
-                            <td class="p-3 text-center">{{ number_format($machine->price) }} جنيه</td>
-                            <td class="p-3 text-center">{{ number_format($machine->total) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($machine->start_counter) }} لتر</td>
+                            <td class="p-3 text-center">{{ formatNumber($machine->end_counter) }} لتر</td>
+                            <td class="p-3 text-center">{{ formatNumber($machine->net) }} لتر</td>
+                            <td class="p-3 text-center">{{ formatNumber($machine->price) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($machine->total) }} جنيه</td>
                         </tr>
                     @empty
                         <tr>
@@ -130,11 +130,11 @@
                 <tfoot>
                     <tr>
                         <td class="p-3 text-center" colspan="6">الاجماليات</td>
-                        <td class="p-3 text-center">{{ number_format($operations->sum('start_counter')) }} لتر</td>
-                        <td class="p-3 text-center">{{ number_format($operations->sum('end_counter')) }} لتر</td>
-                        <td class="p-3 text-center">{{ number_format($operations->sum('net')) }} لتر</td>
+                        <td class="p-3 text-center">{{ formatNumber($operations->sum('start_counter')) }} لتر</td>
+                        <td class="p-3 text-center">{{ formatNumber($operations->sum('end_counter')) }} لتر</td>
+                        <td class="p-3 text-center">{{ formatNumber($operations->sum('net')) }} لتر</td>
                         <td></td>
-                        <td class="p-3 text-center">{{ number_format($operations->sum('total')) }} جنيه</td>
+                        <td class="p-3 text-center">{{ formatNumber($operations->sum('total')) }} جنيه</td>
                     </tr>
                 </tfoot>
             </table>

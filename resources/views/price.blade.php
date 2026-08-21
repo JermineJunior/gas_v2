@@ -47,7 +47,7 @@
                             <circle cx="7" cy="18" r="2" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="mr-3">
                         <p class="text-gray-600">تغيير اسعار اللتر</p>
                     </div>
                 </div>

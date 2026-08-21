@@ -105,7 +105,7 @@
                             @if (!$supplier)
                                 <td class="p-3 text-center">{{ $sup->supplier->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($sup->quantity) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($sup->quantity) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -115,5 +115,21 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- اجماليات الموردين -->
+        @php
+            $supplierTotals = $operations->pluck('supplier')->filter()->unique('id');
+        @endphp
+        @if ($supplierTotals->isNotEmpty())
+            <div class="mt-6 flex flex-wrap gap-3">
+                @foreach ($supplierTotals as $sup)
+                    <div class="bg-primary-soft rounded-full px-5 py-2 flex items-center gap-4 text-sm shadow-sm">
+                        <span class="font-bold text-gray-800">{{ $sup->name }}</span>
+                        <span class="text-blue-700">الطلبات: <b>{{ formatNumber($sup->total_orders ?? 0) }}</b></span>
+                        <span class="text-green-700">التوريدات: <b>{{ formatNumber($sup->total_deliveries ?? 0) }}</b></span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 @endsection

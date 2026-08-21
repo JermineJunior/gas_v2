@@ -191,7 +191,7 @@
             </div>
             @endcanany
 
-            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse'])
+            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -207,6 +207,9 @@
                     @can('reports.tuncker')
                         <a href="{{ route('reports.tuncker') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير التناكر</a>
                     @endcan
+                    @can('reports.stock_general')
+                        <a href="{{ route('reports.stock_general') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير البير</a>
+                    @endcan
                     @can('reports.machine_detail')
                         <a href="{{ route('reports.machine_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات</a>
                     @endcan
@@ -218,6 +221,12 @@
                     @endcan
                     @can('reports.warehouse')
                         <a href="{{ route('reports.warehouse') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير المستودعات</a>
+                    @endcan
+                    @can('reports.machine_report')
+                        <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>
+                    @endcan
+                    @can('reports.machine_report_time')
+                        <a href="{{ route('reports.machine_report_time') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات بالفترة</a>
                     @endcan
                 </div>
             </div>
@@ -288,7 +297,7 @@
         @endcanany
 
         <!-- Dropdown للتقارير -->
-        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse'])
+        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 التقارير
@@ -305,6 +314,9 @@
                 @can('reports.tuncker')
                     <a href="{{ route('reports.tuncker') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير التناكر</a>
                 @endcan
+                @can('reports.stock_general')
+                    <a href="{{ route('reports.stock_general') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير البير</a>
+                @endcan
                 @can('reports.machine_detail')
                     <a href="{{ route('reports.machine_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات</a>
                 @endcan
@@ -316,6 +328,12 @@
                 @endcan
                 @can('reports.warehouse')
                     <a href="{{ route('reports.warehouse') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير المستودعات</a>
+                @endcan
+                @can('reports.machine_report')
+                    <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>
+                @endcan
+                @can('reports.machine_report_time')
+                    <a href="{{ route('reports.machine_report_time') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات بالفترة</a>
                 @endcan
             </div>
         </div>

@@ -39,24 +39,18 @@ class RolePermissionSeeder extends Seeder
 
         // Create viewer role with view-only permissions
         $viewer = Role::firstOrCreate(['name' => 'مدير المحطة']);
-        $viewerPermissions = [
-            'stations.view',
-            'users.view',
-            'clients.view',
-            'suppliers.view',
-            'machines.view',
-            'machine_details.view',
-            'tunckers.view',
-            'deposit_details.view',
-            'employees.view',
-            'stocks.view',
-            'revenue.view',
-            'prices.view',
+        $viewerPermissions = Permission::where('name', 'like', '%.view')->pluck('name')->toArray();
+        $viewerPermissions = array_merge($viewerPermissions, [
             'reports.debt',
             'reports.tuncker',
             'reports.machine_detail',
             'reports.deposit_detail',
-        ];
+            'reports.supplier',
+            'reports.warehouse',
+            'reports.machine_report',
+            'reports.machine_report_time',
+            'reports.stock_general',
+        ]);
         $viewer->syncPermissions($viewerPermissions);
 
         // Assign roles to existing users based on type
@@ -66,7 +60,7 @@ class RolePermissionSeeder extends Seeder
             if ($user->type == 0 || $user->type == 1) {
                 $user->assignRole('admin');
             } elseif ($user->type == 3) {
-                $user->assignRole('viewer');
+                $user->assignRole('مدير المحطة');
             } else {
                 $user->assignRole('admin');
             }

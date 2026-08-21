@@ -90,6 +90,9 @@ return [
         'reports.deposit_detail'    => 'تقرير التوريد',
         'reports.supplier'          => 'تقرير الموردين',
         'reports.warehouse'         => 'تقرير المستودعات',
+        'reports.machine_report'        => 'تقرير العدادات بالماكينات',
+        'reports.machine_report_time'   => 'تقرير العدادات بالماكينات بالفترة',
+        'reports.stock_general'         => 'تقرير البير',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',

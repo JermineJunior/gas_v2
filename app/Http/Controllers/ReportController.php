@@ -12,6 +12,7 @@ use App\Models\Supplier;
 use App\Models\Tuncker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -108,7 +109,10 @@ class ReportController extends Controller
         $start_date = $request->start_date;
         $end_date = $request->end_date;
         $supplier = Supplier::find($request->supplier_id) ?? null;
-        $operations = FuelOrder::with('supplier')
+        $operations = FuelOrder::with(['supplier' => function ($q) {
+                $q->withSum('fuelOrders as total_orders', 'quantity')
+                    ->withSum('fuelDeliveries as total_deliveries', 'quantity');
+            }])
             ->when($request->supplier_id, function ($query) use ($request) {
                 return $query->where('supplier_id', $request->supplier_id);
             })
@@ -151,5 +155,160 @@ class ReportController extends Controller
             })
             ->get();
         return view('debt_result', compact('operations', 'start_date', 'end_date', 'client'));
+    }
+
+    // ── Machine Report (no time filter) ──
+    public function machine_report()
+    {
+        
+        $stations = auth('web')->user()->stations; // only show the user stations
+        return view('machine_report', compact('stations'));
+    }
+
+    public function machine_report_result(Request $request)
+    {
+        $stationId = $request->station_id;
+        $machineId = $request->machine_id;
+        $fuelType = $request->fuel_type;
+
+        $machinesQuery = \App\Models\Machine::query()->with('stock.station');
+        if ($stationId) $machinesQuery->where('station_id', $stationId);
+        if ($machineId) $machinesQuery->where('id', $machineId);
+        if ($fuelType) $machinesQuery->whereHas('stock', fn($q) => $q->where('type', $fuelType));
+        $machines = $machinesQuery->get();
+
+        $results = $machines->map(function ($machine) {
+            $gunStats = \App\Models\MachineDetail::select('gun_id', DB::raw('SUM(net) as total_net'), DB::raw('SUM(total) as total_amount'), DB::raw('COUNT(*) as count'))
+                ->where('machine_id', $machine->id)
+                ->groupBy('gun_id')
+                ->get()
+                ->map(function ($row) {
+                    $gun = \App\Models\Gun::find($row->gun_id);
+                    return [
+                        'gun_name' => $gun->name ?? '-',
+                        'total_net' => $row->total_net,
+                        'total_amount' => $row->total_amount,
+                        'count' => $row->count,
+                    ];
+                });
+
+            $totalNet = $gunStats->sum('total_net');
+            $totalAmount = $gunStats->sum('total_amount');
+            $stock = $machine->stock;
+
+            return [
+                'machine' => $machine,
+                'guns' => $gunStats,
+                'total_net' => $totalNet,
+                'total_amount' => $totalAmount,
+                'stock_name' => $stock->name ?? '-',
+                'stock_type' => $stock ? ($stock->type == 1 ? 'جازولين' : 'بنزين') : '-',
+                'stock_remaining' => $stock->qty ?? 0,
+            ];
+        });
+
+        $station = $stationId ? Station::find($stationId) : null;
+        return view('machine_report_result', compact('results', 'station'));
+    }
+
+    // ── Machine Report with Time Filter ──
+    public function machine_report_time()
+    {
+        $stations = Station::get();
+        return view('machine_report_time', compact('stations'));
+    }
+
+    public function machine_report_time_result(Request $request)
+    {
+        $stationId = Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id;
+        $machineId = $request->machine_id;
+        $fuelType = $request->fuel_type;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $machinesQuery = \App\Models\Machine::query()->with('stock.station');
+        if ($stationId) $machinesQuery->where('station_id', $stationId);
+        if ($machineId) $machinesQuery->where('id', $machineId);
+        if ($fuelType) $machinesQuery->whereHas('stock', fn($q) => $q->where('type', $fuelType));
+        $machines = $machinesQuery->get();
+
+        $results = $machines->map(function ($machine) use ($startDate, $endDate) {
+            $detailQuery = \App\Models\MachineDetail::select('gun_id', DB::raw('SUM(net) as total_net'), DB::raw('SUM(total) as total_amount'), DB::raw('COUNT(*) as count'))
+                ->where('machine_id', $machine->id);
+            if ($startDate) $detailQuery->whereDate('date', '>=', $startDate);
+            if ($endDate) $detailQuery->whereDate('date', '<=', $endDate);
+            $gunStats = $detailQuery->groupBy('gun_id')->get()->map(function ($row) {
+                $gun = \App\Models\Gun::find($row->gun_id);
+                return [
+                    'gun_name' => $gun->name ?? '-',
+                    'total_net' => $row->total_net,
+                    'total_amount' => $row->total_amount,
+                    'count' => $row->count,
+                ];
+            });
+
+            $totalNet = $gunStats->sum('total_net');
+            $totalAmount = $gunStats->sum('total_amount');
+            $stock = $machine->stock;
+
+            return [
+                'machine' => $machine,
+                'guns' => $gunStats,
+                'total_net' => $totalNet,
+                'total_amount' => $totalAmount,
+                'stock_name' => $stock->name ?? '-',
+                'stock_type' => $stock ? ($stock->type == 1 ? 'جازولين' : 'بنزين') : '-',
+                'stock_remaining' => $stock->qty ?? 0,
+            ];
+        });
+
+        $station = $stationId ? Station::find($stationId) : null;
+        return view('machine_report_time_result', compact('results', 'station', 'startDate', 'endDate'));
+    }
+
+    // ── General Stock Report (per stock, outside machines) ──
+    public function stock_report()
+    {
+        $stations = Station::get();
+        return view('stock_report', compact('stations'));
+    }
+
+    public function stock_report_result(Request $request)
+    {
+        $stationId = Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id;
+        $fuelType = $request->fuel_type;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $stocksQuery = \App\Models\Stock::query()->with('station');
+        if ($stationId) $stocksQuery->where('station_id', $stationId);
+        if ($fuelType) $stocksQuery->where('type', $fuelType);
+        $stocks = $stocksQuery->get();
+
+        $results = $stocks->map(function ($stock) use ($startDate, $endDate) {
+            // الاضافات: من التناكر (stock_details بلا تاريخ - إجمالي كلي)
+            $additions = \App\Models\StockDetail::where('stock_id', $stock->id)->sum('qty');
+
+            // المسحوبات: عبر الماكينات المرتبطة بالبير
+            $withdrawQuery = MachineDetail::whereHas('machine', function ($q) use ($stock) {
+                $q->where('stock_id', $stock->id);
+            });
+            if ($startDate) $withdrawQuery->whereDate('date', '>=', $startDate);
+            if ($endDate) $withdrawQuery->whereDate('date', '<=', $endDate);
+
+            $withdrawals = (clone $withdrawQuery)->sum('net');
+            $withdrawTotal = (clone $withdrawQuery)->sum('total');
+
+            return [
+                'stock' => $stock,
+                'additions' => $additions,
+                'withdrawals' => $withdrawals,
+                'withdraw_total' => $withdrawTotal,
+                'remaining' => $stock->qty,
+            ];
+        });
+
+        $station = $stationId ? Station::find($stationId) : null;
+        return view('stock_report_result', compact('results', 'station', 'startDate', 'endDate'));
     }
 }
