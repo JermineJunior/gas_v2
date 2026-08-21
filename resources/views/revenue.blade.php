@@ -97,7 +97,7 @@
                                 <tr class="border-b bg-gray-50 hover:bg-gray-100">
                                     <td class="px-4 py-4 text-right">{{ $loop->iteration }}</td>
                                     <td class="px-4 py-4 text-right">{{ $cus->date->format('Y-m-d') }}</td>
-                                    <td class="px-4 py-4 text-right">{{ number_format($cus->amount, 2) }}</td>
+                                    <td class="px-4 py-4 text-right">{{ formatNumber($cus->amount) }}</td>
                                     <td class="px-4 py-4 text-right">{{ $cus->note }}</td>
                                     @canany(['revenue.edit', 'revenue.delete'])
                                         <td class="px-4 py-4 text-center">

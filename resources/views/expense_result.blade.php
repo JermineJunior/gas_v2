@@ -107,7 +107,7 @@
                                 @endif
                                 <td class="p-3 text-center">{{ $item->expense_desc }}</td>
                                 <td class="p-3 text-center font-semibold text-green-600">
-                                    {{ number_format($item->expense_amount, 2) }} جنيه
+                                    {{ formatNumber($item->expense_amount) }} جنيه
                                 </td>
                             </tr>
                         @endforeach
@@ -135,7 +135,7 @@
             <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-700">إجمالي المصروفات:</span>
                 <span class="text-xl font-bold text-primary-strong">
-                    {{ number_format($total, 2) }} جنيه
+                    {{ formatNumber($total) }} جنيه
                 </span>
             </div>
         @endif

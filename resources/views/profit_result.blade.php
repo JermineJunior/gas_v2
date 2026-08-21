@@ -105,13 +105,13 @@
                             @if (!$station)
                                 <td class="p-3 text-center">{{ $profit->station->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($profit->cost_total, 2) }} جنيه</td>
-                            <td class="p-3 text-center">{{ number_format($profit->net_total, 2) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($profit->cost_total) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($profit->net_total) }} جنيه</td>
                             <td class="p-3 text-center">
-                                {{ number_format($profit->expense_details()->where('status', 1)->sum('expense_amount'), 2) }}
+                                {{ formatNumber($profit->expense_details()->where('status', 1)->sum('expense_amount')) }}
                                 جنيه</td>
                             <td class="p-3 text-center font-semibold text-green-600">
-                                {{ number_format($profit->net_total - $profit->cost_total - $profit->expense_details()->where('status', 1)->sum('expense_amount'), 2) }}
+                                {{ formatNumber($profit->net_total - $profit->cost_total - $profit->expense_details()->where('status', 1)->sum('expense_amount')) }}
                                 جنيه
                             </td>
                         </tr>
@@ -137,7 +137,7 @@
             <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-700">إجمالي الارباح:</span>
                 <span class="text-xl font-bold text-primary-strong">
-                    {{ number_format($operations->sum('net_total') - $operations->sum('cost_total') - $total, 2) }}
+                    {{ formatNumber($operations->sum('net_total') - $operations->sum('cost_total') - $total) }}
                     جنيه
                 </span>
             </div>

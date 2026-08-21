@@ -104,10 +104,10 @@
                             @if (!$station)
                                 <td class="p-3 text-center">{{ $cost->station->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($cost->buy_diesel, 2) }} جنيه</td>
-                            <td class="p-3 text-center">{{ number_format($cost->transfer_diesel, 2) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($cost->buy_diesel) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($cost->transfer_diesel) }} جنيه</td>
                             <td class="p-3 text-center font-semibold text-green-600">
-                                {{ number_format($cost->cost_total, 2) }} جنيه
+                                {{ formatNumber($cost->cost_total) }} جنيه
                             </td>
                         </tr>
                     @empty
@@ -124,7 +124,7 @@
             <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-700">إجمالي التكلفة:</span>
                 <span class="text-xl font-bold text-primary-strong">
-                    {{ number_format($operations->sum('cost_total'), 2) }} جنيه
+                    {{ formatNumber($operations->sum('cost_total')) }} جنيه
                 </span>
             </div>
         @endif

@@ -104,10 +104,10 @@
                             @if (!$station)
                                 <td class="p-3 text-center">{{ $sale->station->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($sale->grand_total, 2) }} جنيه</td>
-                            <td class="p-3 text-center">{{ number_format($sale->discount, 2) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($sale->grand_total) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($sale->discount) }} جنيه</td>
                             <td class="p-3 text-center font-semibold text-green-600">
-                                {{ number_format($sale->net_total, 2) }} جنيه
+                                {{ formatNumber($sale->net_total) }} جنيه
                             </td>
                         </tr>
                     @empty
@@ -124,7 +124,7 @@
             <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-700">إجمالي المبيعات:</span>
                 <span class="text-xl font-bold text-primary-strong">
-                    {{ number_format($operations->sum('net_total'), 2) }} جنيه
+                    {{ formatNumber($operations->sum('net_total')) }} جنيه
                 </span>
             </div>
         @endif

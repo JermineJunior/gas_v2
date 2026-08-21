@@ -103,10 +103,10 @@
                                     <td class="px-4 py-4 text-right">{{ $loop->iteration }}</td>
                                     <td class="px-4 py-4 text-right">{{ $cus->date->format('Y-m-d') }}</td>
                                     <td class="px-4 py-4 text-right">{{ $cus->name }}</td>
-                                    <td class="px-4 py-4 text-right">{{ number_format($cus->liter, 2) }}</td>
-                                    <td class="px-4 py-4 text-right">{{ number_format($cus->price, 2) }}</td>
+                                    <td class="px-4 py-4 text-right">{{ formatNumber($cus->liter) }}</td>
+                                    <td class="px-4 py-4 text-right">{{ formatNumber($cus->price) }}</td>
                                     <td class="px-4 py-4 text-right font-bold text-primary-strong">
-                                        {{ number_format($cus->total, 2) }}
+                                        {{ formatNumber($cus->total) }}
                                     </td>
                                     <td class="px-4 py-4 text-right">{{ $cus->note }}</td>
                                     <td class="px-4 py-4 text-center">

@@ -26,7 +26,7 @@
     @include('header')
 
     <!-- قسم الحسابات -->
-    <div x-data="{ showAddModal: false, showEditModal: false, editclient: { id: '', name: '', phone: '', type: '' }, activeTab: '1' }" x-init="$watch('activeTab', v => window._clientActiveTab = v); window._clientActiveTab = activeTab" class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
+    <div x-data="{ showAddModal: false, showEditModal: false, editclient: { id: '', name: '', phone: '', type: '' }, activeTab: 'all' }" x-init="$watch('activeTab', v => window._clientActiveTab = v); window._clientActiveTab = activeTab" class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
 
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">إدارة العملاء</h2>

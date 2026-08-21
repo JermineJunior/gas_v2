@@ -156,7 +156,7 @@
             <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-700">إجمالي المصروفات:</span>
                 <span class="text-xl font-bold text-primary-strong">
-                    {{ number_format($total, 2) }} جنيه
+                    {{ formatNumber($total) }} جنيه
                 </span>
             </div>
         @endif --}}

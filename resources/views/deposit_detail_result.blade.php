@@ -111,7 +111,7 @@
                             @if (!$station)
                                 <td class="p-3 text-center">{{ $deposit->station->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($deposit->deposit_amount, 2) }} جنيه</td>
+                            <td class="p-3 text-center">{{ formatNumber($deposit->deposit_amount) }} جنيه</td>
                             <td class="p-3 text-center">{{ $deposit->deposit_desc ?? '-' }}</td>
                         </tr>
                     @empty

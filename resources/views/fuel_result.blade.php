@@ -102,7 +102,7 @@
                             @if (!$station)
                                 <td class="p-3 text-center">{{ $fuel->station->name ?? '-' }}</td>
                             @endif
-                            <td class="p-3 text-center">{{ number_format($fuel->grand_litters, 2) }}</td>
+                            <td class="p-3 text-center">{{ formatNumber($fuel->grand_litters) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -118,7 +118,7 @@
             <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow flex justify-between items-center">
                 <span class="text-lg font-semibold text-gray-700">إجمالي الوقود:</span>
                 <span class="text-xl font-bold text-primary-strong">
-                    {{ number_format($operations->sum('grand_litters'), 2) }} لتر
+                    {{ formatNumber($operations->sum('grand_litters')) }} لتر
                 </span>
             </div>
         @endif
