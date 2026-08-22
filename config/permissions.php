@@ -93,6 +93,7 @@ return [
         'reports.machine_report'        => 'تقرير العدادات بالماكينات',
         'reports.machine_report_time'   => 'تقرير العدادات بالماكينات بالفترة',
         'reports.stock_general'         => 'تقرير البير',
+        'reports.stock_movement'        => 'تقرير حركة البير',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',

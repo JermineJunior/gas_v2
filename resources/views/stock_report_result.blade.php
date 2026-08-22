@@ -104,6 +104,7 @@
             @php
                 $totalAdditions = $results->sum('additions');
                 $totalWithdrawals = $results->sum('withdrawals');
+                $totalWithdrawAmount = $results->sum('withdraw_total');
                 $totalRemaining = $results->sum('remaining');
             @endphp
             <div class="mt-6 bg-primary-soft rounded-lg p-4 flex items-center justify-between font-bold text-gray-800 flex-wrap gap-4">
@@ -111,6 +112,7 @@
                 <div class="flex items-center gap-6 flex-wrap">
                     <span class="text-green-700">الاضافات: {{ formatNumber($totalAdditions) }} لتر</span>
                     <span class="text-red-700">المسحوبات: {{ formatNumber($totalWithdrawals) }} لتر</span>
+                    <span class="text-blue-700">مبلغ المسحوبات: {{ formatNumber($totalWithdrawAmount) }}</span>
                     <span class="text-amber-700">الرصيد: {{ formatNumber($totalRemaining) }} لتر</span>
                 </div>
             </div>

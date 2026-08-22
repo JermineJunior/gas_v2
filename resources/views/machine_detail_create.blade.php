@@ -186,7 +186,7 @@
                     <label class="block mb-1 text-sm font-medium text-gray-700">البير</label>
                     <select name="stock_id" id="stock_id" class="w-full" required>
                         @foreach ($stocks as $stock)
-                            <option value="{{ $stock->id }}">{{ $stock->name }}</option>
+                            <option value="{{ $stock->id }}">{{ $stock->name }} ({{ $stock->type == 1 ? 'جازولين' : 'بنزين' }})</option>
                         @endforeach
                     </select>
                 </div>

@@ -55,9 +55,13 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge(['name' => trim((string) $request->name)]);
+
         $request->validate([
             'name' => 'required|unique:roles,name',
             'permissions' => 'required|array',
+        ], [
+            'name.unique' => 'اسم الدور مستخدم من قبل، اختر اسماً آخر',
         ]);
 
         $role = Role::create(['name' => $request->name]);
@@ -75,9 +79,13 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        $request->merge(['name' => trim((string) $request->name)]);
+
         $request->validate([
             'name' => 'required|unique:roles,name,' . $role->id,
             'permissions' => 'required|array',
+        ], [
+            'name.unique' => 'اسم الدور مستخدم من قبل، اختر اسماً آخر',
         ]);
 
         $role->update(['name' => $request->name]);

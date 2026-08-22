@@ -36,7 +36,7 @@
                     @foreach ($fuel_orders as $fuel_order)
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-4 py-3">{{ $loop->iteration }}</td>
-                            <td class="px-4 py-3">{{ $fuel_order->date }}</td>
+                            <td class="px-4 py-3">{{ $fuel_order->date->format('Y-m-d') }}</td>
                             <td class="px-4 py-3">{{ number_format($fuel_order->quantity) }}</td>
                             <td class="px-4 py-3 flex gap-2">
                                 @can('fuel_orders.edit')

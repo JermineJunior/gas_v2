@@ -60,6 +60,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/reports/stock-general', [ReportController::class, 'stock_report'])->name('reports.stock_general');
     Route::post('report/stock-general', [ReportController::class, 'stock_report_result'])->name('reports.stock_general.result');
 
+    Route::get('/reports/stock-movement', [ReportController::class, 'stock_movement'])->name('reports.stock_movement');
+    Route::post('report/stock-movement', [ReportController::class, 'stock_movement_result'])->name('reports.stock_movement.result');
+
     
     Route::post('/machines/store', [MachineController::class, 'storeAjax'])->name('machines.store.ajax');
 

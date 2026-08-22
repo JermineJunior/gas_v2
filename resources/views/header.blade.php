@@ -191,7 +191,7 @@
             </div>
             @endcanany
 
-            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general'])
+            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -209,6 +209,9 @@
                     @endcan
                     @can('reports.stock_general')
                         <a href="{{ route('reports.stock_general') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير البير</a>
+                    @endcan
+                    @can('reports.stock_movement')
+                        <a href="{{ route('reports.stock_movement') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حركة البير</a>
                     @endcan
                     @can('reports.machine_detail')
                         <a href="{{ route('reports.machine_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات</a>
@@ -297,7 +300,7 @@
         @endcanany
 
         <!-- Dropdown للتقارير -->
-        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general'])
+        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 التقارير
@@ -316,6 +319,9 @@
                 @endcan
                 @can('reports.stock_general')
                     <a href="{{ route('reports.stock_general') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير البير</a>
+                @endcan
+                @can('reports.stock_movement')
+                    <a href="{{ route('reports.stock_movement') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حركة البير</a>
                 @endcan
                 @can('reports.machine_detail')
                     <a href="{{ route('reports.machine_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات</a>

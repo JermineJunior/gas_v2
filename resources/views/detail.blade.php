@@ -49,12 +49,26 @@
             <!-- Content -->
             <div class="p-6">
                 <!-- Client info (على يسار الكارد في الصورة، هنا مبسط) -->
+                @php $clientBalance = $client->details()->sum('total') - $client->details()->sum('amount'); @endphp
                 <div class="mb-6 bg-primary-soft border border-primary-strong/30 rounded-lg p-4">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div>
                             <div class="text-lg font-semibold">اسم العميل: <span
                                     class="text-gray-700">{{ $client->name }}</span>
                             </div>
+                            <div class="text-lg font-semibold mt-1">الرصيد المتبقي: <span
+                                    class="{{ $clientBalance > 0 ? 'text-red-600' : 'text-green-700' }}">{{ formatNumber($clientBalance) }} ج.س</span>
+                            </div>
+                        </div>
+                        <div class="text-sm">
+                            @if ($clientBalance > 0)
+                                @if ($lastPaymentDate)
+                                    <span class="text-gray-600">آخر توريدة/سداد:</span>
+                                    <span class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($lastPaymentDate)->diffForHumans() }}</span>
+                                @else
+                                    <span class="font-semibold text-red-600">لم يقم بأي توريدة/سداد</span>
+                                @endif
+                            @endif
                         </div>
                     </div>
                 </div>

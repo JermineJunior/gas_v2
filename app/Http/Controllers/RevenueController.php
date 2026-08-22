@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RevenueController extends Controller
 {
+    //سدات العملاء
     public function index(Client $client)
     {
         $client->load([

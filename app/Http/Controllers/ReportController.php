@@ -46,7 +46,7 @@ class ReportController extends Controller
 
     public function machine_detail()
     {
-        $stations = Station::get();
+        $stations = Auth::user()->stations;
         return view('machine_detail', compact('stations'));
     }
 
@@ -73,7 +73,7 @@ class ReportController extends Controller
 
     public function tuncker()
     {
-        $stations = Station::get();
+        $stations = Auth::user()->stations;
         return view('tuncker_detail', compact('stations'));
     }
 
@@ -110,9 +110,9 @@ class ReportController extends Controller
         $end_date = $request->end_date;
         $supplier = Supplier::find($request->supplier_id) ?? null;
         $operations = FuelOrder::with(['supplier' => function ($q) {
-                $q->withSum('fuelOrders as total_orders', 'quantity')
-                    ->withSum('fuelDeliveries as total_deliveries', 'quantity');
-            }])
+            $q->withSum('fuelOrders as total_orders', 'quantity')
+                ->withSum('fuelDeliveries as total_deliveries', 'quantity');
+        }])
             ->when($request->supplier_id, function ($query) use ($request) {
                 return $query->where('supplier_id', $request->supplier_id);
             })
@@ -128,10 +128,10 @@ class ReportController extends Controller
 
     public function debt()
     {
-        $clients = Client::when(Auth::user()->type == 3, function ($q) {
+        /*  $clients = Client::when(Auth::user()->type == 3, function ($q) {
             $q->where('user_id', Auth::id());
-        })->get();
-
+        })->get(); */ // no need for this check , after switching to roles and permissions
+        $clients = Client::where('user_id', Auth::id())->get();
         return view('debt', compact('clients'));
     }
 
@@ -160,8 +160,8 @@ class ReportController extends Controller
     // ── Machine Report (no time filter) ──
     public function machine_report()
     {
-        
-        $stations = auth('web')->user()->stations; // only show the user stations
+
+        $stations = Auth::user()->stations; // only show the user stations
         return view('machine_report', compact('stations'));
     }
 
@@ -214,13 +214,13 @@ class ReportController extends Controller
     // ── Machine Report with Time Filter ──
     public function machine_report_time()
     {
-        $stations = Station::get();
+        $stations = Auth::user()->stations;
         return view('machine_report_time', compact('stations'));
     }
 
     public function machine_report_time_result(Request $request)
     {
-        $stationId = Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id;
+        $stationId =  $request->station_id;
         $machineId = $request->machine_id;
         $fuelType = $request->fuel_type;
         $startDate = $request->start_date;
@@ -269,7 +269,7 @@ class ReportController extends Controller
     // ── General Stock Report (per stock, outside machines) ──
     public function stock_report()
     {
-        $stations = Station::get();
+        $stations = Auth::user()->stations;
         return view('stock_report', compact('stations'));
     }
 
@@ -310,5 +310,61 @@ class ReportController extends Controller
 
         $station = $stationId ? Station::find($stationId) : null;
         return view('stock_report_result', compact('results', 'station', 'startDate', 'endDate'));
+    }
+
+    // ── Per-Stock Movement Report (single stock detail) ──
+    public function stock_movement()
+    {
+        $stations = Auth::user()->stations;
+        return view('stock_movement', compact('stations'));
+    }
+
+    public function stock_movement_result(Request $request)
+    {
+        $request->validate([
+            'stock_id' => 'required|exists:stocks,id',
+        ]);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $stock = \App\Models\Stock::with('station')->findOrFail($request->stock_id);
+
+        // الاضافات: من التناكر (بلا تاريخ في stock_details)
+        $additions = \App\Models\StockDetail::where('stock_id', $stock->id)
+            ->get()
+            ->map(function ($detail) {
+                $tuncker = \App\Models\Tuncker::find($detail->tuncker_id);
+                return [
+                    'qty' => $detail->qty,
+                    'driver_name' => $tuncker->driver_name ?? '-',
+                    'tuncker_no' => $tuncker->tuncker_no ?? '-',
+                    'supplier' => $tuncker->supplier->name ?? '-',
+                ];
+            });
+
+        // المسحوبات: قراءات الماكينات المرتبطة بالبير
+        $withdrawQuery = MachineDetail::with(['machine', 'gun'])
+            ->whereHas('machine', function ($q) use ($stock) {
+                $q->where('stock_id', $stock->id);
+            });
+        if ($startDate) $withdrawQuery->whereDate('date', '>=', $startDate);
+        if ($endDate) $withdrawQuery->whereDate('date', '<=', $endDate);
+        $withdrawals = $withdrawQuery->orderBy('date')->orderBy('id')->get();
+
+        $totalAdditions = $additions->sum('qty');
+        $totalWithdrawals = $withdrawals->sum('net');
+        $totalWithdrawAmount = $withdrawals->sum('total');
+
+        return view('stock_movement_result', compact(
+            'stock',
+            'additions',
+            'withdrawals',
+            'totalAdditions',
+            'totalWithdrawals',
+            'totalWithdrawAmount',
+            'startDate',
+            'endDate'
+        ));
     }
 }

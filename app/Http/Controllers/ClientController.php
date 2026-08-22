@@ -12,7 +12,13 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $clients = Client::whereUser_id(Auth::id())->get();
+        $clients = Client::whereUser_id(Auth::id())
+            ->withSum('details as total_sum', 'total')
+            ->withSum('details as paid_sum', 'amount')
+            ->addSelect(['last_payment_date' => Detail::selectRaw('MAX(date)')
+                ->whereColumn('client_id', 'clients.id')
+                ->where('amount', '>', 0)])
+            ->get();
         return view('client', compact('clients'));
     }
 
@@ -70,7 +76,13 @@ class ClientController extends Controller
         if (!$user) {
             $user = $station->users()->where('type', 2)->first();
         }
-        $clients = client::where('user_id', $user->id)->get();
+        $clients = client::where('user_id', $user->id)
+            ->withSum('details as total_sum', 'total')
+            ->withSum('details as paid_sum', 'amount')
+            ->addSelect(['last_payment_date' => Detail::selectRaw('MAX(date)')
+                ->whereColumn('client_id', 'clients.id')
+                ->where('amount', '>', 0)])
+            ->get();
         return view('client', compact('clients', 'station'));
     }
 
@@ -80,6 +92,9 @@ class ClientController extends Controller
         $clients = Client::where('user_id', Auth::id())
             ->withSum('details as total_sum', 'total')
             ->withSum('details as paid_sum', 'amount')
+            ->addSelect(['last_payment_date' => Detail::selectRaw('MAX(date)')
+                ->whereColumn('client_id', 'clients.id')
+                ->where('amount', '>', 0)])
             ->where('name', 'LIKE', "%$keyword%")
             ->orderBy('id', 'DESC')
             ->get();
@@ -93,7 +108,8 @@ class ClientController extends Controller
                 $query->whereNot('total', 0)->orderBy('id', 'DESC');
             },
         ]);
-        return view('detail', compact('client'));
+        $lastPaymentDate = $client->details()->where('amount', '>', 0)->max('date');
+        return view('detail', compact('client', 'lastPaymentDate'));
     }
 
     public function store_detail(Request $request)

@@ -33,7 +33,32 @@
         <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">قائمة التناكر التي تم شحنها</h2>
-                <p>المجموع <span class="bg-green-500 p-1 rounded-lg text-gray-800">{{number_format($total_amount)}}</span></p>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-2 bg-green-50 border border-green-200 rounded-full pl-5 pr-2 py-1.5">
+                        <span
+                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold">ج</span>
+                        <div class="leading-tight">
+                            <p class="text-[11px] text-gray-500">جازولين</p>
+                            <p class="text-sm font-bold text-green-700">{{ number_format($total_gasoline) }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-full pl-5 pr-2 py-1.5">
+                        <span
+                            class="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm font-bold">ب</span>
+                        <div class="leading-tight">
+                            <p class="text-[11px] text-gray-500">بنزين</p>
+                            <p class="text-sm font-bold text-sky-700">{{ number_format($total_benzine) }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-accent-soft border border-yellow-300 rounded-full pl-5 pr-2 py-1.5">
+                        <span
+                            class="w-8 h-8 rounded-full bg-accent-strong text-white flex items-center justify-center text-sm font-bold">Σ</span>
+                        <div class="leading-tight">
+                            <p class="text-[11px] text-gray-500">المجموع الكلي</p>
+                            <p class="text-sm font-bold text-accent-strong">{{ number_format($total_amount) }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             @php

@@ -4,9 +4,17 @@
 
 @section('body-class', 'bg-gray-100 min-h-screen p-6')
 
+@php
+    $tabTotals = [
+        'all' => ['total' => $clients->sum('total_sum'), 'paid' => $clients->sum('paid_sum')],
+        '1'   => ['total' => $clients->where('type', 1)->sum('total_sum'), 'paid' => $clients->where('type', 1)->sum('paid_sum')],
+        '2'   => ['total' => $clients->where('type', 2)->sum('total_sum'), 'paid' => $clients->where('type', 2)->sum('paid_sum')],
+    ];
+@endphp
+
 @section('content')
     <!-- قسم الحسابات -->
-    <div x-data="{ showAddModal: false, showEditModal: false, editclient: { id: '', name: '', phone: '', type: '' }, activeTab: 'all' }" x-init="$watch('activeTab', v => window._clientActiveTab = v); window._clientActiveTab = activeTab" class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
+    <div x-data="{ showAddModal: false, showEditModal: false, editclient: { id: '', name: '', phone: '', type: '' }, activeTab: (function(){ try { return localStorage.getItem('clientActiveTab') || 'all' } catch(e) { return 'all' } })(), totals: @js($tabTotals), fmt(n) { return Number(n || 0).toLocaleString(); } }" x-init="$watch('activeTab', v => { window._clientActiveTab = v; try { localStorage.setItem('clientActiveTab', v) } catch(e) {} }); window._clientActiveTab = activeTab" class="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
 
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">إدارة العملاء</h2>
@@ -49,6 +57,22 @@
                 class="px-5 py-2 rounded-lg font-semibold transition">
                 الباصات
             </button>
+        </div>
+
+        <!-- ملخص المديونيات والإيرادات حسب التبويب -->
+        <div class="flex flex-wrap gap-4 mb-6">
+            <div class="bg-primary-soft rounded-xl px-5 py-3 shadow-sm min-w-[180px]">
+                <p class="text-sm text-gray-600 mb-1">إجمالي المديونيات</p>
+                <p id="totalDebtVal" class="text-xl font-bold" x-text="fmt(totals[activeTab]?.total) + ' ج.س'"></p>
+            </div>
+            <div class="bg-green-50 rounded-xl px-5 py-3 shadow-sm min-w-[180px]">
+                <p class="text-sm text-gray-600 mb-1">إجمالي الإيرادات</p>
+                <p id="totalPaidVal" class="text-xl font-bold text-green-700" x-text="fmt(totals[activeTab]?.paid) + ' ج.س'"></p>
+            </div>
+            <div class="bg-accent-soft rounded-xl px-5 py-3 shadow-sm min-w-[180px]">
+                <p class="text-sm text-gray-600 mb-1">الرصيد المتبقي</p>
+                <p id="totalBalanceVal" class="text-xl font-bold text-accent-strong" x-text="fmt((totals[activeTab]?.total || 0) - (totals[activeTab]?.paid || 0)) + ' ج.س'"></p>
+            </div>
         </div>
 
         <!-- بطاقات الحسابات -->
@@ -104,14 +128,26 @@
                     </div>
 
                     <!-- اسم + الرصيد -->
+                    @php $clientBalance = $client->total_sum - $client->paid_sum; @endphp
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $client->name }}</h3>
                         <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
                         <p
-                            class="text-2xl font-bold {{ $client->details()->sum('total') - $client->details()->sum('amount') >= 0 ? 'text-primary-strong' : 'text-red-600' }} mb-3">
-                            {{ number_format($client->details()->sum('total') - $client->details()->sum('amount')) }}
+                            class="text-2xl font-bold {{ $clientBalance >= 0 ? 'text-primary-strong' : 'text-red-600' }} mb-1">
+                            {{ formatNumber($clientBalance) }}
                             ج.س
                         </p>
+                        @if ($clientBalance > 0)
+                            <p class="text-xs mb-3 {{ $client->last_payment_date ? 'text-gray-500' : 'text-red-600 font-semibold' }}">
+                                @if ($client->last_payment_date)
+                                    آخر توريدة/سداد: {{ \Carbon\Carbon::parse($client->last_payment_date)->diffForHumans() }}
+                                @else
+                                    لم يقم بأي توريدة/سداد
+                                @endif
+                            </p>
+                        @else
+                            <p class="mb-3">&nbsp;</p>
+                        @endif
                     </div>
 
                     <!-- الأزرار -->
@@ -264,6 +300,13 @@
 
                             let filtered = activeTab === 'all' ? response : response.filter(c => String(c.type) === String(activeTab));
 
+                            // تحديث ملخص المديونيات والإيرادات حسب نتائج البحث
+                            let sumTotal = filtered.reduce((s, c) => s + (Number(c.total_sum) || 0), 0);
+                            let sumPaid = filtered.reduce((s, c) => s + (Number(c.paid_sum) || 0), 0);
+                            $("#totalDebtVal").text(sumTotal.toLocaleString() + ' ج.س');
+                            $("#totalPaidVal").text(sumPaid.toLocaleString() + ' ج.س');
+                            $("#totalBalanceVal").text((sumTotal - sumPaid).toLocaleString() + ' ج.س');
+
                             if (filtered.length === 0) {
                                 $("#clientGrid").html(
                                     '<p class="text-center col-span-3 text-gray-600 mt-6">لا توجد نتائج مطابقة.</p>'
@@ -276,6 +319,25 @@
                                 let balance = (client.total_sum - client
                                     .paid_sum) || 0;
                                 balance = balance.toLocaleString();
+
+                                let lastPaymentHtml = '';
+                                if (balance > 0) {
+                                    if (client.last_payment_date) {
+                                        let days = Math.floor((Date.now() - new Date(client.last_payment_date).getTime()) / 86400000);
+                                        let rtf = new Intl.RelativeTimeFormat('ar', {
+                                            numeric: 'auto'
+                                        });
+                                        let rel;
+                                        if (days < 30) rel = rtf.format(-days, 'day');
+                                        else if (days < 365) rel = rtf.format(-Math.floor(days / 30), 'month');
+                                        else rel = rtf.format(-Math.floor(days / 365), 'year');
+                                        lastPaymentHtml =
+                                            `<p class="text-xs mb-3 text-gray-500">آخر توريدة/سداد: ${rel}</p>`;
+                                    } else {
+                                        lastPaymentHtml =
+                                            `<p class="text-xs mb-3 text-red-600 font-semibold">لم يقم بأي توريدة/سداد</p>`;
+                                    }
+                                }
 
                                 let revenueBtn = `
                                         <a href="/revenue/${client.id}"
@@ -327,9 +389,11 @@
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-2">${client.name}</h3>
                                 <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
-                                <p class="text-2xl font-bold text-primary-strong mb-3">
+                                <p class="text-2xl font-bold text-primary-strong mb-1">
                                     ${balance} ج.س
                                 </p>
+                                ${lastPaymentHtml}
+                                ${lastPaymentHtml ? '' : '<p class="mb-3">&nbsp;</p>'}
                             </div>
 
                             <div class="flex justify-between gap-2 mt-4">
