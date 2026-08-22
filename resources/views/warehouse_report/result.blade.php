@@ -63,8 +63,11 @@
                         <th class="p-3 text-center">#</th>
                         <th class="p-3 text-center">التاريخ</th>
                         <th class="p-3 text-center">النوع</th>
-                        <th class="p-3 text-center">الكمية</th>
+                        <th class="p-3 text-center">اضافة (لتر)</th>
+                        <th class="p-3 text-center">سحب (لتر)</th>
                         <th class="p-3 text-center">الرصيد</th>
+                        <th class="p-3 text-center">السائق</th>
+                        <th class="p-3 text-center">رقم السيارة</th>
                         <th class="p-3 text-center">المصدر / الوجهة</th>
                         <th class="p-3 text-center">ملاحظة</th>
                     </tr>
@@ -87,18 +90,21 @@
                             </td>
                             <td class="p-3 text-center">
                                 @if(in_array($t->type, [\App\Models\WarehouseTransaction::TYPE_ADDITION, \App\Models\WarehouseTransaction::TYPE_TRANSFER_IN]))
-                                    <span class="text-green-700 font-semibold">+{{ formatNumber($t->quantity) }}</span>
-                                @else
-                                    <span class="text-red-700 font-semibold">-{{ formatNumber($t->quantity) }}</span>
+                                    <span class="text-green-700 font-semibold">{{ formatNumber($t->quantity) }}</span>
+                                @endif
+                            </td>
+                            <td class="p-3 text-center">
+                                @if(in_array($t->type, [\App\Models\WarehouseTransaction::TYPE_WITHDRAWAL, \App\Models\WarehouseTransaction::TYPE_TRANSFER_OUT]))
+                                    <span class="text-red-700 font-semibold">{{ formatNumber($t->quantity) }}</span>
                                 @endif
                             </td>
                             <td class="p-3 text-center font-semibold">{{ formatNumber($t->balance_after ?? 0) }}</td>
+                            <td class="p-3 text-center">{{ $t->driver_name ?? ($t->withdrawal->driver_name ?? '-') }}</td>
+                            <td class="p-3 text-center">{{ $t->car_number ?? ($t->withdrawal->car_number ?? '-') }}</td>
                             <td class="p-3 text-center">
-                                @if($t->type == \App\Models\WarehouseTransaction::TYPE_WITHDRAWAL)
-                                    {{ $t->withdrawal->driver_name ?? '' }} {{ $t->withdrawal->car_number ? '(' . $t->withdrawal->car_number . ')' : '' }}
-                                @elseif(in_array($t->type, [\App\Models\WarehouseTransaction::TYPE_TRANSFER_OUT, \App\Models\WarehouseTransaction::TYPE_TRANSFER_IN]))
+                                @if(in_array($t->type, [\App\Models\WarehouseTransaction::TYPE_TRANSFER_OUT, \App\Models\WarehouseTransaction::TYPE_TRANSFER_IN]))
                                     {{ $t->relatedTransaction->warehouse->name ?? '-' }}
-                                @else
+                                @elseif($t->type == \App\Models\WarehouseTransaction::TYPE_ADDITION)
                                     {{ $t->source ?? '-' }}
                                 @endif
                             </td>
@@ -106,7 +112,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="p-4 text-center text-gray-500">لا توجد حركات في الفترة المحددة</td>
+                            <td colspan="10" class="p-4 text-center text-gray-500">لا توجد حركات في الفترة المحددة</td>
                         </tr>
                     @endforelse
                 </tbody>

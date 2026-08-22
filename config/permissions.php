@@ -94,6 +94,11 @@ return [
         'reports.machine_report_time'   => 'تقرير العدادات بالماكينات بالفترة',
         'reports.stock_general'         => 'تقرير البير',
         'reports.stock_movement'        => 'تقرير حركة البير',
+        'warehouse_reports.withdrawals'  => 'تقرير سحوبات المستودعات',
+        'warehouse_reports.additions'    => 'تقرير اضافات المستودعات',
+        'warehouse_reports.transfers'    => 'تقرير تحويلات المستودعات',
+        'warehouse_reports.summary'      => 'ملخص مخزون المستودعات',
+        'warehouse_reports.consumption'  => 'تقرير استهلاك المستودعات',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',

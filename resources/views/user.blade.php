@@ -212,61 +212,12 @@
             </div>
         </div>
 
-        <!-- مودال الملف التعريفي -->
-        <div x-data="{ show: false }" x-on:open-modal.window="if($event.detail.id === 'profileModal') show = true"
-            x-show="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-            x-transition>
-
-            <div @click.away="show = false" class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 space-y-4">
-
-                <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">الملف التعريفي</h2>
-
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-1">اسم المستخدم</label>
-                    <input type="text" value="{{ auth()->user()->name }}" readonly
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed">
-                </div>
-
-                <form action="{{ route('user.update-password') }}" method="POST">
-                    @csrf
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر القديمة</label>
-                            <input type="password" name="old_password"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-1">كلمة السر الجديدة</label>
-                            <input type="password" name="new_password"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-1">تأكيد كلمة السر</label>
-                            <input type="password" name="new_password_confirmation"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary focus:ring">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end mt-4 gap-2">
-                        <button type="button" @click="show = false"
-                            class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
-                            اغلاق
-                        </button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-strong text-white">
-                            حفظ
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
     </div>
 @endsection
 
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @include('messages')
     <script>

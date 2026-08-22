@@ -12,4 +12,9 @@ class Stock extends Model
     {
         return $this->belongsTo(Station::class);
     }
+
+    public function machines()
+    {
+        return $this->hasMany(Machine::class);
+    }
 }

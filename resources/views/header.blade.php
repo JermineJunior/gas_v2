@@ -115,7 +115,7 @@
     $isPrice = request()->routeIs('price.*');
     $isAccounts = request()->routeIs('client.*');
     $isReports = request()->routeIs('reports.*');
-    $isWarehouses = request()->routeIs('warehouses.*') || request()->routeIs('warehouse_withdrawals.*') || request()->routeIs('warehouse_transactions.*') || request()->routeIs('warehouse_transfers.*');
+    $isWarehouses = request()->routeIs('warehouses.*') || request()->routeIs('warehouse_withdrawals.*') || request()->routeIs('warehouse_transactions.*') || request()->routeIs('warehouse_transfers.*') || request()->routeIs('warehouse_reports.*');
 @endphp
 
 <div class="max-w-6xl mx-auto mb-6">
@@ -165,7 +165,7 @@
                 <a href="{{ route('client.index') }}" class="nav-link {{ $isAccounts ? 'active' : '' }}">الحسابات</a>
             @endcan
 
-            @canany(['warehouses.view', 'warehouse_withdrawals.view', 'warehouse_transactions.view', 'warehouse_transfers.view'])
+            @canany(['warehouses.view', 'warehouse_withdrawals.view', 'warehouse_transactions.view', 'warehouse_transfers.view', 'reports.warehouse', 'warehouse_reports.withdrawals', 'warehouse_reports.additions', 'warehouse_reports.transfers', 'warehouse_reports.summary', 'warehouse_reports.consumption'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isWarehouses ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     المستودعات
@@ -174,7 +174,7 @@
                     </svg>
                 </button>
                 <div x-cloak x-show="open" @click.away="open = false"
-                    class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 z-50">
+                    class="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg py-2 z-50">
                     @can('warehouses.view')
                         <a href="{{ route('warehouses.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">المستودعات</a>
                     @endcan
@@ -187,11 +187,34 @@
                     @can('warehouse_transfers.view')
                         <a href="{{ route('warehouse_transfers.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">التحويلات</a>
                     @endcan
+
+                    @canany(['reports.warehouse', 'warehouse_reports.withdrawals', 'warehouse_reports.additions', 'warehouse_reports.transfers', 'warehouse_reports.summary', 'warehouse_reports.consumption'])
+                        <div class="border-t my-2"></div>
+                        <p class="px-4 py-1 text-xs font-bold text-gray-400">التقارير</p>
+                        @can('reports.warehouse')
+                            <a href="{{ route('reports.warehouse') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حركة المستودع</a>
+                        @endcan
+                        @can('warehouse_reports.withdrawals')
+                            <a href="{{ route('warehouse_reports.withdrawals') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">سحوبات المستودعات</a>
+                        @endcan
+                        @can('warehouse_reports.additions')
+                            <a href="{{ route('warehouse_reports.additions') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">اضافات المستودعات</a>
+                        @endcan
+                        @can('warehouse_reports.transfers')
+                            <a href="{{ route('warehouse_reports.transfers') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">التحويلات بين المستودعات</a>
+                        @endcan
+                        @can('warehouse_reports.summary')
+                            <a href="{{ route('warehouse_reports.summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص المخزون</a>
+                        @endcan
+                        @can('warehouse_reports.consumption')
+                            <a href="{{ route('warehouse_reports.consumption') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">استهلاك المستودعات</a>
+                        @endcan
+                    @endcanany
                 </div>
             </div>
             @endcanany
 
-            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
+            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -202,7 +225,7 @@
                 <div x-cloak x-show="open" @click.away="open = false"
                     class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 z-50">
                     @can('reports.debt')
-                        <a href="{{ route('reports.debt') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير الحسابات</a>
+                        <a href="{{ route('reports.debt') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حسابات العملاء</a>
                     @endcan
                     @can('reports.tuncker')
                         <a href="{{ route('reports.tuncker') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير التناكر</a>
@@ -221,9 +244,6 @@
                     @endcan
                     @can('reports.supplier')
                         <a href="{{ route('reports.supplier') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير الموردين</a>
-                    @endcan
-                    @can('reports.warehouse')
-                        <a href="{{ route('reports.warehouse') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير المستودعات</a>
                     @endcan
                     @can('reports.machine_report')
                         <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>
@@ -272,7 +292,7 @@
         @endcan
 
         <!-- Dropdown للمستودعات -->
-        @canany(['warehouses.view', 'warehouse_withdrawals.view', 'warehouse_transactions.view', 'warehouse_transfers.view'])
+        @canany(['warehouses.view', 'warehouse_withdrawals.view', 'warehouse_transactions.view', 'warehouse_transfers.view', 'reports.warehouse', 'warehouse_reports.withdrawals', 'warehouse_reports.additions', 'warehouse_reports.transfers', 'warehouse_reports.summary', 'warehouse_reports.consumption'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 المستودعات
@@ -295,12 +315,35 @@
                 @can('warehouse_transfers.view')
                     <a href="{{ route('warehouse_transfers.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">التحويلات</a>
                 @endcan
+
+                @canany(['reports.warehouse', 'warehouse_reports.withdrawals', 'warehouse_reports.additions', 'warehouse_reports.transfers', 'warehouse_reports.summary', 'warehouse_reports.consumption'])
+                    <div class="border-t my-1"></div>
+                    <p class="px-4 py-1 text-xs font-bold text-gray-400">التقارير</p>
+                    @can('reports.warehouse')
+                        <a href="{{ route('reports.warehouse') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حركة المستودع</a>
+                    @endcan
+                    @can('warehouse_reports.withdrawals')
+                        <a href="{{ route('warehouse_reports.withdrawals') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">سحوبات المستودعات</a>
+                    @endcan
+                    @can('warehouse_reports.additions')
+                        <a href="{{ route('warehouse_reports.additions') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">اضافات المستودعات</a>
+                    @endcan
+                    @can('warehouse_reports.transfers')
+                        <a href="{{ route('warehouse_reports.transfers') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">التحويلات بين المستودعات</a>
+                    @endcan
+                    @can('warehouse_reports.summary')
+                        <a href="{{ route('warehouse_reports.summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص المخزون</a>
+                    @endcan
+                    @can('warehouse_reports.consumption')
+                        <a href="{{ route('warehouse_reports.consumption') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">استهلاك المستودعات</a>
+                    @endcan
+                @endcanany
             </div>
         </div>
         @endcanany
 
         <!-- Dropdown للتقارير -->
-        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.warehouse', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
+        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 التقارير
@@ -312,7 +355,7 @@
 
             <div x-cloak x-show="open" class="mt-1 space-y-1 bg-gray-50 rounded-lg shadow-inner">
                 @can('reports.debt')
-                    <a href="{{ route('reports.debt') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير الحسابات</a>
+                    <a href="{{ route('reports.debt') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حسابات العملاء</a>
                 @endcan
                 @can('reports.tuncker')
                     <a href="{{ route('reports.tuncker') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير التناكر</a>
@@ -331,9 +374,6 @@
                 @endcan
                 @can('reports.supplier')
                     <a href="{{ route('reports.supplier') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير الموردين</a>
-                @endcan
-                @can('reports.warehouse')
-                    <a href="{{ route('reports.warehouse') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير المستودعات</a>
                 @endcan
                 @can('reports.machine_report')
                     <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>

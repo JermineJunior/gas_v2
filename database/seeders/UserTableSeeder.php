@@ -41,7 +41,6 @@ class UserTableSeeder extends Seeder
 
         $bayan->assignRole('admin');
         $admin->assignRole('admin');
-        $user->assignRole('viewer');
         //$user->stations()->syncWithoutDetaching(Station::pluck('id')->toArray());
     }
 }

@@ -66,7 +66,7 @@
         <!-- الاضافات -->
         <div class="mb-8 border rounded-lg overflow-hidden">
             <div class="bg-primary-soft px-4 py-3 flex items-center justify-between">
-                <span class="font-bold text-lg text-gray-800">الاضافات (التوريدات)</span>
+                <span class="font-bold text-lg text-gray-800">الاضافات (تفريغ التناكر)</span>
                 <span class="text-green-700 font-semibold">الاجمالي: {{ formatNumber($totalAdditions) }} لتر</span>
             </div>
             <div class="overflow-x-auto">

@@ -73,7 +73,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">الماكينة</label>
                             <div class="flex items-center gap-2">
-                                <!-- زر الإضافة -->
+                                {{-- زر الإضافة (تم تعطيله - الإضافة الآن من صفحة تهيئة المحطة)
                                 <button type="button"
                                     class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
@@ -81,6 +81,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                     </svg>
                                 </button>
+                                --}}
 
                                 <select name="machine_id[0]"
                                     class="machine w-full p-2 border border-gray-300 rounded-lg select2" data-prev-machine="{{ $machine_detail->machine_id }}" required>
@@ -96,7 +97,7 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">المسدسات</label>
                             <div class="flex items-center">
-                                <!-- زر الإضافة -->
+                                {{-- زر الإضافة (تم تعطيله - الإضافة الآن من صفحة تهيئة المحطة)
                                 <button type="button"
                                     class="add-gun-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
@@ -104,6 +105,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                     </svg>
                                 </button>
+                                --}}
 
                                 <select name="gun_id[0]"
                                     class="gun w-full p-2 border border-gray-300 rounded-lg select2" required>
@@ -246,7 +248,6 @@
 @section('scripts')
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ URL::asset('form_validation/jquery.form.js') }}"></script>
@@ -587,15 +588,8 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">الماكينات</label>
                             <div class="flex items-center">
-                                <!-- زر الإضافة بجانب select -->
-                                <button type="button"
-                                    class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                                
+                                {{-- زر الإضافة (معطل) --}}
+
                                 <select name="machine_id[${index}]" required class="machine w-full p-2 border border-gray-300 rounded-lg select2" required>
                                     ${generateMachineOptions()}
                                 </select>
@@ -606,15 +600,8 @@
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">المسدسات</label>
                             <div class="flex items-center">
-                                <!-- زر الإضافة بجانب select -->
-                                <button type="button"
-                                    class="add-gun-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                                
+                                {{-- زر الإضافة (معطل) --}}
+
                                 <select name="gun_id[${index}]" required class="gun w-full p-2 border border-gray-300 rounded-lg select2" required>
                                 </select>
                             </div>

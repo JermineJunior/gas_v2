@@ -51,6 +51,11 @@ class RolePermissionSeeder extends Seeder
             'reports.machine_report_time',
             'reports.stock_general',
             'reports.stock_movement',
+            'warehouse_reports.withdrawals',
+            'warehouse_reports.additions',
+            'warehouse_reports.transfers',
+            'warehouse_reports.summary',
+            'warehouse_reports.consumption',
         ]);
         $viewer->syncPermissions($viewerPermissions);
 

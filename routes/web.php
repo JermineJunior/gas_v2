@@ -11,6 +11,7 @@ use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\StationController;
+use App\Http\Controllers\StationSetupController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TunckerController;
@@ -163,6 +164,18 @@ Route::group(['middleware' => 'auth'], function () {
     Route::delete('stock/{stock}/delete', [StockController::class, 'delete'])->name('stock.delete');
     Route::get('/get-stocks-by-type', [StockController::class, 'getByType'])->name('stock.getByType');
 
+    // === Station Setup (stocks + machines + guns in one screen) ===
+    Route::get('station-setup/{station}', [StationSetupController::class, 'index'])->name('station_setup.index');
+    Route::post('station-setup/{station}/stock', [StationSetupController::class, 'storeStock'])->name('station_setup.stock.store');
+    Route::post('station-setup/machine', [StationSetupController::class, 'storeMachine'])->name('station_setup.machine.store');
+    Route::post('station-setup/gun', [StationSetupController::class, 'storeGun'])->name('station_setup.gun.store');
+    Route::put('station-setup/stock', [StationSetupController::class, 'updateStock'])->name('station_setup.stock.update');
+    Route::put('station-setup/machine', [StationSetupController::class, 'updateMachine'])->name('station_setup.machine.update');
+    Route::put('station-setup/gun', [StationSetupController::class, 'updateGun'])->name('station_setup.gun.update');
+    Route::delete('station-setup/stock/{stock}', [StationSetupController::class, 'destroyStock'])->name('station_setup.stock.delete');
+    Route::delete('station-setup/machine/{machine}', [StationSetupController::class, 'destroyMachine'])->name('station_setup.machine.delete');
+    Route::delete('station-setup/gun/{gun}', [StationSetupController::class, 'destroyGun'])->name('station_setup.gun.delete');
+
     // === Warehouses ===
     Route::get('warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
     Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
@@ -196,6 +209,17 @@ Route::group(['middleware' => 'auth'], function () {
     // === Warehouse Ledger Report ===
     Route::get('reports/warehouse', [WarehouseReportController::class, 'index'])->name('reports.warehouse');
     Route::post('reports/warehouse', [WarehouseReportController::class, 'result'])->name('reports.warehouse.result');
+
+    // === Warehouse Reports ===
+    Route::get('warehouse-reports/withdrawals', [WarehouseReportController::class, 'withdrawals'])->name('warehouse_reports.withdrawals');
+    Route::post('warehouse-reports/withdrawals', [WarehouseReportController::class, 'withdrawalsResult'])->name('warehouse_reports.withdrawals.result');
+    Route::get('warehouse-reports/additions', [WarehouseReportController::class, 'additions'])->name('warehouse_reports.additions');
+    Route::post('warehouse-reports/additions', [WarehouseReportController::class, 'additionsResult'])->name('warehouse_reports.additions.result');
+    Route::get('warehouse-reports/transfers', [WarehouseReportController::class, 'transfers'])->name('warehouse_reports.transfers');
+    Route::post('warehouse-reports/transfers', [WarehouseReportController::class, 'transfersResult'])->name('warehouse_reports.transfers.result');
+    Route::get('warehouse-reports/summary', [WarehouseReportController::class, 'summary'])->name('warehouse_reports.summary');
+    Route::get('warehouse-reports/consumption', [WarehouseReportController::class, 'consumption'])->name('warehouse_reports.consumption');
+    Route::post('warehouse-reports/consumption', [WarehouseReportController::class, 'consumptionResult'])->name('warehouse_reports.consumption.result');
 
     // === API ===
     Route::get('api/warehouse-stock', function (\Illuminate\Http\Request $request) {
