@@ -60,6 +60,7 @@ return [
         'deposit_details.create'  => 'إضافة توريد',
         'deposit_details.edit'    => 'تعديل توريد',
         'deposit_details.delete'  => 'حذف توريد',
+        'deposits.approve'        => 'اعتماد التوريدات',
     ],
     'employees' => [
         'employees.view'      => 'عرض الموظفين',
@@ -99,6 +100,7 @@ return [
         'warehouse_reports.transfers'    => 'تقرير تحويلات المستودعات',
         'warehouse_reports.summary'      => 'ملخص مخزون المستودعات',
         'warehouse_reports.consumption'  => 'تقرير استهلاك المستودعات',
+        'reports.employee_account'      => 'تقرير حساب الموظف',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',

@@ -9,6 +9,7 @@ use App\Models\FuelOrder;
 use App\Models\MachineDetail;
 use App\Models\Station;
 use App\Models\Supplier;
+use App\Models\Deposit;
 use App\Models\Tuncker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -209,6 +210,66 @@ class ReportController extends Controller
 
         $station = $stationId ? Station::find($stationId) : null;
         return view('machine_report_result', compact('results', 'station'));
+    }
+
+    // ── تقرير حساب الموظف (العداد القديم/الجديد + كل التوريدات) ──
+    public function employee_account()
+    {
+        $stations = Auth::user()->stations;
+        return view('employee_account', compact('stations'));
+    }
+
+    public function employee_account_result(Request $request)
+    {
+        $request->validate([
+            'station_id'  => 'required|exists:stations,id',
+            'employee_id' => 'required|exists:employees,id',
+        ]);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $employee = \App\Models\Employee::findOrFail($request->employee_id);
+        $station = Station::findOrFail($request->station_id);
+
+        // المطلوب من العداد الجديد: مجموع قرادات الموظف غير المسجلة (نفس منطق deposit_detail_create)
+        $totalNewMachine = MachineDetail::where('station_id', $request->station_id)
+            ->where('employee_id', $request->employee_id)
+            ->where('status', 0)
+            ->sum('total');
+
+        // المطلوب من العداد القديم: متبقي آخر توريد للموظف
+        $totalOldMachine = Deposit::where('station_id', $request->station_id)
+            ->where('employee_id', $request->employee_id)
+            ->latest()
+            ->first()->remaining ?? 0;
+
+        // كل التوريدات
+        $depositsQuery = DepositDetail::whereHas('deposit', function ($q) use ($request) {
+                $q->where('station_id', $request->station_id)
+                    ->where('employee_id', $request->employee_id);
+            })
+            ->with(['deposit.employee', 'approver']);
+        if ($startDate) $depositsQuery->whereDate('date', '>=', $startDate);
+        if ($endDate) $depositsQuery->whereDate('date', '<=', $endDate);
+        $deposits = $depositsQuery->orderBy('date')->orderBy('id')->get();
+
+        $totalDeposits = $deposits->sum('deposit_amount');
+        // المتبقي = العداد القديم + العداد الجديد
+        // (العداد القديم محسوب أصلاً من متبقي آخر توريد، فلا يُطرح مجموع التوريدات مرة أخرى)
+        $remaining = $totalOldMachine + $totalNewMachine;
+
+        return view('employee_account_result', compact(
+            'employee',
+            'station',
+            'totalNewMachine',
+            'totalOldMachine',
+            'deposits',
+            'totalDeposits',
+            'remaining',
+            'startDate',
+            'endDate'
+        ));
     }
 
     // ── Machine Report with Time Filter ──

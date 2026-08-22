@@ -22,4 +22,22 @@ class Deposit extends Model
     {
         return $this->hasMany(DepositDetail::class);
     }
+
+    /**
+     * حالة التوريد الكلية محسوبة مباشرة من البنود (بدون عمود في قاعدة البيانات)
+     */
+    public function getStatusAttribute(): string
+    {
+        $details = $this->deposit_details;
+
+        if ($details->isEmpty() || $details->every(fn($d) => $d->status == 0)) {
+            return 'pending';
+        }
+
+        if ($details->every(fn($d) => $d->status == 1)) {
+            return 'approved';
+        }
+
+        return 'partially_approved';
+    }
 }

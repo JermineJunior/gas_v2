@@ -103,13 +103,73 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client = $client->load([
-            'details' => function ($query) {
-                $query->whereNot('total', 0)->orderBy('id', 'DESC');
-            },
-        ]);
+        // ترتيب زمني مع رصيد متحرك (عليه - له)
+        $details = $client->details()->orderBy('date')->orderBy('id')->get();
+
+        $balance = 0;
+        $rows = $details->map(function ($detail) use (&$balance) {
+            $balance += (float) $detail->total - (float) $detail->amount;
+            return ['detail' => $detail, 'balance' => $balance];
+        });
+
+        $totalDebit = $details->sum('total');   // عليه
+        $totalCredit = $details->sum('amount');  // له
         $lastPaymentDate = $client->details()->where('amount', '>', 0)->max('date');
-        return view('detail', compact('client', 'lastPaymentDate'));
+
+        return view('detail', compact('client', 'rows', 'totalDebit', 'totalCredit', 'lastPaymentDate'));
+    }
+
+    /**
+     * تحميل تقرير حساب العميل PDF (مع رسالة اختيارية)
+     */
+    public function pdf(Client $client, Request $request)
+    {
+        $message = trim((string) $request->query('message', ''));
+
+        $details = $client->details()->orderBy('date')->orderBy('id')->get();
+
+        $balance = 0;
+        $rows = $details->map(function ($detail) use (&$balance) {
+            $balance += (float) $detail->total - (float) $detail->amount;
+            return ['detail' => $detail, 'balance' => $balance];
+        });
+
+        $totalDebit = $details->sum('total');
+        $totalCredit = $details->sum('amount');
+        $total = $totalDebit - $totalCredit;
+
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = array_merge($defaultConfig['fontDir'], [public_path('fonts')]);
+
+        $fontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $fontConfig['fontdata'];
+        // خط Cairo — تم تحميله من Google Fonts ومعالجته لتوافقه مع mpdf
+        $fontData['cairo'] = [
+            'R' => 'Cairo-Regular.ttf',
+            'useOTL' => 0xFF,
+            'useKashida' => 75,
+        ];
+
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'fontDir' => $fontDirs,
+            'fontdata' => $fontData,
+            'default_font' => 'cairo',
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+        ]);
+
+        $html = view('pdf', compact('client', 'rows', 'totalDebit', 'totalCredit', 'total', 'message'))->render();
+        $mpdf->WriteHTML($html);
+
+        $content = $mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN);
+        $fileName = 'حسابات_العميل_' . $client->name . '.pdf';
+
+        return response($content, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"client-{$client->id}-account.pdf\"; filename*=UTF-8''" . rawurlencode($fileName),
+        ]);
     }
 
     public function store_detail(Request $request)

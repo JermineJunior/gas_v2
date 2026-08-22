@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class DepositDetail extends Model
 {
-    protected $fillable = ['deposit_id','deposit_amount','deposit_desc','station_id','date'];
+    protected $fillable = ['deposit_id','station_id','date','deposit_amount','deposit_desc','status','approved_by','approved_at'];
 
     protected $casts = [
-        'date' => 'date'
+        'date' => 'date',
+        'approved_at' => 'datetime',
     ];
 
     public function station()
@@ -21,4 +22,10 @@ class DepositDetail extends Model
     {
         return $this->belongsTo(Deposit::class);
     }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 }
+

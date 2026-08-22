@@ -56,6 +56,7 @@ class RolePermissionSeeder extends Seeder
             'warehouse_reports.transfers',
             'warehouse_reports.summary',
             'warehouse_reports.consumption',
+            'reports.employee_account',
         ]);
         $viewer->syncPermissions($viewerPermissions);
 

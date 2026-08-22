@@ -214,7 +214,7 @@
             </div>
             @endcanany
 
-            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
+            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -236,14 +236,8 @@
                     @can('reports.stock_movement')
                         <a href="{{ route('reports.stock_movement') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حركة البير</a>
                     @endcan
-                    @can('reports.machine_detail')
-                        <a href="{{ route('reports.machine_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات</a>
-                    @endcan
-                    @can('reports.deposit_detail')
-                        <a href="{{ route('reports.deposit_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير التوريد</a>
-                    @endcan
-                    @can('reports.supplier')
-                        <a href="{{ route('reports.supplier') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير الموردين</a>
+                    @can('reports.employee_account')
+                        <a href="{{ route('reports.employee_account') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حساب الموظف</a>
                     @endcan
                     @can('reports.machine_report')
                         <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>
@@ -254,7 +248,7 @@
                 </div>
             </div>
             @endcanany
-        </div>
+            </div><!-- /روابط -->
 
         <!-- زر تسجيل الخروج خفيف -->
         <div class="flex items-center gap-3">
@@ -343,7 +337,7 @@
         @endcanany
 
         <!-- Dropdown للتقارير -->
-        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement'])
+        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 التقارير
@@ -380,6 +374,9 @@
                 @endcan
                 @can('reports.machine_report_time')
                     <a href="{{ route('reports.machine_report_time') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات بالفترة</a>
+                @endcan
+                @can('reports.employee_account')
+                    <a href="{{ route('reports.employee_account') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حساب الموظف</a>
                 @endcan
             </div>
         </div>

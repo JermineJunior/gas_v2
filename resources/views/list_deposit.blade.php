@@ -59,7 +59,7 @@
                                             <th class="px-4 py-3 text-right"> الموظف</th>
                                             <th class="px-4 py-3 text-right"> البيان</th>
                                             <th class="px-4 py-3 text-right">المبلغ</th>
-                                            @canany(['deposit_details.edit', 'deposit_details.delete'])
+                                            @canany(['deposit_details.edit', 'deposit_details.delete', 'deposits.approve'])
                                                 <th class="px-4 py-3 text-right">الاجراءات</th>
                                             @endcanany
                                         </tr>
@@ -79,12 +79,30 @@
                                             @endphp
                                                 <tr class="border-b hover:bg-gray-50">
                                                     <td class="px-4 py-3">{{ $index }}</td>
-                                                    <td class="px-4 py-3">{{ $depositItem->employee->name ?? '-' }}</td>
+                                                    <td class="px-4 py-3">
+                                                        {{ $depositItem->employee->name ?? '-' }}
+                                                        @php $depStatus = $depositItem->status; @endphp
+                                                        <span class="mr-1 px-2 py-0.5 rounded-full text-xs font-semibold {{ $depStatus === 'approved' ? 'bg-green-100 text-green-700' : ($depStatus === 'partially_approved' ? 'bg-amber-100 text-amber-700' : 'bg-gray-200 text-gray-500') }}">
+                                                            {{ $depStatus === 'approved' ? 'معتمد' : ($depStatus === 'partially_approved' ? 'اعتماد جزئي' : 'قيد الاعتماد') }}
+                                                        </span>
+                                                    </td>
                                                     <td class="px-4 py-3">{{ $deposit->deposit_desc }}</td>
                                                     <td class="px-4 py-3">{{ number_format($deposit->deposit_amount) }}
                                                     </td>
-                                                    @canany(['deposit_details.edit', 'deposit_details.delete'])
-                                                        <td class="px-4 py-3 flex gap-2">
+                                                    @canany(['deposit_details.edit', 'deposit_details.delete', 'deposits.approve'])
+                                                        <td class="px-4 py-3 flex gap-2 flex-wrap">
+                                                            @can('deposits.approve')
+                                                                @if ($deposit->status == 0)
+                                                                    <button type="button"
+                                                                        class="approve-btn bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
+                                                                        data-url="{{ route('deposit_details.approve', $deposit->id) }}">اعتماد</button>
+                                                                @else
+                                                                    <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">معتمد</span>
+                                                                    <button type="button"
+                                                                        class="unapprove-btn bg-amber-500 text-white px-3 py-1 rounded-lg hover:bg-amber-600"
+                                                                        data-url="{{ route('deposit_details.unapprove', $deposit->id) }}">إلغاء الاعتماد</button>
+                                                                @endif
+                                                            @endcan
                                                             @can('deposit_details.edit')
                                                                 <a href="{{ route('deposit_detail.edit', $depositItem->id) }}"
                                                                     class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
@@ -154,6 +172,60 @@
                     }
                 });
             }
+
+            // 🔹 اعتماد البند
+            document.querySelectorAll('.approve-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const url = this.dataset.url;
+                    Swal.fire({
+                        title: 'اعتماد البند؟',
+                        text: 'لا يمكن تعديل أو حذف البند بعد الاعتماد',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'نعم، اعتماد',
+                        cancelButtonText: 'إلغاء'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const f = document.createElement('form');
+                            f.method = 'POST';
+                            f.action = url;
+                            const token = document.querySelector('input[name="_token"]');
+                            if (token) f.appendChild(token.cloneNode());
+                            document.body.appendChild(f);
+                            f.submit();
+                        }
+                    });
+                });
+            });
+
+            // 🔹 إلغاء اعتماد البند
+            document.querySelectorAll('.unapprove-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const url = this.dataset.url;
+                    Swal.fire({
+                        title: 'إلغاء اعتماد البند؟',
+                        text: 'سيصبح البند قابلاً للتعديل والحذف مرة أخرى',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f59e0b',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'نعم، إلغاء الاعتماد',
+                        cancelButtonText: 'تراجع'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const f = document.createElement('form');
+                            f.method = 'POST';
+                            f.action = url;
+                            const token = document.querySelector('input[name="_token"]');
+                            if (token) f.appendChild(token.cloneNode());
+                            document.body.appendChild(f);
+                            f.submit();
+                        }
+                    });
+                });
+            });
 
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', function(e) {

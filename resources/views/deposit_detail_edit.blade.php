@@ -28,7 +28,16 @@
 @endsection
 
 @section('content')
+    @php
+        $allApproved = $deposit->deposit_details->isNotEmpty() && $deposit->deposit_details->every(fn($d) => $d->status == 1);
+    @endphp
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+
+        @if ($allApproved)
+            <div class="mb-6 bg-green-50 border border-green-300 text-green-700 rounded-lg p-4 text-center font-semibold">
+                هذا التوريد معتمد بالكامل ولا يمكن تعديله
+            </div>
+        @endif
 
         <form action="{{ route('deposit_detail.update',$deposit->id) }}" method="POST" id="storeForm">
             @csrf
@@ -38,17 +47,21 @@
             <div class="mb-6">
                 <div class="flex justify-end items-center mb-4">
                     {{-- <h2 class="text-xl font-semibold text-gray-800">بنود التوريد</h2> --}}
-                    <button id="addDepositBtn" type="button"
-                        class="flex items-center bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">
-                        إضافة توريد
-                    </button>
+                    @if (!$allApproved)
+                        @can('deposit_details.edit')
+                            <button id="addDepositBtn" type="button"
+                                class="flex items-center bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">
+                                إضافة توريد
+                            </button>
+                        @endcan
+                    @endif
                 </div>
 
                 <div id="depositContainer" class="space-y-3">
                     <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
-                            <select name="employee_id" id="employee_id">
+                            <select name="employee_id" id="employee_id" @if($allApproved) disabled @endif>
                                 <option value="">قم باختيار الموظف</option>
                                 @foreach ($employees as $employee)
                                     <option @selected($employee->id == $deposit->employee_id) value="{{ $employee->id }}">
@@ -60,32 +73,49 @@
                             <label class="block mb-1 text-sm font-medium text-gray-700"> التاريخ</label>
                             <input type="date" name="date"
                                 class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
-                                value="{{ $deposit->date }}">
+                                value="{{ $deposit->date }}" @if($allApproved) readonly @endif>
                         </div>
 
                     </div>
-                    <!-- الصف الأساسي -->
+                    <!-- الصفوف -->
                     @foreach ($deposit->deposit_details as $deposit_detail)
+                        @php $isApproved = $deposit_detail->status == 1; @endphp
                         <div
-                            class="deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative ">
+                            class="deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 {{ $isApproved ? 'bg-green-50 border border-green-200' : 'bg-primary-soft' }} rounded-lg relative ">
+                            <input type="hidden" name="detail_ids[]" value="{{ $deposit_detail->id }}">
+
                             <!-- مبلغ التوريد -->
                             <div>
-                                <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
-                                <input type="text" name="deposit_amount[0]" id="deposit_amount_0" placeholder="0.00"
+                                <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد
+                                    @if ($isApproved)
+                                        <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-semibold">معتمد</span>
+                                    @endif
+                                </label>
+                                <input type="text" name="deposit_amount[{{ $loop->index }}]" id="deposit_amount_{{ $loop->index }}" placeholder="0.00"
                                     value="{{ number_format($deposit_detail->deposit_amount) }}"
-                                    class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                    class="deposit-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                    @if ($isApproved) readonly @endif>
+                                @if ($isApproved && $deposit_detail->approver)
+                                    <p class="text-xs text-gray-500 mt-1">بواسطة: {{ $deposit_detail->approver->name }} — {{ $deposit_detail->approved_at?->format('Y/m/d') }}</p>
+                                @endif
                             </div>
 
                             <!-- بيان التوريد -->
                             <div>
                                 <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
-                                <input type="text" name="deposit_desc[0]" id="deposit_desc_0"
+                                <input type="text" name="deposit_desc[{{ $loop->index }}]" id="deposit_desc_{{ $loop->index }}"
                                     placeholder="مثال: توريد يوم الأحد" value="{{ $deposit_detail->deposit_desc }}"
-                                    class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                    class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                    @if ($isApproved) readonly @endif>
                             </div>
-                            @if ($loop->index != 0)
-                                <button type="button"
-                                    class="remove-deposit-row text-red-600 font-bold text-lg mt-6">✖</button>
+
+                            @if (!$isApproved)
+                                @if ($loop->index != 0)
+                                    <button type="button"
+                                        class="remove-deposit-row text-red-600 font-bold text-lg mt-6">✖</button>
+                                @endif
+                            @else
+                                <span class="text-green-600 font-bold mt-6">✓</span>
                             @endif
                         </div>
                     @endforeach
@@ -119,10 +149,12 @@
 
             <div class="flex justify-start space-x-3 space-x-reverse mt-6">
                 <!-- زر حفظ -->
-                <button type="submit"
-                    class="flex items-center bg-primary-strong text-white px-6 py-2 rounded-lg hover:bg-primary-strong transition-colors">
-                    حفظ
-                </button>
+                @if (!$allApproved)
+                    <button type="submit"
+                        class="flex items-center bg-primary-strong text-white px-6 py-2 rounded-lg hover:bg-primary-strong transition-colors">
+                        حفظ
+                    </button>
+                @endif
             </div>
 
         </form>
@@ -304,6 +336,7 @@
                 row.className =
                     "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
                 row.innerHTML = `
+                    <input type="hidden" name="detail_ids[]" value="">
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
                         <input type="text" name="deposit_amount[${index}]" id="deposit_amount_${index}" placeholder="0.00"

@@ -8,7 +8,7 @@
 
     <style>
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'cairo', sans-serif;
             direction: rtl;
             text-align: right;
             background: #fff;
@@ -113,8 +113,18 @@
         }
 
         .total-row {
-            background: #1e40af;
+            background: #065f46;
             color: white;
+            font-weight: bold;
+        }
+
+        .total-row td {
+            border-color: #065f46;
+        }
+
+        .total-row {
+            background: #1e40af;
+            color: white important;
             font-weight: bold;
         }
 
@@ -151,9 +161,16 @@
         <p>اسم العميل: <strong>{{ $client->name }}</strong></p>
     </div>
 
+    @if (!empty($message))
+        <div class="client-info" style="background:#fffbeb; border-color:#f59e0b;">
+            <strong>رسالة:</strong> {{ $message }}
+        </div>
+    @endif
+
     <div class="client-info">
         <strong>الهاتف:</strong> {{ $client->phone ?? 'لا يوجد' }}<br>
-        <strong>عدد العمليات:</strong> {{ $client->accounts->count() }}
+        <strong>النوع:</strong> {{ $client->type == 1 ? 'عميل' : 'باص' }}<br>
+        <strong>عدد العمليات:</strong> {{ $rows->count() }}
     </div>
 
     <table>
@@ -161,42 +178,47 @@
             <tr>
                 <th>#</th>
                 <th>التاريخ</th>
-                <th>التفاصيل</th>
+                <th>البيان</th>
+                <th>عدد اللترات</th>
+                <th>سعر اللتر</th>
                 <th>عليه</th>
                 <th>له</th>
                 <th>الرصيد</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($client->accounts as $account)
-                <tr style="color: {{ $account->type == 0 ? '#065f46' : '#991b1b' }};">
+            @forelse($rows as $row)
+                @php $account = $row['detail']; $balance = $row['balance']; @endphp
+                <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $account->date->format('Y-m-d') }}</td>
-                    <td>{{ $account->note }}</td>
-                    <td>{{ number_format($account->type == 1 ? $account->amount : 0) }} ج.س</td>
-                    <td>{{ number_format($account->type == 0 ? $account->amount : 0) }} ج.س</td>
-                    <td class="{{ $account->total > 0 ? 'text-red' : 'text-green' }}">{{ number_format($account->total) }} ج.س</td>
+                    <td>{{ $account->note ?? '-' }}</td>
+                    <td>{{ formatNumber($account->liter) }}</td>
+                    <td>{{ formatNumber($account->price) }}</td>
+                    <td class="{{ $account->total > 0 ? 'text-red' : '' }}">
+                        {{ $account->total > 0 ? number_format($account->total) . ' ج.س' : '-' }}</td>
+                    <td class="{{ $account->amount > 0 ? 'text-green' : '' }}">
+                        {{ $account->amount > 0 ? number_format($account->amount) . ' ج.س' : '-' }}</td>
+                    <td class="{{ $balance > 0 ? 'text-red' : 'text-green' }}">{{ number_format($balance) }} ج.س</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align:center;">لا توجد عمليات حاليا لدى هذا العميل</td>
+                    <td colspan="8" style="text-align:center;">لا توجد عمليات حاليا لدى هذا العميل</td>
                 </tr>
             @endforelse
 
             <tr class="summary-row">
                 <td colspan="3">إجمالي العمليات</td>
-                <td class="text-red">{{ number_format($client->accounts()->where('type', 1)->sum('amount')) }} ج.س</td>
-                <td class="text-green">{{ number_format($client->accounts()->where('type', 0)->sum('amount')) }} ج.س</td>
+                <td></td>
+                <td></td>
+                <td class="text-red">{{ number_format($totalDebit) }} ج.س</td>
+                <td class="text-green">{{ number_format($totalCredit) }} ج.س</td>
                 <td></td>
             </tr>
 
-            @php
-                $total = $client->accounts()->where('type', 1)->sum('amount') - $client->accounts()->where('type', 0)->sum('amount');
-            @endphp
-
             <tr class="total-row">
-                <td colspan="3">الرصيد الإجمالي — {{ $total > 0 ? 'عليه' : 'له' }}</td>
-                <td colspan="3" class="{{ $total > 0 ? 'bg-red' : 'bg-green' }}">{{ number_format(abs($total)) }} ج.س</td>
+                <td colspan="6">الرصيد الإجمالي — {{ $total > 0 ? 'عليه' : 'له' }}</td>
+                <td colspan="2">{{ number_format(abs($total)) }} ج.س</td>
             </tr>
         </tbody>
     </table>

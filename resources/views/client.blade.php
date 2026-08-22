@@ -130,7 +130,12 @@
                     <!-- اسم + الرصيد -->
                     @php $clientBalance = $client->total_sum - $client->paid_sum; @endphp
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $client->name }}</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                            <a href="{{ route('client.show', $client->id) }}"
+                                class="hover:text-primary-strong hover:underline transition-colors">
+                                {{ $client->name }}
+                            </a>
+                        </h3>
                         <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
                         <p
                             class="text-2xl font-bold {{ $clientBalance >= 0 ? 'text-primary-strong' : 'text-red-600' }} mb-1">

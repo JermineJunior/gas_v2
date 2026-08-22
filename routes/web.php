@@ -64,6 +64,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/reports/stock-movement', [ReportController::class, 'stock_movement'])->name('reports.stock_movement');
     Route::post('report/stock-movement', [ReportController::class, 'stock_movement_result'])->name('reports.stock_movement.result');
 
+    Route::get('/reports/employee-account', [ReportController::class, 'employee_account'])->name('reports.employee_account');
+    Route::post('report/employee-account', [ReportController::class, 'employee_account_result'])->name('reports.employee_account.result');
+
     
     Route::post('/machines/store', [MachineController::class, 'storeAjax'])->name('machines.store.ajax');
 
@@ -78,6 +81,12 @@ Route::group(['middleware' => 'auth'], function () {
         if ($request->station_id) $query->where('station_id', $request->station_id);
         return $query->select('id', 'name')->get();
     })->name('api.machines');
+
+    Route::get('/api/employees', function (\Illuminate\Http\Request $request) {
+        $query = \App\Models\Employee::query();
+        if ($request->station_id) $query->where('station_id', $request->station_id);
+        return $query->select('id', 'name')->get();
+    })->name('api.employees');
 
     Route::get('/machine/stock/{machine}', function (\App\Models\Machine $machine) {
         $stock = $machine->stock;
@@ -116,6 +125,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::delete('client/{client}', [ClientController::class, 'delete'])->name('client.delete');
     Route::get('/client-search', [ClientController::class, 'search'])->name('client.search');
     Route::get('/client/{client}', [ClientController::class, 'show'])->name('client.show');
+    Route::get('/client/{client}/pdf', [ClientController::class, 'pdf'])->name('client.pdf');
 
     Route::get('supplier', [SupplierController::class, 'index'])->name('supplier.index');
     Route::post('supplier', [SupplierController::class, 'store'])->name('supplier.store');
@@ -149,6 +159,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('deposit_detail/{deposit}/edit', [DepositDetailController::class, 'edit'])->name('deposit_detail.edit');
     Route::put('deposit_detail/{deposit}', [DepositDetailController::class, 'update'])->name('deposit_detail.update');
     Route::delete('deposit_detail/{deposit_detail}', [DepositDetailController::class, 'destroy'])->name('deposit_detail.delete');
+    Route::post('deposit_detail/{deposit_detail}/approve', [DepositDetailController::class, 'approve'])->name('deposit_details.approve');
+    Route::post('deposit_detail/{deposit_detail}/unapprove', [DepositDetailController::class, 'unapprove'])->name('deposit_details.unapprove');
 
     Route::get('prices', [PriceController::class, 'create'])->name('price.create');
     Route::post('prices', [PriceController::class, 'store'])->name('price.store');

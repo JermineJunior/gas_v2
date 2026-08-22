@@ -30,20 +30,29 @@
         <!-- Card -->
         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
             <!-- header -->
-            <div class="flex items-center justify-between p-6 border-b">
+            <div class="flex items-center justify-between p-6 border-b flex-wrap gap-3">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800">تقاصيل العميل</h1>
                     <p class="text-sm text-gray-500">هنا تعرض كل العمليات المتعلقة بالعميل</p>
                 </div>
-                @if (auth()->id() == $client->user_id)
-                    <div class="flex items-center gap-3">
-                        <!-- إضافة (لون شعار الفجر #00AEEF) -->
+                <div class="flex items-center gap-3">
+                    @if (auth()->id() == $client->user_id)
                         <button onclick="openAddModal()"
                             class="flex items-center gap-2 bg-primary-strong hover:bg-primary-strong text-white px-4 py-2 rounded-lg shadow">
                             + إضافة عملية
                         </button>
-                    </div>
-                @endif
+                    @endif
+                    <!-- تحميل PDF -->
+                    <button onclick="downloadPdf()"
+                        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2M7 9V5a2 2 0 012-2h4.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V9" />
+                        </svg>
+                        تحميل PDF
+                    </button>
+                </div>
             </div>
 
             <!-- Content -->
@@ -80,27 +89,31 @@
                             <tr class="bg-primary-strong text-white">
                                 <th class="px-4 py-3 text-right">#</th>
                                 <th class="px-4 py-3 text-right">التاريخ</th>
-                                <th class="px-4 py-3 text-right">عدد اللترات</th>
-                                <th class="px-4 py-3 text-right">السعر</th>
-                                <th class="px-4 py-3 text-right">الإجمالي</th>
-                                <th class="px-4 py-3 text-right">التفاصيل</th>
+                                <th class="px-4 py-3 text-right">البيان</th>
+                                <th class="px-4 py-3 text-right">عليه</th>
+                                <th class="px-4 py-3 text-right">له</th>
+                                <th class="px-4 py-3 text-right">الرصيد</th>
                                 <th class="px-4 py-3 text-center">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="accountsBody">
-                            @forelse ($client->details as $cus)
+                            @forelse ($rows as $row)
+                                @php $cus = $row['detail']; $balance = $row['balance']; @endphp
                                 <tr class="border-b bg-gray-50 hover:bg-gray-100">
                                     <td class="px-4 py-4 text-right">{{ $loop->iteration }}</td>
                                     <td class="px-4 py-4 text-right">{{ $cus->date->format('Y-m-d') }}</td>
-                                    <td class="px-4 py-4 text-right">{{ formatNumber($cus->liter) }}</td>
-                                    <td class="px-4 py-4 text-right">{{ formatNumber($cus->price) }}</td>
-                                    <td class="px-4 py-4 text-right font-bold text-primary-strong">
-                                        {{ formatNumber($cus->total) }}
-                                    </td>
                                     <td class="px-4 py-4 text-right">{{ $cus->note }}</td>
+                                    <td class="px-4 py-4 text-right font-bold {{ $cus->total > 0 ? 'text-red-600' : '' }}">
+                                        {{ $cus->total > 0 ? formatNumber($cus->total) . ' ج.س' : '-' }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right font-bold text-green-700">
+                                        {{ $cus->amount > 0 ? formatNumber($cus->amount) . ' ج.س' : '-' }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right font-bold {{ $balance > 0 ? 'text-red-600' : 'text-primary-strong' }}">
+                                        {{ formatNumber($balance) }} ج.س
+                                    </td>
                                     <td class="px-4 py-4 text-center">
                                         <div class="inline-flex gap-2">
-                                            {{-- @if ($cus->status == 0) --}}
                                             <button
                                                 class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg edit-btn"
                                                 data-id="{{ $cus->id }}"
@@ -121,22 +134,27 @@
                                                     حذف
                                                 </button>
                                             </form>
-                                            {{-- @else --}}
-
-                                            {{-- @endif --}}
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr class="text-center">
-                                    <td colspan="6" class="px-4 py-4 text-center">لا توجد عمليات حاليا لدى هذا العميل
+                                    <td colspan="7" class="px-4 py-4 text-center">لا توجد عمليات حاليا لدى هذا العميل
                                     </td>
                                 </tr>
                             @endforelse
-                            <tr>
-                                <td colspan="4" class="text-right font-bold px-4 py-4">الاجمالي</td>
-                                <td class="px-4 py-4 text-primary-strong font-bold">
-                                    {{ number_format($client->details()->sum('total')) }}</td>
+                            <tr class="bg-gray-100 font-bold">
+                                <td colspan="3" class="px-4 py-4 text-right">إجمالي العمليات</td>
+                                <td class="px-4 py-4 text-red-600">{{ formatNumber($totalDebit) }}</td>
+                                <td class="px-4 py-4 text-green-700">{{ formatNumber($totalCredit) }}</td>
+                                <td colspan="2"></td>
+                            </tr>
+                            <tr class="bg-primary-soft font-bold">
+                                <td colspan="5" class="px-4 py-4 text-right">
+                                    الرصيد الإجمالي — {{ ($totalDebit - $totalCredit) > 0 ? 'عليه' : 'له' }}</td>
+                                <td colspan="2" class="px-4 py-4 {{ ($totalDebit - $totalCredit) > 0 ? 'text-red-600' : 'text-primary-strong' }} text-lg">
+                                    {{ formatNumber(abs($totalDebit - $totalCredit)) }} ج.س
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -252,6 +270,29 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @include('messages')
     <script>
+        // 🔹 تحميل PDF مع رسالة اختيارية
+        function downloadPdf() {
+            Swal.fire({
+                title: 'تحميل تقرير حساب العميل PDF',
+                input: 'textarea',
+                inputLabel: 'رسالة (اختياري) — ستظهر في أعلى التقرير',
+                inputPlaceholder: 'اكتب رسالتك هنا...',
+                showCancelButton: true,
+                confirmButtonText: 'تحميل',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#2563eb',
+                inputValidator: (value) => {
+                    // الرسالة اختيارية — لا يوجد خطأ
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const message = result.value || '';
+                    const url = '{{ route('client.pdf', $client->id) }}?message=' + encodeURIComponent(message);
+                    window.location.href = url;
+                }
+            });
+        }
+
         $(document).ready(function() {
 
             // 🔹 تنسيق الأرقام أثناء الكتابة (إضافة فاصلة كل 3 خانات)

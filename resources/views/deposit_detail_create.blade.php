@@ -250,14 +250,12 @@
                     success: function(response) {
                         $('#total_new_machine').val(
                             Number(response.total_new_machine).toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             })
                         );
 
                         $('#total_old_machine').val(
                             Number(response.total_old_machine).toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             })
                         );
