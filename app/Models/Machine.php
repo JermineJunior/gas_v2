@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Machine extends Model
 {
-    protected $fillable = ['name','station_id','stock_id'];
+    protected $fillable = ['name', 'station_id', 'stock_id', 'max_counter'];
 
     public function station(): BelongsTo
     {
@@ -20,7 +20,7 @@ class Machine extends Model
         return $this->belongsTo(Stock::class);
     }
 
-    public function guns()
+    public function guns(): HasMany
     {
         return $this->hasMany(Gun::class);
     }

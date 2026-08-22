@@ -47,15 +47,17 @@ class StationSetupController extends Controller
     public function storeMachine(Request $request)
     {
         $request->validate([
-            'name'       => 'required|string|max:255',
-            'stock_id'   => 'required|exists:stocks,id',
-            'station_id' => 'required|exists:stations,id',
+            'name'        => 'required|string|max:255',
+            'stock_id'    => 'required|exists:stocks,id',
+            'station_id'  => 'required|exists:stations,id',
+            'max_counter' => 'nullable|numeric|min:1',
         ]);
 
         Machine::create([
-            'name'       => $request->name,
-            'stock_id'   => $request->stock_id,
-            'station_id' => $request->station_id,
+            'name'        => $request->name,
+            'stock_id'    => $request->stock_id,
+            'station_id'  => $request->station_id,
+            'max_counter' => $request->max_counter ?: 9999999,
         ]);
 
         return back()->with('success', 'تمت إضافة الماكينة بنجاح');
@@ -113,13 +115,15 @@ class StationSetupController extends Controller
     public function updateMachine(Request $request)
     {
         $request->validate([
-            'id'   => 'required|exists:machines,id',
-            'name' => 'required|string|max:255',
+            'id'          => 'required|exists:machines,id',
+            'name'        => 'required|string|max:255',
+            'max_counter' => 'nullable|numeric|min:1',
         ]);
 
         $machine = Machine::findOrFail($request->id);
         $machine->update([
-            'name' => $request->name,
+            'name'        => $request->name,
+            'max_counter' => $request->max_counter ?: ($machine->max_counter ?: 9999999),
         ]);
 
         return back()->with('success', 'تم تعديل الماكينة بنجاح');

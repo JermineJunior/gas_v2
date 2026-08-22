@@ -84,7 +84,11 @@
                                                 <td class="px-4 py-3">{{ $machine->gun->name }}</td>
                                                 <td class="px-4 py-3">{{ number_format($machine->start_counter) }}</td>
                                                 <td class="px-4 py-3">{{ number_format($machine->end_counter) }}</td>
-                                                <td class="px-4 py-3">{{ number_format($machine->net) }}</td>
+                                                <td class="px-4 py-3">{{ number_format($machine->net) }}
+                                                    @if($machine->is_rollover)
+                                                        <span class="mr-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold" title="حدث تصفير للعداد">تصفير</span>
+                                                    @endif
+                                                </td>
                                                 <td class="px-4 py-3">{{ number_format($machine->price) }}</td>
                                                 <td class="px-4 py-3">{{ number_format($machine->total) }}</td>
                                                 @canany(['machine_details.edit', 'machine_details.delete'])

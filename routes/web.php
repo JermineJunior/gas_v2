@@ -91,6 +91,7 @@ Route::group(['middleware' => 'auth'], function () {
                 'qty' => $stock->qty,
                 'type' => $stock->type,
                 'type_text' => $stock->type == 1 ? 'جازولين' : 'بنزين',
+                'max_counter' => $machine->max_counter ?: 9999999,
             ],
         ]);
     })->name('api.machine-stock');

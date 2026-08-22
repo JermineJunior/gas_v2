@@ -134,6 +134,7 @@
                         <!-- الصافي -->
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">صافي اللتر</label>
+                            <input type="hidden" name="is_rollover[0]" value="{{ $machine_detail->is_rollover ? '1' : '0' }}" class="is-rollover">
                             <input type="text" name="net[0]" readonly
                                 value="{{ number_format($machine_detail->net) }}"
                                 class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
@@ -409,6 +410,25 @@
                 },
                 submitHandler: function(form) {
 
+                    // منع الحفظ إذا في صفوف ما زالت بحاجة لتصحيح
+                    let problemRows = [];
+                    document.querySelectorAll('.fuel-item').forEach(item => {
+                        if (item.dataset.needsCorrection === '1') {
+                            const m = item.querySelector('.machine');
+                            const name = m?.options[m.selectedIndex]?.text?.trim() || 'صف غير محدد';
+                            problemRows.push(name);
+                        }
+                    });
+                    if (problemRows.length > 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'صفوف تحتاج تصحيحاً قبل الحفظ',
+                            html: '<div style="text-align:right;direction:rtl">الماكينات: <br><b>' + problemRows.join('<br>') + '</b></div>',
+                            confirmButtonText: 'حسناً'
+                        });
+                        return false;
+                    }
+
                     // فحص الرصيد لكل بير على حدة
                     let stockErrors = [];
                     let stockTotals = {};
@@ -478,12 +498,57 @@
                 }
             });
 
-            function calculateRow(item) {
+            function getMaxCounter(item) {
+                let machineSelect = item.querySelector('.machine');
+                let mid = machineSelect?.value;
+                if (mid && stockMap[mid] && stockMap[mid].max_counter) {
+                    return Number(stockMap[mid].max_counter);
+                }
+                return 9999999;
+            }
+
+            function clearRolloverState(item) {
+                item.dataset.needsCorrection = '';
+                const end = item.querySelector('.end-counter');
+                if (end) end.classList.remove('border-red-500', 'border-2');
+            }
+
+            function markDeclined(item) {
+                item.dataset.needsCorrection = '1';
+                const end = item.querySelector('.end-counter');
+                if (end) {
+                    end.classList.add('border-red-500', 'border-2');
+                }
+                if (item.querySelector('.net')) item.querySelector('.net').value = '';
+                if (item.querySelector('.total')) item.querySelector('.total').value = '';
+                updateGrandTotals();
+            }
+
+            // الحساب مع دعم التصفير: net = (max - start) + end عند حدوث تصفير
+            function calculateRow(item, forceRollover) {
                 let start = parseNumber(item.querySelector(".start-counter")?.value);
-                let end = parseNumber(item.querySelector(".end-counter")?.value);
+                let endInput = item.querySelector(".end-counter");
+                let end = parseNumber(endInput?.value);
                 let price = parseNumber(item.querySelector(".price")?.value);
 
-                let net = Math.max(end - start, 0);
+                let rolloverFlag = item.querySelector('.is-rollover');
+
+                if (endInput && endInput.value.trim() !== '' && !forceRollover && !item.dataset.rolloverConfirmed && end < start) {
+                    // لا تحسب تلقائياً — يقرر المستخدم عبر نافذة التأكيد عند مغادرة الحقل
+                    updateGrandTotals();
+                    return;
+                }
+
+                let maxC = getMaxCounter(item);
+                let net;
+                if ((forceRollover || item.dataset.rolloverConfirmed) && end < start) {
+                    net = (maxC - start) + end;
+                    if (rolloverFlag) rolloverFlag.value = '1';
+                } else {
+                    net = Math.max(end - start, 0);
+                    if (!forceRollover && rolloverFlag && !(end < start)) rolloverFlag.value = '0';
+                }
+
                 let total = net * price;
 
                 if (item.querySelector(".net")) item.querySelector(".net").value = formatWithCommas(
@@ -492,6 +557,66 @@
                     total);
 
                 updateGrandTotals();
+            }
+
+            // 🔹 بوابة تأكيد التصفير عند مغادرة حقل عداد النهاية
+            function checkRolloverOnBlur(item) {
+                const startEl = item.querySelector('.start-counter');
+                const endEl = item.querySelector('.end-counter');
+                if (!startEl || !endEl) return;
+
+                const start = parseNumber(startEl.value);
+                const endRaw = endEl.value.trim();
+                if (endRaw === '') {
+                    clearRolloverState(item);
+                    delete item.dataset.rolloverConfirmed;
+                    calculateRow(item);
+                    return;
+                }
+                const end = parseNumber(endRaw);
+                const maxC = getMaxCounter(item);
+
+                if (end > maxC) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'قيمة العداد تتجاوز الحد الأقصى',
+                        html: '<div style="direction:rtl">الحد الأقصى للعداد: <b>' + formatWithCommas(maxC) + '</b></div>',
+                        confirmButtonText: 'حسناً'
+                    });
+                    markDeclined(item);
+                    return;
+                }
+
+                if (end >= start) {
+                    clearRolloverState(item);
+                    delete item.dataset.rolloverConfirmed;
+                    const flag = item.querySelector('.is-rollover');
+                    if (flag) flag.value = '0';
+                    calculateRow(item);
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'عداد النهاية أقل من عداد البداية — هل حدث تصفير للعداد (دورة كاملة)؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'نعم، حدث تصفير',
+                    cancelButtonText: 'لا، خطأ في الإدخال'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        clearRolloverState(item);
+                        item.dataset.rolloverConfirmed = '1';
+                        const flag = item.querySelector('.is-rollover');
+                        if (flag) flag.value = '1';
+                        calculateRow(item, true);
+                    } else {
+                        delete item.dataset.rolloverConfirmed;
+                        endEl.value = '';
+                        markDeclined(item);
+                    }
+                });
             }
 
             // ==========================
@@ -541,7 +666,11 @@
 
                 // استخدام الفورماتر على الحقول الرقمية ذات الصلة
                 if (start) attachLiveFormatter(start, () => calculateRow(item));
-                if (end) attachLiveFormatter(end, () => calculateRow(item));
+                if (end) {
+                    attachLiveFormatter(end, () => calculateRow(item));
+                    // بوابة التأكيد عند مغادرة حقل عداد النهاية
+                    end.addEventListener('blur', () => checkRolloverOnBlur(item));
+                }
                 if (price) attachLiveFormatter(price, () => calculateRow(item));
 
                 // زر الحذف في صف الفاتورة
@@ -619,6 +748,7 @@
 
                         <div>
                             <label>صافي اللتر</label>
+                            <input type="hidden" name="is_rollover[${index}]" value="0" class="is-rollover">
                             <input type="text" name="net[${index}]" readonly class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
 

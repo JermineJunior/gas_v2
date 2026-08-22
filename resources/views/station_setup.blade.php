@@ -139,12 +139,13 @@
                                         <div class="relative bg-primary-softer border border-primary-soft rounded-lg px-4 py-4 text-center w-full sm:w-auto">
                                             @can('machines.edit')
                                                 <button type="button"
-                                                    @click="editMachine = { id: {{ $machine->id }}, name: '{{ $machine->name }}' }; openEditMachine = true;"
+                                                    @click="editMachine = { id: {{ $machine->id }}, name: '{{ $machine->name }}', max_counter: {{ $machine->max_counter ?: 9999999 }} }; openEditMachine = true;"
                                                     class="absolute top-1 left-1 text-green-600 hover:text-green-700 text-lg leading-none px-0.5"
                                                     title="تعديل / حذف الماكينة">✎</button>
                                             @endcan
                                             <p class="text-[10px] text-gray-400">ماكينة</p>
                                             <p class="font-bold text-gray-800">{{ $machine->name }}</p>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">الحد الأقصى: {{ number_format($machine->max_counter ?: 9999999) }}</p>
                                         </div>
 
                                         <!-- المسدس الثاني (يسار في RTL / أسفل في الموبايل) -->
@@ -259,6 +260,12 @@
                         <input type="text" name="name" required
                             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
                     </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">الحد الأقصى للعداد</label>
+                        <input type="number" name="max_counter" min="1" step="any" placeholder="9999999"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <p class="text-xs text-gray-400 mt-1">اتركه فارغاً لاستخدام القيمة الافتراضية 9,999,999</p>
+                    </div>
                     <div class="flex justify-end">
                         <button type="submit"
                             class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
@@ -357,6 +364,12 @@
                         <label class="block text-gray-700 mb-1">اسم/رقم الماكينة</label>
                         <input type="text" name="name" :value="editMachine.name" required
                             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-gray-700 mb-1">الحد الأقصى للعداد</label>
+                        <input type="number" name="max_counter" min="1" step="any" :value="editMachine.max_counter"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <p class="text-xs text-gray-400 mt-1">القيمة الافتراضية 9,999,999</p>
                     </div>
                 </form>
                 <div class="flex justify-between items-center mt-2">

@@ -117,7 +117,12 @@
                             <td class="p-3 text-center">{{ $machine->gun->name ?? '-' }}</td>
                             <td class="p-3 text-center">{{ formatNumber($machine->start_counter) }} لتر</td>
                             <td class="p-3 text-center">{{ formatNumber($machine->end_counter) }} لتر</td>
-                            <td class="p-3 text-center">{{ formatNumber($machine->net) }} لتر</td>
+                            <td class="p-3 text-center">
+                                {{ formatNumber($machine->net) }} لتر
+                                @if($machine->is_rollover)
+                                    <span class="mr-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold" title="حدث تصفير للعداد">تصفير</span>
+                                @endif
+                            </td>
                             <td class="p-3 text-center">{{ formatNumber($machine->price) }} جنيه</td>
                             <td class="p-3 text-center">{{ formatNumber($machine->total) }} جنيه</td>
                         </tr>

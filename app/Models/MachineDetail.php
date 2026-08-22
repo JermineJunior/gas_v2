@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class MachineDetail extends Model
 {
-    protected $fillable = ['station_id','gun_id', 'machine_id', 'start_counter', 'end_counter', 'net', 'price', 'total','status','employee_id'];
+    protected $fillable = ['station_id','gun_id', 'machine_id', 'start_counter', 'end_counter', 'net', 'is_rollover', 'price', 'total','status','employee_id'];
 
     protected $casts = [
         'date' => 'date',
+        'is_rollover' => 'boolean',
     ];
 
     public function station()
