@@ -132,6 +132,8 @@
     <script src="{{ URL::asset('form_validation/jquery.validate.min.js') }}"></script>
     <script src="{{ URL::asset('form_validation/additional-methods.min.js') }}"></script>
     <script src="{{ URL::asset('form_validation/messages_ar.js') }}"></script>
+    @include('messages')
+
 
     <script>
         $(document).ready(function() {

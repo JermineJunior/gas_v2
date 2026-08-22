@@ -142,6 +142,9 @@
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @include('messages')
+
     <!-- Alpine.js -->
 
     <!-- jQuery + Select2 -->

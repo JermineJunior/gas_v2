@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DepositDetailController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FuelOrderController;
 use App\Http\Controllers\GunContorller;
@@ -161,6 +162,16 @@ Route::group(['middleware' => 'auth'], function () {
     Route::delete('deposit_detail/{deposit_detail}', [DepositDetailController::class, 'destroy'])->name('deposit_detail.delete');
     Route::post('deposit_detail/{deposit_detail}/approve', [DepositDetailController::class, 'approve'])->name('deposit_details.approve');
     Route::post('deposit_detail/{deposit_detail}/unapprove', [DepositDetailController::class, 'unapprove'])->name('deposit_details.unapprove');
+
+    // === Expenses ===
+    Route::get('expense/{station}', [ExpenseController::class, 'index'])->name('expense.index');
+    Route::get('expense/{station}/create', [ExpenseController::class, 'create'])->name('expense.create');
+    Route::post('expense', [ExpenseController::class, 'store'])->name('expense.store');
+    Route::get('expense/{expense}/edit', [ExpenseController::class, 'edit'])->name('expense.edit');
+    Route::put('expense/{expense}', [ExpenseController::class, 'update'])->name('expense.update');
+    Route::delete('expense/{expense}', [ExpenseController::class, 'destroy'])->name('expense.delete');
+    Route::post('expense_detail/{expense_detail}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve');
+    Route::post('expense_detail/{expense_detail}/unapprove', [ExpenseController::class, 'unapprove'])->name('expenses.unapprove');
 
     Route::get('prices', [PriceController::class, 'create'])->name('price.create');
     Route::post('prices', [PriceController::class, 'store'])->name('price.store');

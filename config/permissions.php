@@ -62,6 +62,13 @@ return [
         'deposit_details.delete'  => 'حذف توريد',
         'deposits.approve'        => 'اعتماد التوريدات',
     ],
+    'expenses' => [
+        'expenses.view'    => 'عرض المصروفات',
+        'expenses.create'  => 'إضافة مصروف',
+        'expenses.update'  => 'تعديل مصروف',
+        'expenses.delete'  => 'حذف مصروف',
+        'expenses.approve' => 'اعتماد المصروفات',
+    ],
     'employees' => [
         'employees.view'      => 'عرض الموظفين',
         'employees.create'    => 'إضافة موظف',

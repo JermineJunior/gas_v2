@@ -122,10 +122,22 @@
                                                     تسجيل التوريدات
                                                 </a>
                                             @endcan
+                                            @can('expenses.create')
+                                                <a href="{{ route('expense.create', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    تسجيل المصروفات
+                                                </a>
+                                            @endcan
                                             @can('deposit_details.view')
                                                 <a href="{{ route('deposit_detail.index', $station->id) }}"
                                                     class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
                                                     قائمة التوريدات لدى المحطة
+                                                </a>
+                                            @endcan
+                                            @can('expenses.view')
+                                                <a href="{{ route('expense.index', $station->id) }}"
+                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                                    قائمة المصروفات لدى المحطة
                                                 </a>
                                             @endcan
                                     </div>

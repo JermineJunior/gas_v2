@@ -30,7 +30,7 @@
             <!-- header -->
             <div class="flex items-center justify-between p-6 border-b">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">تقاصيل العميل</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">تفاصيل العميل</h1>
                     <p class="text-sm text-gray-500">هنا تعرض كل العمليات المتعلقة بالعميل</p>
                 </div>
                 @if (auth()->id() == $client->user_id)

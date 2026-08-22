@@ -32,16 +32,16 @@
             <!-- header -->
             <div class="flex items-center justify-between p-6 border-b flex-wrap gap-3">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">تقاصيل العميل</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">تفاصيل العميل</h1>
                     <p class="text-sm text-gray-500">هنا تعرض كل العمليات المتعلقة بالعميل</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    @if (auth()->id() == $client->user_id)
+                  {{--   @if (auth()->id() == $client->user_id)
                         <button onclick="openAddModal()"
                             class="flex items-center gap-2 bg-primary-strong hover:bg-primary-strong text-white px-4 py-2 rounded-lg shadow">
                             + إضافة عملية
                         </button>
-                    @endif
+                    @endif --}}
                     <!-- تحميل PDF -->
                     <button onclick="downloadPdf()"
                         class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">
