@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'قرادات بانتظار الموافقة')
+@section('title', 'قراءات بانتظار الموافقة')
 
 @section('body-class', 'bg-gray-100 min-h-screen p-6')
 
@@ -9,7 +9,7 @@
         <!-- توكن للنماذج المنشأة برمجياً -->
         <input type="hidden" name="_token" value="{{ csrf_token() }}">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">قرادات بانتظار الموافقة</h2>
+            <h2 class="text-2xl font-bold text-gray-800">قراءات بانتظار الموافقة</h2>
             <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold">{{ $pending->count() }}</span>
         </div>
 
@@ -55,7 +55,7 @@
                     @empty
                         <tr>
                             <td colspan="10" class="px-4 py-6 text-center text-gray-500">
-                                لا توجد قرادات بانتظار الموافقة
+                                لا توجد قراءات بانتظار الموافقة
                             </td>
                         </tr>
                     @endforelse
@@ -96,7 +96,7 @@
         $(document).ready(function() {
             document.querySelectorAll('.approve-row-btn').forEach(button => {
                 button.addEventListener('click', function() {
-                    submitAction(this.dataset.url, 'اعتماد القرادة؟',
+                    submitAction(this.dataset.url, 'اعتماد القراءة؟',
                         'سيتم خصم كمية التصفير من البير ولا يمكن التراجع',
                         '#3085d6', 'نعم، اعتماد وخصم');
                 });
@@ -104,7 +104,7 @@
 
             document.querySelectorAll('.reject-row-btn').forEach(button => {
                 button.addEventListener('click', function() {
-                    submitAction(this.dataset.url, 'رفض القرادة؟',
+                    submitAction(this.dataset.url, 'رفض القراءة؟',
                         'لن يتم خصم أي كمية من البير',
                         '#d33', 'نعم، رفض');
                 });

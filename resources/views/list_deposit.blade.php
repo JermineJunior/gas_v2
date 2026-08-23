@@ -56,6 +56,7 @@
                                     <thead class="bg-gray-100 text-gray-700">
                                         <tr>
                                             <th class="px-4 py-3 text-right">#</th>
+                                            <th class="px-4 py-3 text-right"> المحطة</th>
                                             <th class="px-4 py-3 text-right"> الموظف</th>
                                             <th class="px-4 py-3 text-right"> البيان</th>
                                             <th class="px-4 py-3 text-right">المبلغ</th>
@@ -79,6 +80,7 @@
                                             @endphp
                                                 <tr class="border-b hover:bg-gray-50">
                                                     <td class="px-4 py-3">{{ $index }}</td>
+                                                    <td class="px-4 py-3">{{ $depositItem->station->name ?? '-' }}</td>
                                                     <td class="px-4 py-3">
                                                         {{ $depositItem->employee->name ?? '-' }}
                                                         @php $depStatus = $depositItem->status; @endphp

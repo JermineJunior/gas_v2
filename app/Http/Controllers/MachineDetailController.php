@@ -256,12 +256,12 @@ class MachineDetailController extends Controller
     }
 
     /**
-     * قائمة القرادات المعلقة بانتظار الاعتماد (عبر المحطات)
+     * قائمة القراءات المعلقة بانتظار الاعتماد (عبر المحطات)
      */
     public function pending()
     {
         if (!Auth::user()->can('machine_details.approve')) {
-            return back()->with('error', 'غير مصرح لك باعتماد القرادات');
+            return back()->with('error', 'غير مصرح لك باعتماد القراءات');
         }
 
         $userStationIds = Auth::user()->stations()->pluck('station_id')->toArray();
@@ -277,12 +277,12 @@ class MachineDetailController extends Controller
     }
 
     /**
-     * اعتماد قرادة معلقة — ينفّص الخصم المؤجل من المخزون
+     * اعتماد قراءة معلقة — ينفّص الخصم المؤجل من المخزون
      */
     public function approve(MachineDetail $machine_detail)
     {
         if (!Auth::user()->can('machine_details.approve')) {
-            return back()->with('error', 'غير مصرح لك باعتماد القرادات');
+            return back()->with('error', 'غير مصرح لك باعتماد القراءات');
         }
 
         // idempotent: الصف ليس معلقاً (معتمد/مرفوض/عادي) = لا شيء يُنفذ
@@ -307,16 +307,16 @@ class MachineDetailController extends Controller
             $stock->update(['qty' => $stock->qty - $machine_detail->net]);
         }
 
-        return back()->with('success', 'تم اعتماد القرادة وخصم الكمية من البير بنجاح');
+        return back()->with('success', 'تم اعتماد القراءة وخصم الكمية من البير بنجاح');
     }
 
     /**
-     * رفض قرادة معلقة — لا يخصم أي كمية أبداً
+     * رفض قراءة معلقة — لا يخصم أي كمية أبداً
      */
     public function reject(MachineDetail $machine_detail)
     {
         if (!Auth::user()->can('machine_details.approve')) {
-            return back()->with('error', 'غير مصرح لك باعتماد القرادات');
+            return back()->with('error', 'غير مصرح لك باعتماد القراءات');
         }
 
         if ($machine_detail->approval_status !== 'pending') {
@@ -329,6 +329,6 @@ class MachineDetailController extends Controller
             'approved_at'     => now(),
         ]);
 
-        return back()->with('success', 'تم رفض القرادة');
+        return back()->with('success', 'تم رفض القراءة');
     }
 }

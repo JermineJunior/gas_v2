@@ -237,7 +237,7 @@ class ReportController extends Controller
         $employee = \App\Models\Employee::findOrFail($request->employee_id);
         $station = Station::findOrFail($request->station_id);
 
-        // المطلوب من العداد الجديد: مجموع قرادات الموظف غير المسجلة (نفس منطق deposit_detail_create)
+        // المطلوب من العداد الجديد: مجموع قراءات الموظف غير المسجلة (نفس منطق deposit_detail_create)
         $totalNewMachine = MachineDetail::where('station_id', $request->station_id)
             ->where('employee_id', $request->employee_id)
             ->where('status', 0)

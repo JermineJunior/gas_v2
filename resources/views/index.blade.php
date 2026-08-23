@@ -37,8 +37,17 @@
                         <div class="station-card relative p-5"
                             style="border-bottom: 3px solid var(--color-primary); background-color: var(--color-surface-2);">
 
-                            <!-- زر التلاتة نقاط -->
+                            <!-- فتح لوحة المحطة -->
                             <div class="flex items-center justify-between mb-5">
+                                <a href="{{ route('stations.hub', $station->id) }}"
+                                    class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+                                    title="لوحة المحطة">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                                    </svg>
+                                </a>
+
+                                <!-- إجراءات سريعة -->
                                 <div x-data="{ open: false }" class="relative inline-block text-left">
                                     <button @click="open = !open"
                                         class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition">
@@ -49,96 +58,24 @@
                                         </svg>
                                     </button>
 
-                                    <div x-show="open" @click.away="open = false" x-transition
-                                        class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2 text-sm">
+                                    <div x-cloak x-show="open" @click.away="open = false" x-transition
+                                        class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2 text-sm">
                                             @can('stations.edit')
                                                 <button @click="open = false"
                                                     class="edit-btn w-full text-left px-4 py-2 hover:bg-gray-100"
                                                     data-id="{{ $station->id }}" data-name="{{ $station->name }}">
-                                                    تعديل
+                                                    تعديل بيانات المحطة
                                                 </button>
                                             @endcan
-                                            @canany(['stocks.create', 'machines.create'])
-                                                <a href="{{ route('station_setup.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    تهيئة المحطة
-                                                </a>
-                                            @endcanany
                                             @can('stations.delete')
                                                 <form method="POST" action="{{ route('station.destroy', $station->id) }}">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button"
                                                         class="delete-btn w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                                                        حذف
+                                                        حذف المحطة
                                                     </button>
                                                 </form>
-                                            @endcan
-                                            @can('tunckers.create')
-                                                <a href="{{ route('tuncker.create', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    تسجيل التنكر
-                                                </a>
-                                            @endcan
-                                            @can('tunckers.view')
-                                                <a href="{{ route('tuncker.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة التناكر لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('clients.view')
-                                                <a href="{{ route('client.station', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    ادارة الحسابات لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('employees.view')
-                                                <a href="{{ route('employee.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة الموظفين
-                                                </a>
-                                            @endcan
-                                            @can('stocks.view')
-                                                <a href="{{ route('stock.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة الابار
-                                                </a>
-                                            @endcan
-                                            @can('machine_details.create')
-                                                <a href="{{ route('machine_detail.create', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    تسجيل العدادات
-                                                </a>
-                                            @endcan
-                                            @can('machine_details.view')
-                                                <a href="{{ route('machine_detail.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة العدادات لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('deposit_details.create')
-                                                <a href="{{ route('deposit_detail.create', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    تسجيل التوريدات
-                                                </a>
-                                            @endcan
-                                            @can('expenses.create')
-                                                <a href="{{ route('expense.create', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    تسجيل المصروفات
-                                                </a>
-                                            @endcan
-                                            @can('deposit_details.view')
-                                                <a href="{{ route('deposit_detail.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة التوريدات لدى المحطة
-                                                </a>
-                                            @endcan
-                                            @can('expenses.view')
-                                                <a href="{{ route('expense.index', $station->id) }}"
-                                                    class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
-                                                    قائمة المصروفات لدى المحطة
-                                                </a>
                                             @endcan
                                     </div>
                                 </div>
@@ -155,7 +92,13 @@
                                             d="M14 6h4l2 3v9a2 2 0 0 1-2 2h-2" />
                                         <circle cx="10" cy="8" r="2" />
                                     </svg>
-                                    <h2 class="text-lg font-bold text-gray-800 leading-snug">{{ $station->name }}</h2>
+                                    <h2 class="text-lg font-bold text-gray-800 leading-snug">
+                                        <a href="{{ route('stations.hub', $station->id) }}"
+                                            class="hover:text-primary-strong hover:underline transition-colors"
+                                            title="فتح لوحة المحطة">
+                                            {{ $station->name }}
+                                        </a>
+                                    </h2>
                                 </div>
                                 <span class="inline-flex items-center gap-1.5 mt-1.5 text-sm text-gray-600">
                                     <span class="w-2 h-2 rounded-full bg-green-500"></span>

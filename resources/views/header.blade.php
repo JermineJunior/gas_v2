@@ -153,7 +153,7 @@
         <div class="hidden md:flex items-center gap-6">
             <a href="{{ route('station.index') }}" class="nav-link {{ $isHome ? 'active' : '' }}">الرئيسية</a>
             @can('machine_details.approve')
-                <a href="{{ route('machine_details.pending') }}" class="nav-link">اعتماد القرادات</a>
+                <a href="{{ route('machine_details.pending') }}" class="nav-link">اعتماد القراءات</a>
             @endcan
             @if (auth()->user()->hasPermissionTo('users.view'))
                 <a href="{{ route('user.index') }}" class="nav-link {{ $isUsers ? 'active' : '' }}">المستخدمين</a>
@@ -282,7 +282,7 @@
     <div id="mobileMenu" class="md:hidden hidden bg-white rounded-lg shadow mt-2 p-4 space-y-3">
         <a href="{{ route('station.index') }}" class="mobile-link {{ $isHome ? 'active' : '' }}">الرئيسية</a>
         @can('machine_details.approve')
-            <a href="{{ route('machine_details.pending') }}" class="mobile-link">اعتماد القرادات</a>
+            <a href="{{ route('machine_details.pending') }}" class="mobile-link">اعتماد القراءات</a>
         @endcan
         @if (auth()->user()->hasPermissionTo('users.view'))
             <a href="{{ route('user.index') }}" class="mobile-link {{ $isUsers ? 'active' : '' }}">المستخدمين</a>

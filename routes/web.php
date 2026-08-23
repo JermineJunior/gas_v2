@@ -12,6 +12,7 @@ use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\StationController;
+use App\Http\Controllers\StationHubController;
 use App\Http\Controllers\StationSetupController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SupplierController;
@@ -29,6 +30,9 @@ use Illuminate\Support\Facades\Route;
 Auth::routes();
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [StationController::class, 'index'])->name('station.index');
+
+    // === Station Hub ===
+    Route::get('stations/{station}/hub', [StationHubController::class, 'show'])->name('stations.hub');
     Route::post('/', [StationController::class, 'store'])->name('station.store');
     Route::put('station/{station}', [StationController::class, 'update'])->name('station.update');
     Route::delete('station/{station}', [StationController::class, 'destroy'])->name('station.destroy');

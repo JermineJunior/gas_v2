@@ -48,7 +48,7 @@ return [
         'machine_details.create'  => 'إضافة عداد',
         'machine_details.edit'    => 'تعديل عداد',
         'machine_details.delete'  => 'حذف عداد',
-        'machine_details.approve' => 'اعتماد قرادات العدادات',
+        'machine_details.approve' => 'اعتماد قراءات العدادات',
     ],
     'tunckers' => [
         'tunckers.view'       => 'عرض التناكر',

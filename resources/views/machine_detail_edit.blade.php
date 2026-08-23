@@ -633,7 +633,7 @@
                 const rolloverNet = (maxC - start) + end;
                 const allowed = stockMap[item.querySelector('.machine')?.value]?.allowed_rollover;
                 const needsApprovalWarning = (allowed !== null && allowed !== undefined && rolloverNet > Number(allowed))
-                    ? '<div style="color:#b45309;margin-top:8px;font-weight:bold">⚠ كمية التصفير تتجاوز الحد المسموح (' + formatWithCommas(allowed) + ' لتر) — سيتم إرسال القرادة لاعتماد المدير قبل خصمها</div>'
+                    ? '<div style="color:#b45309;margin-top:8px;font-weight:bold">⚠ كمية التصفير تتجاوز الحد المسموح (' + formatWithCommas(allowed) + ' لتر) — سيتم إرسال القراءة لاعتماد المدير قبل خصمها</div>'
                     : '';
 
                 Swal.fire({

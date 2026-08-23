@@ -18,7 +18,7 @@ class DepositDetailController extends Controller
         if (!in_array($station->id, $stationIds)) {
             return back();
         }
-        $deposits = Deposit::with('deposit_details')
+        $deposits = Deposit::with(['deposit_details', 'station'])
             ->where('station_id', $station->id)
             ->orderBy('date', 'desc') // أولاً نرتب بالتاريخ من الأحدث للأقدم
             ->get()
