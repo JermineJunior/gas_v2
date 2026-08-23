@@ -121,9 +121,9 @@
                 @endcan
 
                 <p class="px-3 pt-3 pb-1 text-xs font-bold text-gray-400">الحسابات</p>
-                @can('clients.view')
+             {{--    @can('clients.view')
                     <a href="{{ route('client.station', $station->id) }}" class="hub-sublink">إدارة الحسابات لدى المحطة</a>
-                @endcan
+                @endcan --}}
             </nav>
 
             <!-- شريط تبويبات أفقي للموبايل -->
@@ -155,9 +155,9 @@
                 @can('expenses.view')
                     <a href="{{ route('expense.index', $station->id) }}" class="shrink-0 px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 whitespace-nowrap">قائمة المصروفات</a>
                 @endcan
-                @can('clients.view')
+                {{-- @can('clients.view')
                     <a href="{{ route('client.station', $station->id) }}" class="shrink-0 px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 whitespace-nowrap">الحسابات</a>
-                @endcan
+                @endcan --}}
                 @can('stock.index')
                     <a href="{{ route('stock.index', $station->id) }}" class="shrink-0 px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 whitespace-nowrap">الآبار</a>
                 @endcan

@@ -24,8 +24,8 @@
         <form action="{{ route('reports.expense_list.result') }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @csrf
 
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">المحطة</label>
+            <div class=>
+                <label class="text-sm font-medium text-gray-600 mb-1">المحطة</label>
                 <select name="station_id" id="station_id" class="w-full select2" required>
                     <option value="">اختر المحطة</option>
                     @foreach ($stations as $station)
@@ -34,23 +34,24 @@
                 </select>
             </div>
 
-            <div>
+           {{--  <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1">المستخدم (منشئ المصروف)</label>
                 <select name="user_id" id="user_id" class="w-full select2-user">
                     <option value="">كل المستخدمين</option>
                 </select>
-            </div>
+            </div> --}}
 
             <div></div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">تاريخ البداية</label>
-                <input type="date" name="start_date" class="w-full p-2 border rounded-lg">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">تاريخ النهاية</label>
-                <input type="date" name="end_date" class="w-full p-2 border rounded-lg">
+            <div class="flex items-center gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">تاريخ البداية</label>
+                    <input type="date" name="start_date" class="w-full p-2 border rounded-lg">
+                </div>
+    
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">تاريخ النهاية</label>
+                    <input type="date" name="end_date" class="w-full p-2 border rounded-lg">
+                </div>
             </div>
 
             <div></div>

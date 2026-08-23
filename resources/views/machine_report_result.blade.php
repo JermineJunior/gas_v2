@@ -64,7 +64,7 @@
                     <div class="bg-primary-soft px-4 py-3 flex items-center justify-between">
                         <span class="font-bold text-lg text-gray-800">{{ $row['machine']->name }}</span>
                         <div class="flex items-center gap-4 text-sm">
-                            <span class="text-green-700 font-semibold">الاضافات: {{ formatNumber($row['total_net']) }} لتر</span>
+                            <span class="text-green-700 font-semibold">السحوبات: {{ formatNumber($row['total_net']) }} لتر</span>
                             <span class="text-blue-700 font-semibold">المبلغ: {{ formatNumber($row['total_amount']) }}</span>
                         </div>
                     </div>
