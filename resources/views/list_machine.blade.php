@@ -85,8 +85,10 @@
                                                 <td class="px-4 py-3">{{ number_format($machine->start_counter) }}</td>
                                                 <td class="px-4 py-3">{{ number_format($machine->end_counter) }}</td>
                                                 <td class="px-4 py-3">{{ number_format($machine->net) }}
-                                                    @if($machine->is_rollover)
-                                                        <span class="mr-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold" title="حدث تصفير للعداد">تصفير</span>
+                                                    @if($machine->approval_status === 'pending')
+                                                        <span class="mr-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold" title="بانتظار موافقة المدير — لم تُخصم من البير">بانتظار الموافقة</span>
+                                                    @elseif($machine->is_rollover)
+                                                        <span class="mr-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-semibold" title="حدث تصفير للعداد">تصفير</span>
                                                     @endif
                                                 </td>
                                                 <td class="px-4 py-3">{{ number_format($machine->price) }}</td>

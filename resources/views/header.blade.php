@@ -152,6 +152,9 @@
         <!-- روابط -->
         <div class="hidden md:flex items-center gap-6">
             <a href="{{ route('station.index') }}" class="nav-link {{ $isHome ? 'active' : '' }}">الرئيسية</a>
+            @can('machine_details.approve')
+                <a href="{{ route('machine_details.pending') }}" class="nav-link">اعتماد القرادات</a>
+            @endcan
             @if (auth()->user()->hasPermissionTo('users.view'))
                 <a href="{{ route('user.index') }}" class="nav-link {{ $isUsers ? 'active' : '' }}">المستخدمين</a>
             @endif
@@ -214,7 +217,7 @@
             </div>
             @endcanany
 
-            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account'])
+            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -238,6 +241,12 @@
                     @endcan
                     @can('reports.employee_account')
                         <a href="{{ route('reports.employee_account') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حساب الموظف</a>
+                    @endcan
+                    @can('reports.expense_list')
+                        <a href="{{ route('reports.expense_list') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير المصروفات</a>
+                    @endcan
+                    @can('reports.expense_summary')
+                        <a href="{{ route('reports.expense_summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص المصروفات</a>
                     @endcan
                     @can('reports.machine_report')
                         <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>
@@ -272,6 +281,9 @@
     <!-- قائمة الموبايل -->
     <div id="mobileMenu" class="md:hidden hidden bg-white rounded-lg shadow mt-2 p-4 space-y-3">
         <a href="{{ route('station.index') }}" class="mobile-link {{ $isHome ? 'active' : '' }}">الرئيسية</a>
+        @can('machine_details.approve')
+            <a href="{{ route('machine_details.pending') }}" class="mobile-link">اعتماد القرادات</a>
+        @endcan
         @if (auth()->user()->hasPermissionTo('users.view'))
             <a href="{{ route('user.index') }}" class="mobile-link {{ $isUsers ? 'active' : '' }}">المستخدمين</a>
         @endif
@@ -337,7 +349,7 @@
         @endcanany
 
         <!-- Dropdown للتقارير -->
-        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account'])
+        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 التقارير
@@ -377,6 +389,12 @@
                 @endcan
                 @can('reports.employee_account')
                     <a href="{{ route('reports.employee_account') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حساب الموظف</a>
+                @endcan
+                @can('reports.expense_list')
+                    <a href="{{ route('reports.expense_list') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير المصروفات</a>
+                @endcan
+                @can('reports.expense_summary')
+                    <a href="{{ route('reports.expense_summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص المصروفات</a>
                 @endcan
             </div>
         </div>

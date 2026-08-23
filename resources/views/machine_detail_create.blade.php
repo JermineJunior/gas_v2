@@ -493,10 +493,37 @@
                 return 9999999;
             }
 
+            function getUseRollover(item) {
+                let machineSelect = item.querySelector('.machine');
+                let mid = machineSelect?.value;
+                if (mid && stockMap[mid] && stockMap[mid].use_rollover !== undefined) {
+                    return !!stockMap[mid].use_rollover;
+                }
+                return true;
+            }
+
+            function setEndError(item, message) {
+                const endInput = item.querySelector('.end-counter');
+                if (!endInput) return;
+                let err = item.querySelector('.end-error');
+                if (!err) {
+                    err = document.createElement('p');
+                    err.className = 'end-error text-xs text-red-600 mt-1 font-semibold';
+                    endInput.after(err);
+                }
+                err.textContent = message;
+            }
+
+            function clearEndError(item) {
+                const err = item.querySelector('.end-error');
+                if (err) err.remove();
+            }
+
             function clearRolloverState(item) {
                 item.dataset.needsCorrection = '';
                 const end = item.querySelector('.end-counter');
                 if (end) end.classList.remove('border-red-500', 'border-2');
+                clearEndError(item);
             }
 
             function markDeclined(item) {
@@ -585,10 +612,25 @@
                     return;
                 }
 
-                // end < start → تأكيد التصفير
+                // end < start → تصفير أو رفض حسب إعداد الماكينة
+                if (!getUseRollover(item)) {
+                    // ماكينة لا تدعم التصفير: خطأ مباشر بدون نافذة تأكيد
+                    setEndError(item, 'عداد النهاية أقل من عداد البداية — تحقق من القيم المدخلة');
+                    markDeclined(item);
+                    return;
+                }
+
+                // تحذير إذا تجاوزت كمية التصفير الحد المسموح — ستحتاج موافقة المدير
+                const rolloverNet = (maxC - start) + end;
+                const allowed = stockMap[item.querySelector('.machine')?.value]?.allowed_rollover;
+                const needsApprovalWarning = (allowed !== null && allowed !== undefined && rolloverNet > Number(allowed))
+                    ? '<div style="color:#b45309;margin-top:8px;font-weight:bold">⚠ كمية التصفير تتجاوز الحد المسموح (' + formatWithCommas(allowed) + ' لتر) — سيتم إرسال القرادة لاعتماد المدير قبل خصمها</div>'
+                    : '';
+
                 Swal.fire({
                     title: 'عداد النهاية أقل من عداد البداية — هل حدث تصفير للعداد (دورة كاملة)؟',
                     icon: 'warning',
+                    html: needsApprovalWarning,
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',

@@ -48,6 +48,7 @@ return [
         'machine_details.create'  => 'إضافة عداد',
         'machine_details.edit'    => 'تعديل عداد',
         'machine_details.delete'  => 'حذف عداد',
+        'machine_details.approve' => 'اعتماد قرادات العدادات',
     ],
     'tunckers' => [
         'tunckers.view'       => 'عرض التناكر',
@@ -108,6 +109,8 @@ return [
         'warehouse_reports.summary'      => 'ملخص مخزون المستودعات',
         'warehouse_reports.consumption'  => 'تقرير استهلاك المستودعات',
         'reports.employee_account'      => 'تقرير حساب الموظف',
+        'reports.expense_list'          => 'تقرير المصروفات',
+        'reports.expense_summary'       => 'ملخص المصروفات',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',

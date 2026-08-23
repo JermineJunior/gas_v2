@@ -68,6 +68,8 @@ class ReportController extends Controller
             ->when($request->end_date, function ($query) use ($request) {
                 return $query->whereDate('date', '<=', $request->end_date);
             })
+            ->orderBy('date')
+            ->orderBy('id')
             ->get();
         return view('machine_detail_result', compact('operations', 'start_date', 'end_date', 'station'));
     }
@@ -181,6 +183,9 @@ class ReportController extends Controller
         $results = $machines->map(function ($machine) {
             $gunStats = \App\Models\MachineDetail::select('gun_id', DB::raw('SUM(net) as total_net'), DB::raw('SUM(total) as total_amount'), DB::raw('COUNT(*) as count'))
                 ->where('machine_id', $machine->id)
+                ->where(function ($q) {
+                    $q->whereNull('approval_status')->orWhere('approval_status', '!=', 'pending');
+                })
                 ->groupBy('gun_id')
                 ->get()
                 ->map(function ($row) {
@@ -272,6 +277,74 @@ class ReportController extends Controller
         ));
     }
 
+    // ── تقرير المصروفات (تفصيلي) ──
+    public function expense_list()
+    {
+        $stations = Auth::user()->stations;
+        return view('expense_report', compact('stations'));
+    }
+
+    public function expense_list_result(Request $request)
+    {
+        $request->validate(['station_id' => 'required|exists:stations,id']);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $query = \App\Models\ExpenseDetail::whereHas('expense', function ($q) use ($request) {
+                $q->where('station_id', $request->station_id)
+                    ->when($request->user_id, fn($u) => $u->where('user_id', $request->user_id));
+            })
+            ->with(['expense.user', 'approver']);
+
+        if ($startDate) $query->whereDate('date', '>=', $startDate);
+        if ($endDate) $query->whereDate('date', '<=', $endDate);
+
+        $details = $query->orderBy('date')->orderBy('id')->get();
+        $total = $details->sum('expense_amount');
+        $totalApproved = $details->where('status', 1)->sum('expense_amount');
+        $totalPending = $details->where('status', 0)->sum('expense_amount');
+
+        return view('expense_report_result', compact(
+            'details', 'total', 'totalApproved', 'totalPending', 'startDate', 'endDate'
+        ));
+    }
+
+    // ── ملخص المصروفات (حسب المستخدم والشهر) ──
+    public function expense_summary()
+    {
+        $stations = Auth::user()->stations;
+        return view('expense_summary', compact('stations'));
+    }
+
+    public function expense_summary_result(Request $request)
+    {
+        $request->validate(['station_id' => 'required|exists:stations,id']);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $baseQuery = \App\Models\ExpenseDetail::query()
+            ->join('expenses', 'expenses.id', '=', 'expense_details.expense_id')
+            ->where('expenses.station_id', $request->station_id)
+            ->when($startDate, fn($q) => $q->whereDate('expense_details.date', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('expense_details.date', '<=', $endDate));
+
+        // حسب الشهر (أعمدة مجمعة فقط لتجنب خطأ ONLY_FULL_GROUP_BY)
+        $byMonth = (clone $baseQuery)
+            ->groupBy(DB::raw("DATE_FORMAT(expense_details.date, '%Y-%m')"))
+            ->selectRaw("DATE_FORMAT(expense_details.date, '%Y-%m') as month, SUM(expense_details.expense_amount) as total")
+            ->orderBy('month')
+            ->get();
+
+        $grandTotal = $byMonth->sum('total');
+        $station = Station::find($request->station_id);
+
+        return view('expense_summary_result', compact(
+            'byMonth', 'grandTotal', 'station', 'startDate', 'endDate'
+        ));
+    }
+
     // ── Machine Report with Time Filter ──
     public function machine_report_time()
     {
@@ -295,7 +368,10 @@ class ReportController extends Controller
 
         $results = $machines->map(function ($machine) use ($startDate, $endDate) {
             $detailQuery = \App\Models\MachineDetail::select('gun_id', DB::raw('SUM(net) as total_net'), DB::raw('SUM(total) as total_amount'), DB::raw('COUNT(*) as count'))
-                ->where('machine_id', $machine->id);
+                ->where('machine_id', $machine->id)
+                ->where(function ($q) {
+                    $q->whereNull('approval_status')->orWhere('approval_status', '!=', 'pending');
+                });
             if ($startDate) $detailQuery->whereDate('date', '>=', $startDate);
             if ($endDate) $detailQuery->whereDate('date', '<=', $endDate);
             $gunStats = $detailQuery->groupBy('gun_id')->get()->map(function ($row) {

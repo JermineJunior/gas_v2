@@ -26,6 +26,33 @@ class StationSetupController extends Controller
         return view('station_setup', compact('station', 'stocks'));
     }
 
+    /**
+     * إعدادات العدادات على مستوى المحطة: الحد الافتراضي + تفعيل التصفير
+     * مع تطبيق جماعي على كل ماكينات المحطة
+     */
+    public function updateMeterSettings(Request $request, Station $station)
+    {
+        $request->validate([
+            'default_max_counter' => 'nullable|numeric|min:1',
+            'use_rollover'        => 'nullable|boolean',
+        ]);
+
+        $defaultMax = $request->default_max_counter;
+
+        $station->update([
+            'default_max_counter' => $defaultMax,
+        ]);
+
+        // التطبيق الجماعي على كل ماكينات المحطة (يتجاوز القيم الفردية)
+        $count = Machine::where('station_id', $station->id)->update([
+            'max_counter'  => $defaultMax ?: 9999999,
+            // مربع الاختيار غير المحدد لا يُرسل شيئاً — has() يفرّق بين محدد وغير محدد
+            'use_rollover' => $request->has('use_rollover'),
+        ]);
+
+        return back()->with('success', "تم تطبيق الإعدادات على {$count} ماكينة بنجاح");
+    }
+
     public function storeStock(Request $request, Station $station)
     {
         $request->validate([
@@ -51,13 +78,18 @@ class StationSetupController extends Controller
             'stock_id'    => 'required|exists:stocks,id',
             'station_id'  => 'required|exists:stations,id',
             'max_counter' => 'nullable|numeric|min:1',
+            'use_rollover'=> 'nullable|boolean',
         ]);
 
+        $station = Station::findOrFail($request->station_id);
+
         Machine::create([
-            'name'        => $request->name,
-            'stock_id'    => $request->stock_id,
-            'station_id'  => $request->station_id,
-            'max_counter' => $request->max_counter ?: 9999999,
+            'name'         => $request->name,
+            'stock_id'     => $request->stock_id,
+            'station_id'   => $request->station_id,
+            // الحد الافتراضي: القيمة المدخلة، وإلا إعداد المحطة، وإلا 9999999
+            'max_counter'  => $request->max_counter ?: ($station->default_max_counter ?: 9999999),
+            'use_rollover' => $request->has('use_rollover'),
         ]);
 
         return back()->with('success', 'تمت إضافة الماكينة بنجاح');
@@ -115,15 +147,18 @@ class StationSetupController extends Controller
     public function updateMachine(Request $request)
     {
         $request->validate([
-            'id'          => 'required|exists:machines,id',
-            'name'        => 'required|string|max:255',
-            'max_counter' => 'nullable|numeric|min:1',
+            'id'           => 'required|exists:machines,id',
+            'name'         => 'required|string|max:255',
+            'max_counter'  => 'nullable|numeric|min:1',
+            'use_rollover' => 'nullable|boolean',
         ]);
 
         $machine = Machine::findOrFail($request->id);
         $machine->update([
-            'name'        => $request->name,
-            'max_counter' => $request->max_counter ?: ($machine->max_counter ?: 9999999),
+            'name'         => $request->name,
+            'max_counter'  => $request->max_counter ?: ($machine->max_counter ?: 9999999),
+            // has() بدل boolean(): غياب الحقل في الطلب يعني أن الصندوق غير محدد
+            'use_rollover' => $request->has('use_rollover'),
         ]);
 
         return back()->with('success', 'تم تعديل الماكينة بنجاح');

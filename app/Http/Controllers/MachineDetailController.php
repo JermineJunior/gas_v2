@@ -22,7 +22,7 @@ class MachineDetailController extends Controller
         return (float) str_replace(',', '', (string) $value);
     }
 
-    private function computeReading(float $start, float $end, float $maxCounter, string $machineName): array
+    private function computeReading(float $start, float $end, float $maxCounter, string $machineName, bool $useRollover = true, ?float $allowedRollover = null): array
     {
         if ($start < 0 || $end < 0) {
             throw new \Illuminate\Validation\ValidationException(
@@ -40,11 +40,24 @@ class MachineDetailController extends Controller
             );
         }
 
-        // end >= start: قراءة عادية | end < start: حدث تصفير للعداد
-        $isRollover = $end < $start;
-        $net = $isRollover ? (($maxCounter - $start) + $end) : ($end - $start);
+        // end >= start: قراءة عادية
+        if ($end >= $start) {
+            return [$end - $start, false, false];
+        }
 
-        return [$net, $isRollover];
+        // end < start: تصفير العداد — مسموح فقط إذا كانت الماكينة تدعمه
+        if (!$useRollover) {
+            throw new \Illuminate\Validation\ValidationException(
+                validator([], []),
+                back()->withErrors("الماكينة \"{$machineName}\": عداد النهاية أقل من عداد البداية ولا يدعم هذا الماكينة حساب تصفير العداد")
+            );
+        }
+
+        // تصفير مقبول تلقائياً أو يحتاج موافقة حسب الحد المسموح
+        $rolloverNet = ($maxCounter - $start) + $end;
+        $requiresApproval = ($allowedRollover !== null && $rolloverNet > $allowedRollover);
+
+        return [$rolloverNet, true, $requiresApproval];
     }
 
     public function index(Station $station)
@@ -97,13 +110,20 @@ class MachineDetailController extends Controller
             $price = (float) str_replace(',', '', $request->price[$index]);
 
             try {
-                [$net, $isRollover] = $this->computeReading($start, $end, (float) $machine->max_counter, $machine->name);
+                [$net, $isRollover, $requiresApproval] = $this->computeReading(
+                    $start,
+                    $end,
+                    (float) $machine->max_counter,
+                    $machine->name,
+                    (bool) ($machine->use_rollover ?? true),
+                    $machine->allowed_rollover !== null ? (float) $machine->allowed_rollover : null
+                );
             } catch (\Illuminate\Validation\ValidationException $e) {
                 return redirect()->back()->withErrors($e->errors())->withInput();
             }
 
-            // فحص رصيد البير مقابل الصافي المحسوب من السيرفر
-            if ($machine->stock_id) {
+            // فحص رصيد البير مقابل الصافي المحسوب من السيرفر (فقط للصفوف التي تُخصم فوراً)
+            if (!$requiresApproval && $machine->stock_id) {
                 $stock = Stock::find($machine->stock_id);
                 if ($stock && $net > $stock->qty) {
                     return back()->withErrors(
@@ -122,11 +142,14 @@ class MachineDetailController extends Controller
                 'end_counter' => $end,
                 'net' => $net,
                 'is_rollover' => $isRollover,
+                'requires_approval' => $requiresApproval,
+                'approval_status' => $requiresApproval ? 'pending' : null,
                 'price' => $price,
                 'total' => $net * $price,
             ];
 
-            if ($machine->stock_id) {
+            // الخصم الفوري فقط للصفوف المقبولة تلقائياً — المعلقة تُخصم عند الاعتماد
+            if (!$requiresApproval && $machine->stock_id) {
                 $stock = Stock::find($machine->stock_id);
                 if ($stock) {
                     $stock->update(['qty' => $stock->qty - $net]);
@@ -151,7 +174,9 @@ class MachineDetailController extends Controller
     public function update(MachineDetail $machine_detail, Request $request)
     {
         $data = [];
-        $qty = $machine_detail->net;
+        // التعويض في المخزون فقط إذا كان الصف الأصلي مخصوماً فعلاً (غير معلق على الاعتماد)
+        $originalWasDeducted = !($machine_detail->requires_approval || $machine_detail->approval_status === 'pending');
+        $qty = $originalWasDeducted ? $machine_detail->net : 0;
         $station_id = $machine_detail->station_id;
         $machine_detail->delete();
 
@@ -166,7 +191,14 @@ class MachineDetailController extends Controller
             $price = (float) str_replace(',', '', $request->price[$index]);
 
             try {
-                [$net, $isRollover] = $this->computeReading($start, $end, (float) $machine->max_counter, $machine->name);
+                [$net, $isRollover, $requiresApproval] = $this->computeReading(
+                    $start,
+                    $end,
+                    (float) $machine->max_counter,
+                    $machine->name,
+                    (bool) ($machine->use_rollover ?? true),
+                    $machine->allowed_rollover !== null ? (float) $machine->allowed_rollover : null
+                );
             } catch (\Illuminate\Validation\ValidationException $e) {
                 return redirect()->back()->withErrors($e->errors())->withInput();
             }
@@ -181,16 +213,21 @@ class MachineDetailController extends Controller
                 'end_counter' => $end,
                 'net' => $net,
                 'is_rollover' => $isRollover,
+                'requires_approval' => $requiresApproval,
+                'approval_status' => $requiresApproval ? 'pending' : null,
                 'price' => $price,
                 'total' => $net * $price,
             ];
 
-            $stock = Stock::find($machine->stock_id);
+            if (!$requiresApproval) {
+                $stock = Stock::find($machine->stock_id);
 
-            if ($stock) {
-                $stock->update([
-                    'qty' => $stock->qty - $net + $qty,
-                ]);
+                if ($stock) {
+                    $stock->update([
+                        'qty' => $stock->qty - $net + $qty,
+                    ]);
+                    $qty = 0; // تعويض الصف الأصلي يُطبق مرة واحدة فقط
+                }
             }
         }
 
@@ -203,12 +240,95 @@ class MachineDetailController extends Controller
     {
         $machine = Machine::find($machine_detail->machine_id);
 
-        $stock = Stock::find($machine->stock_id);
+        // الصفوف المعلقة لم تُخصم من المخزون أصلاً — لا تعويض عند حذفها
+        if (!($machine_detail->requires_approval || $machine_detail->approval_status === 'pending')) {
+            $stock = Stock::find($machine->stock_id ?? null);
 
-        $stock->update([
-            'qty' => $stock->qty + $machine_detail->net,
-        ]);
+            if ($stock) {
+                $stock->update([
+                    'qty' => $stock->qty + $machine_detail->net,
+                ]);
+            }
+        }
+
         $machine_detail->delete();
         return back()->with('success', 'تم حذف العداد بنجاح');
+    }
+
+    /**
+     * قائمة القرادات المعلقة بانتظار الاعتماد (عبر المحطات)
+     */
+    public function pending()
+    {
+        if (!Auth::user()->can('machine_details.approve')) {
+            return back()->with('error', 'غير مصرح لك باعتماد القرادات');
+        }
+
+        $userStationIds = Auth::user()->stations()->pluck('station_id')->toArray();
+
+        $pending = MachineDetail::with(['machine', 'gun', 'station', 'employee'])
+            ->where('approval_status', 'pending')
+            ->whereIn('station_id', $userStationIds)
+            ->orderBy('date')
+            ->orderBy('id')
+            ->get();
+
+        return view('pending_machine_details', compact('pending'));
+    }
+
+    /**
+     * اعتماد قرادة معلقة — ينفّص الخصم المؤجل من المخزون
+     */
+    public function approve(MachineDetail $machine_detail)
+    {
+        if (!Auth::user()->can('machine_details.approve')) {
+            return back()->with('error', 'غير مصرح لك باعتماد القرادات');
+        }
+
+        // idempotent: الصف ليس معلقاً (معتمد/مرفوض/عادي) = لا شيء يُنفذ
+        if ($machine_detail->approval_status !== 'pending') {
+            return back()->with('success', 'الصف تمت معالجته مسبقاً');
+        }
+
+        $machine = Machine::find($machine_detail->machine_id);
+        $stock = $machine && $machine->stock_id ? Stock::find($machine->stock_id) : null;
+
+        if ($stock && $machine_detail->net > $stock->qty) {
+            return back()->with('error', 'لا يمكن الاعتماد: الكمية (' . number_format($machine_detail->net) . ' لتر) تتجاوز رصيد البير "' . $stock->name . '" المتوفر (' . number_format($stock->qty) . ' لتر)');
+        }
+
+        $machine_detail->update([
+            'approval_status' => 'approved',
+            'approved_by'     => Auth::id(),
+            'approved_at'     => now(),
+        ]);
+
+        if ($stock) {
+            $stock->update(['qty' => $stock->qty - $machine_detail->net]);
+        }
+
+        return back()->with('success', 'تم اعتماد القرادة وخصم الكمية من البير بنجاح');
+    }
+
+    /**
+     * رفض قرادة معلقة — لا يخصم أي كمية أبداً
+     */
+    public function reject(MachineDetail $machine_detail)
+    {
+        if (!Auth::user()->can('machine_details.approve')) {
+            return back()->with('error', 'غير مصرح لك باعتماد القرادات');
+        }
+
+        if ($machine_detail->approval_status !== 'pending') {
+            return back()->with('success', 'الصف تمت معالجته مسبقاً');
+        }
+
+        $machine_detail->update([
+            'approval_status' => 'rejected',
+            'approved_by'     => Auth::id(),
+            'approved_at'     => now(),
+        ]);
+
+        return back()->with('success', 'تم رفض القرادة');
     }
 }

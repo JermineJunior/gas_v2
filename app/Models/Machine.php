@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Machine extends Model
 {
-    protected $fillable = ['name', 'station_id', 'stock_id', 'max_counter'];
+    protected $fillable = ['name', 'station_id', 'stock_id', 'max_counter', 'use_rollover'];
 
     public function station(): BelongsTo
     {

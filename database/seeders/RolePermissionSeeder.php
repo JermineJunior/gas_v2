@@ -39,25 +39,77 @@ class RolePermissionSeeder extends Seeder
 
         // Create viewer role with view-only permissions
         $viewer = Role::firstOrCreate(['name' => 'مدير المحطة']);
-        $viewerPermissions = Permission::where('name', 'like', '%.view')->pluck('name')->toArray();
-        $viewerPermissions = array_merge($viewerPermissions, [
+        $viewerPermissions =  [
+            //stations
+            'stations.view',
+            'stations.edit',
+            //clients
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+            'clients.delete',
+            //machines
+            'machines.view',
+            'machines.create',
+             'machines.edit',
+             'machines.delete',
+            // machines العدادت
+            'machine_details.view',
+            'machine_details.create',
+            'machine_details.edit',
+            'machine_details.delete',
+            //tunckers
+            'tunckers.view',
+            'tunckers.create',
+            'tunckers.edit',
+            //deposits
+            'deposit_details.view',
+            'deposit_details.create',
+            'deposit_details.edit',
+            'deposit_details.delete',
+            //expenses
+            'expenses.view',
+            'expenses.create',
+            'expenses.update',
+            'expenses.delete',
+            //employees
+            'employees.view',
+            'employees.create',
+            'employees.edit',
+            'employees.delete',
+            //stocks
+            'stocks.view',
+            'stocks.create',
+            'stocks.edit',
+            'stocks.delete',
+            //revenue (customers)
+            'revenue.view',
+            'revenue.create',
+            'revenue.edit',
+            'revenue.delete',
+            //prices
+            'prices.view',
+            'prices.manage',
+            //reports
             'reports.debt',
             'reports.tuncker',
             'reports.machine_detail',
             'reports.deposit_detail',
-            'reports.supplier',
-            'reports.warehouse',
+            //'reports.supplier',
+         //   'reports.warehouse',
             'reports.machine_report',
             'reports.machine_report_time',
             'reports.stock_general',
             'reports.stock_movement',
-            'warehouse_reports.withdrawals',
-            'warehouse_reports.additions',
-            'warehouse_reports.transfers',
-            'warehouse_reports.summary',
-            'warehouse_reports.consumption',
+           // 'warehouse_reports.withdrawals',
+            //'warehouse_reports.additions',
+            //'warehouse_reports.transfers',
+            //'warehouse_reports.summary',
+            //'warehouse_reports.consumption',
             'reports.employee_account',
-        ]);
+            'reports.expense_list',
+            'reports.expense_summary',
+        ];
         $viewer->syncPermissions($viewerPermissions);
 
         // Assign roles to existing users based on type

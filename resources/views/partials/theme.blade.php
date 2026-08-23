@@ -200,6 +200,9 @@
     .bg-primary-softer { background-color: var(--color-primary-softer) !important; }
     .bg-accent { background-color: var(--color-accent) !important; }
     .bg-accent-soft { background-color: var(--color-accent-soft) !important; }
+    .bg-accent-strong { background-color: var(--color-accent-strong) !important; }
+    .hover\:bg-accent-strong:hover { background-color: var(--color-accent-strong) !important; }
+    .text-accent-strong { color: var(--color-accent-strong) !important; }
     .bg-surface { background-color: var(--color-surface) !important; }
     .bg-surface-2 { background-color: var(--color-surface-2) !important; }
 

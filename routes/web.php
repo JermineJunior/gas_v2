@@ -68,6 +68,17 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/reports/employee-account', [ReportController::class, 'employee_account'])->name('reports.employee_account');
     Route::post('report/employee-account', [ReportController::class, 'employee_account_result'])->name('reports.employee_account.result');
 
+    Route::get('/api/expense-users', function (\Illuminate\Http\Request $request) {
+        return \App\Models\User::whereIn('id',
+            \App\Models\Expense::where('station_id', $request->station_id)->select('user_id')
+        )->select('id', 'name')->get();
+    })->name('api.expense-users');
+
+    Route::get('/reports/expenses', [ReportController::class, 'expense_list'])->name('reports.expense_list');
+    Route::post('report/expenses', [ReportController::class, 'expense_list_result'])->name('reports.expense_list.result');
+    Route::get('/reports/expenses-summary', [ReportController::class, 'expense_summary'])->name('reports.expense_summary');
+    Route::post('report/expenses-summary', [ReportController::class, 'expense_summary_result'])->name('reports.expense_summary.result');
+
     
     Route::post('/machines/store', [MachineController::class, 'storeAjax'])->name('machines.store.ajax');
 
@@ -102,6 +113,8 @@ Route::group(['middleware' => 'auth'], function () {
                 'type' => $stock->type,
                 'type_text' => $stock->type == 1 ? 'جازولين' : 'بنزين',
                 'max_counter' => $machine->max_counter ?: 9999999,
+                'use_rollover' => (bool) ($machine->use_rollover ?? true),
+                'allowed_rollover' => $machine->allowed_rollover !== null ? (float) $machine->allowed_rollover : null,
             ],
         ]);
     })->name('api.machine-stock');
@@ -150,6 +163,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('machine_detail/{station}', [MachineDetailController::class, 'index'])->name('machine_detail.index');
     Route::get('machine_detail/{station}/create', [MachineDetailController::class, 'create'])->name('machine_detail.create');
     Route::post('machine_detail', [MachineDetailController::class, 'store'])->name('machine_detail.store');
+    Route::post('machine_detail/{machine_detail}/approve', [MachineDetailController::class, 'approve'])->name('machine_details.approve');
+    Route::post('machine_detail/{machine_detail}/reject', [MachineDetailController::class, 'reject'])->name('machine_details.reject');
+    Route::get('machine_details/pending', [MachineDetailController::class, 'pending'])->name('machine_details.pending');
     Route::get('machine_detail/{machine_detail}/edit', [MachineDetailController::class, 'edit'])->name('machine_detail.edit');
     Route::put('machine_detail/{machine_detail}', [MachineDetailController::class, 'update'])->name('machine_detail.update');
     Route::delete('machine_detail/{machine_detail}', [MachineDetailController::class, 'destroy'])->name('machine_detail.delete');
@@ -190,6 +206,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // === Station Setup (stocks + machines + guns in one screen) ===
     Route::get('station-setup/{station}', [StationSetupController::class, 'index'])->name('station_setup.index');
+    Route::post('station-setup/{station}/meter-settings', [StationSetupController::class, 'updateMeterSettings'])->name('station_setup.meter_settings');
     Route::post('station-setup/{station}/stock', [StationSetupController::class, 'storeStock'])->name('station_setup.stock.store');
     Route::post('station-setup/machine', [StationSetupController::class, 'storeMachine'])->name('station_setup.machine.store');
     Route::post('station-setup/gun', [StationSetupController::class, 'storeGun'])->name('station_setup.gun.store');

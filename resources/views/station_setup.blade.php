@@ -34,7 +34,7 @@
         gunForm: { machine_id: '', machine_name: '' },
         editStock: { id: '', name: '', type: '1', qty: 0 },
         openEditStock: false,
-        editMachine: { id: '', name: '' },
+        editMachine: { id: '', name: '', max_counter: 9999999, use_rollover: true },
         openEditMachine: false,
         editGun: { id: '', name: '' },
         openEditGun: false
@@ -52,7 +52,38 @@
                 @endcan
             </div>
 
-            <!-- بطاقات الابار -->
+            <!-- إعدادات العدادات -->
+        <div class="max-w-7xl mx-auto mb-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">إعدادات العدادات</h3>
+            <form action="{{ route('station_setup.meter_settings', $station->id) }}" method="POST" id="meterSettingsForm"
+                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">الحد الافتراضي للعداد</label>
+                    <input type="text" name="default_max_counter" id="defaultMaxCounter"
+                        value="{{ $station->default_max_counter ? number_format($station->default_max_counter) : '' }}"
+                        placeholder="100,000"
+                        class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 text-sm font-medium text-gray-600 cursor-pointer select-none">
+                        <input type="checkbox" name="use_rollover" value="1" checked
+                            class="w-4 h-4 accent-green-600">
+                        تفعيل حساب تصفير العداد افتراضيًا
+                    </label>
+                </div>
+                <div></div>
+                <div>
+                    <button type="submit"
+                        class="w-full bg-accent-strong text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition font-semibold">
+                        تطبيق على كل ماكينات المحطة
+                    </button>
+                </div>
+            </form>
+            <p class="text-xs text-gray-400 mt-2">التطبيق الجماعي يستبدل إعدادات الحد الأقصى والتصفير لكل ماكينات المحطة الحالية.</p>
+        </div>
+
+        <!-- بطاقات الابار -->
             <div class="space-y-6">
                 @forelse ($stocks as $stock)
                     @php
@@ -139,13 +170,16 @@
                                         <div class="relative bg-primary-softer border border-primary-soft rounded-lg px-4 py-4 text-center w-full sm:w-auto">
                                             @can('machines.edit')
                                                 <button type="button"
-                                                    @click="editMachine = { id: {{ $machine->id }}, name: '{{ $machine->name }}', max_counter: {{ $machine->max_counter ?: 9999999 }} }; openEditMachine = true;"
+                                                    @click="editMachine = { id: {{ $machine->id }}, name: '{{ $machine->name }}', max_counter: {{ $machine->max_counter ?: 9999999 }}, use_rollover: {{ $machine->use_rollover ? 'true' : 'false' }} }; openEditMachine = true;"
                                                     class="absolute top-1 left-1 text-green-600 hover:text-green-700 text-lg leading-none px-0.5"
                                                     title="تعديل / حذف الماكينة">✎</button>
                                             @endcan
                                             <p class="text-[10px] text-gray-400">ماكينة</p>
                                             <p class="font-bold text-gray-800">{{ $machine->name }}</p>
-                                            <p class="text-[10px] text-gray-500 mt-0.5">الحد الأقصى: {{ number_format($machine->max_counter ?: 9999999) }}</p>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">
+                                                الحد الأقصى: {{ number_format($machine->max_counter ?: 9999999) }}
+                                                {{ $machine->use_rollover ? '' : '· بدون تصفير' }}
+                                            </p>
                                         </div>
 
                                         <!-- المسدس الثاني (يسار في RTL / أسفل في الموبايل) -->
@@ -266,6 +300,13 @@
                             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
                         <p class="text-xs text-gray-400 mt-1">اتركه فارغاً لاستخدام القيمة الافتراضية 9,999,999</p>
                     </div>
+                    <div>
+                        <label class="flex items-center gap-2 text-sm font-medium text-gray-600 cursor-pointer select-none">
+                            <input type="checkbox" name="use_rollover" value="1" checked
+                                class="w-4 h-4 accent-green-600">
+                            تفعيل حساب تصفير العداد لهذه الماكينة
+                        </label>
+                    </div>
                     <div class="flex justify-end">
                         <button type="submit"
                             class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
@@ -371,6 +412,13 @@
                             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none">
                         <p class="text-xs text-gray-400 mt-1">القيمة الافتراضية 9,999,999</p>
                     </div>
+                    <div class="mt-4">
+                        <label class="flex items-center gap-2 text-sm font-medium text-gray-600 cursor-pointer select-none">
+                            <input type="checkbox" name="use_rollover" value="1" :checked="editMachine.use_rollover"
+                                class="w-4 h-4 accent-green-600">
+                            تفعيل حساب تصفير العداد لهذه الماكينة
+                        </label>
+                    </div>
                 </form>
                 <div class="flex justify-between items-center mt-2">
                     @can('machines.delete')
@@ -437,6 +485,41 @@
     @include('messages')
     <script>
         $(document).ready(function() {
+            // 🔹 تنسيق الحد الافتراضي للعداد بفواصل
+            function formatNumberInput(value) {
+                let cleaned = String(value || '').replace(/,/g, '');
+                if (cleaned === '') return '';
+                let n = parseFloat(cleaned);
+                if (isNaN(n)) return '';
+                return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+            }
+
+            $('#defaultMaxCounter').on('input', function() {
+                this.value = formatNumberInput(this.value);
+            });
+
+            // 🔹 تأكيد قبل التطبيق الجماعي لإعدادات العدادات
+            $('#meterSettingsForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                Swal.fire({
+                    title: 'تطبيق على كل ماكينات المحطة؟',
+                    text: 'سيتم استبدال إعدادات الحد الأقصى والتصفير لجميع الماكينات الحالية',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'نعم، تطبيق',
+                    cancelButtonText: 'إلغاء'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const input = form.querySelector('#defaultMaxCounter');
+                        if (input) input.value = String(input.value).replace(/,/g, '');
+                        form.submit();
+                    }
+                });
+            });
+
             $('.type').select2({
                 width: '100%',
                 placeholder: 'اختر نوع الوقود الموجود في البير',

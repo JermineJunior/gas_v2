@@ -119,8 +119,10 @@
                             <td class="p-3 text-center">{{ formatNumber($machine->end_counter) }} لتر</td>
                             <td class="p-3 text-center">
                                 {{ formatNumber($machine->net) }} لتر
-                                @if($machine->is_rollover)
-                                    <span class="mr-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold" title="حدث تصفير للعداد">تصفير</span>
+                                @if($machine->approval_status === 'pending')
+                                    <span class="mr-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold" title="بانتظار موافقة المدير — لم تُخصم من البير">بانتظار الموافقة</span>
+                                @elseif($machine->is_rollover)
+                                    <span class="mr-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-semibold" title="حدث تصفير للعداد">تصفير</span>
                                 @endif
                             </td>
                             <td class="p-3 text-center">{{ formatNumber($machine->price) }} جنيه</td>
@@ -134,12 +136,15 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td class="p-3 text-center" colspan="6">الاجماليات</td>
-                        <td class="p-3 text-center">{{ formatNumber($operations->sum('start_counter')) }} لتر</td>
-                        <td class="p-3 text-center">{{ formatNumber($operations->sum('end_counter')) }} لتر</td>
-                        <td class="p-3 text-center">{{ formatNumber($operations->sum('net')) }} لتر</td>
+                        @php
+                            $postedOperations = $operations->filter(fn($o) => $o->approval_status !== 'pending');
+                        @endphp
+                        <td class="p-3 text-center" colspan="6">الاجماليات (بدون المعلقة)</td>
+                        <td class="p-3 text-center">{{ formatNumber($postedOperations->sum('start_counter')) }} لتر</td>
+                        <td class="p-3 text-center">{{ formatNumber($postedOperations->sum('end_counter')) }} لتر</td>
+                        <td class="p-3 text-center">{{ formatNumber($postedOperations->sum('net')) }} لتر</td>
                         <td></td>
-                        <td class="p-3 text-center">{{ formatNumber($operations->sum('total')) }} جنيه</td>
+                        <td class="p-3 text-center">{{ formatNumber($postedOperations->sum('total')) }} جنيه</td>
                     </tr>
                 </tfoot>
             </table>
