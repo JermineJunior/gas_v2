@@ -3,7 +3,7 @@
 @section('title', $station->name . ' - تسجيل بيانات الوقود')
 
 @section('styles')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('vendor/select2/css/select2.min.css') }}" rel="stylesheet" />
 
     <style>
         .text-danger {
@@ -163,7 +163,7 @@
 
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('vendor/select2/js/select2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ URL::asset('form_validation/jquery.form.js') }}"></script>
     <script src="{{ URL::asset('form_validation/jquery.validate.min.js') }}"></script>

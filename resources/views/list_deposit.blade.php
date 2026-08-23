@@ -5,7 +5,7 @@
 @section('body-class', 'bg-gray-100 min-h-screen p-6')
 
 @section('styles')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('vendor/select2/css/select2.min.css') }}" rel="stylesheet" />
     <style>
         .select2-container .select2-selection--multiple {
             border-radius: 0.5rem;
@@ -151,7 +151,7 @@
 
     <!-- jQuery + Select2 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('vendor/select2/js/select2.min.js') }}"></script>
 
     <script>
         function toggleCollapse(id) {

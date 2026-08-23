@@ -6,7 +6,7 @@
 
 @section('styles')
     <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('vendor/select2/css/select2.min.css') }}" rel="stylesheet" />
 
     <style>
         .select2-container .select2-selection--single {
@@ -205,7 +205,7 @@
 @section('scripts')
     <!-- jQuery + Select2 + SweetAlert2 JS -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('vendor/select2/js/select2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @include('messages')
     <script>
