@@ -112,12 +112,13 @@
                                                 @endcanany
                                             </tr>
                                         @endforeach
-                                        <tr class="border-b hover:bg-gray-200">
+                                        {{-- Todo issue here fix  --}}
+                                       {{--  <tr class="border-b hover:bg-gray-200">
                                             <td class="px-4 py-3 text-center" colspan="6">الاجماليات</td>
                                             <td>{{ number_format($machine->sum('net')) }}</td>
                                             <td></td>
                                             <td>{{ number_format($machine->sum('total')) }}</td>
-                                        </tr>
+                                        </tr> --}}
                                     </tbody>
                                 </table>
                             </div>

@@ -22,6 +22,12 @@ class MachineDetailController extends Controller
         return (float) str_replace(',', '', (string) $value);
     }
 
+    private function cleanFk($value): ?int
+    {
+        $v = trim((string) ($value ?? ''));
+        return $v !== '' && $v !== '0' ? (int) $v : null;
+    }
+
     private function computeReading(float $start, float $end, float $maxCounter, string $machineName, bool $useRollover = true, ?float $allowedRollover = null): array
     {
         if ($start < 0 || $end < 0) {
@@ -97,17 +103,21 @@ class MachineDetailController extends Controller
             'station_id' => 'required',
         ]);
 
-        $data = [];
-
+        // المرحلة 1: حساب جميع القراءات والتحقق من صحتها (بدون تعديل أي شيء)
+        $rows = [];
         foreach ($request->machine_id as $index => $machineId) {
+            if (!$machineId) continue;
+
             $machine = Machine::find($machineId);
             if (!$machine) {
                 return back()->withErrors('الماكينة غير موجودة في الصف رقم ' . ($index + 1));
             }
 
-            $start = $this->parseCounter($request->start_counter[$index]);
-            $end = $this->parseCounter($request->end_counter[$index]);
-            $price = (float) str_replace(',', '', $request->price[$index]);
+            $start = $this->parseCounter($request->start_counter[$index] ?? '0');
+            $end = $this->parseCounter($request->end_counter[$index] ?? '0');
+            $price = (float) str_replace(',', '', $request->price[$index] ?? '0');
+
+            if ($start == 0 && $end == 0 && $price == 0) continue;
 
             try {
                 [$net, $isRollover, $requiresApproval] = $this->computeReading(
@@ -119,45 +129,82 @@ class MachineDetailController extends Controller
                     $machine->allowed_rollover !== null ? (float) $machine->allowed_rollover : null
                 );
             } catch (\Illuminate\Validation\ValidationException $e) {
-                return redirect()->back()->withErrors($e->errors())->withInput();
+                return $e->getResponse()->withInput();
             }
 
-            // فحص رصيد البير مقابل الصافي المحسوب من السيرفر (فقط للصفوف التي تُخصم فوراً)
-            if (!$requiresApproval && $machine->stock_id) {
-                $stock = Stock::find($machine->stock_id);
-                if ($stock && $net > $stock->qty) {
-                    return back()->withErrors(
-                        'الكمية المطلوبة (' . number_format($net) . ' لتر) للماكينة "' . $machine->name . '" تتجاوز رصيد البير "' . $stock->name . '" المتوفر (' . number_format($stock->qty) . ' لتر)'
-                    )->withInput();
-                }
-            }
-
-            $data[] = [
-                'employee_id' => $request->employee_id,
-                'date' => $request->date,
-                'station_id' => $request->station_id,
-                'machine_id' => $machine->id,
-                'gun_id' => $request->gun_id[$index],
-                'start_counter' => $start,
-                'end_counter' => $end,
-                'net' => $net,
-                'is_rollover' => $isRollover,
-                'requires_approval' => $requiresApproval,
-                'approval_status' => $requiresApproval ? 'pending' : null,
-                'price' => $price,
-                'total' => $net * $price,
+            $rows[] = [
+                'index'              => $index,
+                'machine'            => $machine,
+                'start'              => $start,
+                'end'                => $end,
+                'price'              => $price,
+                'net'                => $net,
+                'isRollover'         => $isRollover,
+                'requiresApproval'   => $requiresApproval,
             ];
+        }
 
-            // الخصم الفوري فقط للصفوف المقبولة تلقائياً — المعلقة تُخصم عند الاعتماد
-            if (!$requiresApproval && $machine->stock_id) {
-                $stock = Stock::find($machine->stock_id);
-                if ($stock) {
-                    $stock->update(['qty' => $stock->qty - $net]);
-                }
+        if (empty($rows)) {
+            return back()->withErrors('لم يتم إدخال أي بيانات');
+        }
+
+        // المرحلة 2: فحص الرصيد لكل بير بشكل إجمالي قبل أي خصم
+        $stockDeductions = []; // stock_id => total deduction
+        foreach ($rows as $row) {
+            if ($row['requiresApproval']) continue;
+            $machine = $row['machine'];
+            if (!$machine->stock_id) continue;
+            if (!isset($stockDeductions[$machine->stock_id])) {
+                $stockDeductions[$machine->stock_id] = 0;
+            }
+            $stockDeductions[$machine->stock_id] += $row['net'];
+        }
+
+        foreach ($stockDeductions as $stockId => $totalDeduction) {
+            $stock = Stock::find($stockId);
+            if ($stock && $totalDeduction > $stock->qty) {
+                return back()->withErrors(
+                    'الكمية المطلوبة من بير "' . $stock->name . '" (' . number_format($totalDeduction) . ' لتر) تتجاوز الرصيد المتوفر (' . number_format($stock->qty) . ' لتر)'
+                )->withInput();
             }
         }
 
-        MachineDetail::insert($data);
+        // المرحلة 3: حفظ كل شيء في transaction واحد
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($rows, $request) {
+                $data = [];
+                foreach ($rows as $row) {
+                    $machine = $row['machine'];
+                    $data[] = [
+                        'employee_id'       => $request->employee_id,
+                        'date'              => $request->date ?: today()->toDateString(),
+                        'station_id'        => $request->station_id,
+                        'machine_id'        => $machine->id,
+                        'gun_id'            => $this->cleanFk($request->gun_id[$row['index']] ?? null),
+                        'start_counter'     => $row['start'],
+                        'end_counter'       => $row['end'],
+                        'net'               => $row['net'],
+                        'is_rollover'       => $row['isRollover'],
+                        'requires_approval' => $row['requiresApproval'],
+                        'approval_status'   => $row['requiresApproval'] ? 'pending' : null,
+                        'price'             => $row['price'],
+                        'total'             => $row['net'] * $row['price'],
+                    ];
+
+                    // الخصم الفوري فقط للصفوف المقبولة تلقائياً
+                    if (!$row['requiresApproval'] && $machine->stock_id) {
+                        $stock = Stock::find($machine->stock_id);
+                        if ($stock) {
+                            $stock->update(['qty' => $stock->qty - $row['net']]);
+                        }
+                    }
+                }
+                MachineDetail::insert($data);
+            });
+        } catch (\Exception $e) {
+            \Log::error('MachineDetail store failed: ' . $e->getMessage());
+            return back()->withErrors('خطأ في حفظ البيانات: ' . $e->getMessage())->withInput();
+        }
 
         return back()->with('success', 'تم ادخال العدادات بنجاح');
     }
@@ -173,22 +220,24 @@ class MachineDetailController extends Controller
 
     public function update(MachineDetail $machine_detail, Request $request)
     {
-        $data = [];
-        // التعويض في المخزون فقط إذا كان الصف الأصلي مخصوماً فعلاً (غير معلق على الاعتماد)
-        $originalWasDeducted = !($machine_detail->requires_approval || $machine_detail->approval_status === 'pending');
-        $qty = $originalWasDeducted ? $machine_detail->net : 0;
         $station_id = $machine_detail->station_id;
-        $machine_detail->delete();
 
+        // هل الصف الأصلي كان مخصوماً من المخزون؟
+        $originalWasDeducted = !($machine_detail->requires_approval || $machine_detail->approval_status === 'pending');
+
+        // المرحلة 1: حساب جميع القراءات الجديدة
+        $rows = [];
         foreach ($request->machine_id as $index => $machine_id) {
+            if (!$machine_id) continue;
+
             $machine = Machine::find($machine_id);
             if (!$machine) {
                 return back()->withErrors('الماكينة غير موجودة في الصف رقم ' . ($index + 1));
             }
 
-            $start = $this->parseCounter($request->start_counter[$index]);
-            $end = $this->parseCounter($request->end_counter[$index]);
-            $price = (float) str_replace(',', '', $request->price[$index]);
+            $start = $this->parseCounter($request->start_counter[$index] ?? '0');
+            $end = $this->parseCounter($request->end_counter[$index] ?? '0');
+            $price = (float) str_replace(',', '', $request->price[$index] ?? '0');
 
             try {
                 [$net, $isRollover, $requiresApproval] = $this->computeReading(
@@ -200,40 +249,107 @@ class MachineDetailController extends Controller
                     $machine->allowed_rollover !== null ? (float) $machine->allowed_rollover : null
                 );
             } catch (\Illuminate\Validation\ValidationException $e) {
-                return redirect()->back()->withErrors($e->errors())->withInput();
+                return $e->getResponse()->withInput();
             }
 
-            $data[] = [
-                'date' => today(),
-                'employee_id' => $request->employee_id,
-                'station_id' => $request->station_id,
-                'machine_id' => $machine->id,
-                'gun_id' => $request->gun_id[$index],
-                'start_counter' => $start,
-                'end_counter' => $end,
-                'net' => $net,
-                'is_rollover' => $isRollover,
-                'requires_approval' => $requiresApproval,
-                'approval_status' => $requiresApproval ? 'pending' : null,
-                'price' => $price,
-                'total' => $net * $price,
+            $rows[] = [
+                'index'            => $index,
+                'machine'          => $machine,
+                'start'            => $start,
+                'end'              => $end,
+                'price'            => $price,
+                'net'              => $net,
+                'isRollover'       => $isRollover,
+                'requiresApproval' => $requiresApproval,
             ];
+        }
 
-            if (!$requiresApproval) {
-                $stock = Stock::find($machine->stock_id);
+        if (empty($rows)) {
+            return back()->withErrors('لم يتم إدخال أي بيانات');
+        }
 
-                if ($stock) {
-                    $stock->update([
-                        'qty' => $stock->qty - $net + $qty,
-                    ]);
-                    $qty = 0; // تعويض الصف الأصلي يُطبق مرة واحدة فقط
-                }
+        // المرحلة 2: حساب صافي التغيير لكل بير (الجديد − الأصلي)
+        $stockChanges = []; // stock_id => net change
+        foreach ($rows as $row) {
+            $machine = $row['machine'];
+            if (!$machine->stock_id) continue;
+            if (!isset($stockChanges[$machine->stock_id])) {
+                $stockChanges[$machine->stock_id] = 0;
+            }
+            // الصفوف غير المعلقة تُخصم
+            if (!$row['requiresApproval']) {
+                $stockChanges[$machine->stock_id] += $row['net'];
             }
         }
 
-        MachineDetail::insert($data);
+        // تعويض الصف الأصلي إذا كان مخصوماً
+        if ($originalWasDeducted && $machine_detail->machine) {
+            $origStockId = $machine_detail->machine->stock_id;
+            if ($origStockId) {
+                if (!isset($stockChanges[$origStockId])) {
+                    $stockChanges[$origStockId] = 0;
+                }
+                // نطرح الأصلي لأننا سنضيف الجديد: net_change = new - old
+                $stockChanges[$origStockId] -= $machine_detail->net;
+            }
+        }
 
-        return redirect()->route('machine_detail.index', $station_id)->with('success', 'تم تحديث  العدادات بنجاح');
+        // فحص الرصيد: هل سيصبح أي بير بالسالب؟
+        foreach ($stockChanges as $stockId => $change) {
+            if ($change <= 0) continue;
+            $stock = Stock::find($stockId);
+            if ($stock && $change > $stock->qty) {
+                return back()->withErrors(
+                    'الكمية المطلوبة من بير "' . $stock->name . '" (' . number_format($change) . ' لتر) تتجاوز الرصيد المتوفر (' . number_format($stock->qty) . ' لتر)'
+                )->withInput();
+            }
+        }
+
+        // المرحلة 3: حفظ كل شيء في transaction
+        \Illuminate\Support\Facades\DB::transaction(function () use ($rows, $request, $machine_detail, $originalWasDeducted) {
+            // حذف الصف الأصلي
+            if ($originalWasDeducted) {
+                $origMachine = Machine::find($machine_detail->machine_id);
+                if ($origMachine && $origMachine->stock_id) {
+                    $stock = Stock::find($origMachine->stock_id);
+                    if ($stock) {
+                        $stock->update(['qty' => $stock->qty + $machine_detail->net]);
+                    }
+                }
+            }
+            $machine_detail->delete();
+
+            // إدراج الصفوف الجديدة وخصم المخزون
+            $data = [];
+            foreach ($rows as $row) {
+                $machine = $row['machine'];
+                $data[] = [
+                    'date'              => $request->date ?? today(),
+                    'employee_id'       => $request->employee_id,
+                    'station_id'        => $request->station_id,
+                    'machine_id'        => $machine->id,
+                    'gun_id'            => $this->cleanFk($request->gun_id[$row['index']] ?? null),
+                    'start_counter'     => $row['start'],
+                    'end_counter'       => $row['end'],
+                    'net'               => $row['net'],
+                    'is_rollover'       => $row['isRollover'],
+                    'requires_approval' => $row['requiresApproval'],
+                    'approval_status'   => $row['requiresApproval'] ? 'pending' : null,
+                    'price'             => $row['price'],
+                    'total'             => $row['net'] * $row['price'],
+                ];
+
+                if (!$row['requiresApproval'] && $machine->stock_id) {
+                    $stock = Stock::find($machine->stock_id);
+                    if ($stock) {
+                        $stock->update(['qty' => $stock->qty - $row['net']]);
+                    }
+                }
+            }
+            MachineDetail::insert($data);
+        });
+
+        return redirect()->route('machine_detail.index', $station_id)->with('success', 'تم تحديث العدادات بنجاح');
     }
 
     public function destroy(MachineDetail $machine_detail)

@@ -31,11 +31,6 @@
 
     @yield('content')
 
-    @hasSection('no_header')
-    @else
-        @include('messages')
-    @endif
-
     {{-- مودال الملف التعريفي (متاح لكل مستخدم مسجل) --}}
     <div x-data="{ show: false }" x-cloak x-on:open-modal.window="if($event.detail.id === 'profileModal') show = true"
         x-show="show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -83,6 +78,11 @@
     </div>
 
     @yield('scripts')
+
+    @hasSection('no_header')
+    @else
+        @include('messages')
+    @endif
 </body>
 
 </html>

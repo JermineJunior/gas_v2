@@ -47,7 +47,7 @@
                 <div id="stocksInfoContainer" class="mb-4 space-y-2"></div>
                 <!-- الفواتير -->
                 <div id="fuelInvoicesContainer" class="space-y-4">
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
                             <select name="employee_id" id="employee_id">
@@ -309,6 +309,7 @@
             const addInvoiceBtn = document.getElementById('addFuelInvoiceBtn');
             let machines = @json($machines);
             let stockMap = {};
+            let nextRowIndex = 1; // the initial HTML row is index 0
 
             function renderStocksInfo() {
                 const box = document.getElementById('stocksInfoContainer');
@@ -740,7 +741,7 @@
             if (addInvoiceBtn) {
                 addInvoiceBtn.addEventListener('click', () => {
                     const newItem = document.createElement('div');
-                    let index = document.querySelectorAll('.fuel-item').length;
+                    const index = nextRowIndex++;
                     newItem.className =
                         "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 pt-4 bg-primary-soft rounded-lg relative";
                     newItem.innerHTML = `
