@@ -111,22 +111,17 @@
             background: #f3f4f6;
             font-weight: bold;
         }
-
+        
         .total-row {
-            background: #065f46;
+            background: #5a78db;
             color: white;
             font-weight: bold;
         }
-
+    
         .total-row td {
-            border-color: #065f46;
-        }
+           color: #e8f7ff
+    }
 
-        .total-row {
-            background: #1e40af;
-            color: white important;
-            font-weight: bold;
-        }
 
         @media print {
             body {

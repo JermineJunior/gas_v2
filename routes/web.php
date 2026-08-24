@@ -154,7 +154,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('revenue', [RevenueController::class, 'store'])->name('revenue.store');
     Route::put('revenue/{detail}', [RevenueController::class, 'update'])->name('revenue.update');
     Route::delete('revenue/{detail}', [RevenueController::class, 'delete'])->name('revenue.delete');
-
+    // اضافة مديونية
     Route::post('/client/details', [ClientController::class, 'store_detail'])->name('client.details.store');
     Route::put('/client/details/{detail}', [ClientController::class, 'update_detail'])->name('client.details.update');
     Route::delete('/client/details/{detail}', [ClientController::class, 'delete_detail'])->name('client.details.delete');

@@ -176,7 +176,7 @@
 
 
         @if ($clients->isEmpty())
-            <p class="text-center text-gray-600 mt-6">لا يوجد عملاء مسجلة حالياً.</p>
+            <p class="text-center text-gray-600 mt-6">لا يوجد عملاء مسجلون حالياً.</p>
         @endif
 
         <!-- 🟦 مودال إضافة عميل جديد -->

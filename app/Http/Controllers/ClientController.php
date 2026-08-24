@@ -171,7 +171,7 @@ class ClientController extends Controller
             'Content-Disposition' => "attachment; filename=\"client-{$client->id}-account.pdf\"; filename*=UTF-8''" . rawurlencode($fileName),
         ]);
     }
-
+    // اضافة مديونية
     public function store_detail(Request $request)
     {
         $request->validate([

@@ -83,7 +83,7 @@ class MachineDetailController extends Controller
 
     public function create(Station $station)
     {
-        $machines = Machine::get();
+        $machines = Machine::where('station_id', $station->id)->get();
         $employees = Employee::where('station_id', $station->id)->get();
         $stocks = Stock::where('station_id', $station->id)->get();
         return view('machine_detail_create', compact('machines', 'station', 'employees', 'stocks'));

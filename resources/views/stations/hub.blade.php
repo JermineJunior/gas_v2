@@ -119,9 +119,9 @@
                 @can('expenses.view')
                     <a href="{{ route('expense.index', $station->id) }}" class="hub-sublink">قائمة المصروفات</a>
                 @endcan
-
+                {{--
                 <p class="px-3 pt-3 pb-1 text-xs font-bold text-gray-400">الحسابات</p>
-             {{--    @can('clients.view')
+                 @can('clients.view')
                     <a href="{{ route('client.station', $station->id) }}" class="hub-sublink">إدارة الحسابات لدى المحطة</a>
                 @endcan --}}
             </nav>
@@ -173,7 +173,7 @@
         <!-- المحتوى -->
         <main class="flex-1 min-w-0">
             <!-- إحصائيات سريعة لليوم -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white rounded-2xl shadow-lg p-5">
                     <p class="text-sm text-gray-500 mb-1">توريدات اليوم</p>
                     <p class="text-2xl font-bold text-green-700">{{ number_format($stats['deposits']) }} <span class="text-xs text-gray-400">ج.س</span></p>
@@ -186,13 +186,13 @@
                     <p class="text-sm text-gray-500 mb-1">صافي قراءات اليوم</p>
                     <p class="text-2xl font-bold text-blue-700">{{ number_format($stats['readings']) }} <span class="text-xs text-gray-400">لتر</span></p>
                 </div>
-                <div class="bg-white rounded-2xl shadow-lg p-5 {{ $stats['pending_approvals'] > 0 ? 'ring-2 ring-amber-300' : '' }}">
+               {{--  <div class="bg-white rounded-2xl shadow-lg p-5 {{ $stats['pending_approvals'] > 0 ? 'ring-2 ring-amber-300' : '' }}">
                     <p class="text-sm text-gray-500 mb-1">قراءات بانتظار الاعتماد</p>
                     <p class="text-2xl font-bold {{ $stats['pending_approvals'] > 0 ? 'text-amber-600' : 'text-gray-400' }}">{{ $stats['pending_approvals'] }}</p>
                     @if ($stats['pending_approvals'] > 0)
                         <a href="{{ route('machine_details.pending') }}" class="text-xs text-primary hover:underline">مراجعة الآن ←</a>
                     @endif
-                </div>
+                </div> --}}
             </div>
 
             <!-- نظرة عامة -->

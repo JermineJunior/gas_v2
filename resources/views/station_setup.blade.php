@@ -109,11 +109,11 @@
                                         + إضافة ماكينة
                                     </button>
                                 @endcan
-                                @can('stocks.edit')
-                                    <button type="button"
-                                        @click="
-                                            editStock = { id: {{ $stock->id }}, name: '{{ $stock->name }}', type: '{{ $stock->type }}', qty: {{ $stock->qty }} };
-                                            openEditStock = true;
+                                            @can('stocks.edit')
+                                            <button type="button"
+                                                @click="
+                                                editStock = {id:{{ $stock->id }}, name:'{{ $stock->name }}', type:'{{ $stock->type }}', qty:{{ $stock->qty ?? 0 }}};
+                                                openEditStock = true;
                                             setTimeout(() => { $('.type-edit').val(editStock.type).trigger('change'); }, 100);
                                         "
                                         class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition"
