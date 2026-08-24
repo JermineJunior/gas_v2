@@ -38,109 +38,58 @@
             <input type="hidden" value="{{ $station->id }}" name="station_id">
 
             <div class="mb-6">
-                <div class="flex justify-end items-center mb-4"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
+                <div class="flex justify-end items-center gap-2 mb-4"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
+                    <button type="button" id="addAllMachinesBtn"
+                        class="flex items-center bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700">
+                        إضافة جميع الماكينات
+                    </button>
                     <button type="button" id="addFuelInvoiceBtn"
                         class="flex items-center bg-primary-strong text-white px-3 py-2 rounded-lg hover:bg-primary-strong">
                         إضافة عداد جديد
                     </button>
                 </div>
                 <div id="stocksInfoContainer" class="mb-4 space-y-2"></div>
+
+                <!-- الموظف والتاريخ وسعر اللتر العام -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-primary-soft rounded-lg mb-4">
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
+                        <select name="employee_id" id="employee_id">
+                            <option value="">قم باختيار الموظف</option>
+                            @foreach ($employees as $employee)
+                                <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700"> التاريخ</label>
+                        <input type="date" name="date"
+                            class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">سعر اللتر العام (اختياري)</label>
+                        <input type="text" id="globalPrice" placeholder="يُطبّق على كل الصفوف"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+
                 <!-- الفواتير -->
                 <div id="fuelInvoicesContainer" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
+                    <div class="machine-picker grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-primary-soft rounded-lg relative">
+                        <button type="button" class="remove-btn absolute top-2 left-2 text-red-500">✖</button>
                         <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
-                            <select name="employee_id" id="employee_id">
-                                <option value="">قم باختيار الموظف</option>
-                                @foreach ($employees as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                            <label class="block mb-1 text-sm font-medium text-gray-700">الماكينة</label>
+                            <select class="picker-machine w-full">
+                                <option value="">اختر الماكينة</option>
+                                @foreach ($machines as $machine)
+                                    <option value="{{ $machine->id }}">{{ $machine->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700"> التاريخ</label>
-                            <input type="date" name="date"
-                                class="date w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-                        </div>
-
-                    </div>
-
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 bg-primary-soft rounded-lg relative">
-
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">الماكينات</label>
-                            <div class="flex items-center">
-                                {{-- زر الإضافة (تم تعطيله - الإضافة الآن من صفحة تهيئة المحطة)
-                                <button type="button"
-                                    class="add-machine-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                                --}}
-
-                                <select name="machine_id[0]"
-                                    class="machine w-full p-2 border border-gray-300 rounded-lg select2" required>
-                                    <option value="">اختر الماكينة</option>
-                                    @foreach ($machines as $machine)
-                                        <option value="{{ $machine->id }}">{{ $machine->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">المسدسات</label>
-                            <div class="flex items-center">
-                                {{-- زر الإضافة (تم تعطيله - الإضافة الآن من صفحة تهيئة المحطة)
-                                <button type="button"
-                                    class="add-gun-btn flex items-center justify-center bg-primary-strong text-white rounded-lg p-2 hover:bg-primary-strong transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                                --}}
-
-                                <select name="gun_id[0]"
-                                    class="gun w-full p-2 border border-gray-300 rounded-lg select2" required>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mr-5">
-                            <label class="block mb-1 text-sm font-medium text-gray-700">عداد البداية</label>
-                            <input type="text" name="start_counter[0]" placeholder="0"
-                                class="start-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-                        </div>
-
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">عداد النهاية</label>
-                            <input type="text" name="end_counter[0]" placeholder="0"
-                                class="end-counter w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-                        </div>
-
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">صافي اللتر</label>
-                            <input type="hidden" name="is_rollover[0]" value="0" class="is-rollover">
-                            <input type="text" name="net[0]" readonly
-                                class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
-                        </div>
-
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">سعر اللتر</label>
-                            <input type="text" name="price[0]" placeholder="0.00"
-                                class="price w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-                        </div>
-
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">الإجمالي</label>
-                            <input type="text" name="total[0]" readonly
-                                class="total w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                        <div class="md:col-span-2 flex items-end pb-1">
+                            <p class="text-xs text-gray-500">عند اختيار الماكينة ستُضاف قراءة لكل مسدس فيها تلقائيًا (مسدسان إذا كان لها مسدسان، ومسدس واحد إذا كان لها مسدس واحد).</p>
                         </div>
                     </div>
-
                 </div>
 
 
@@ -252,14 +201,9 @@
             let currentSelectGun = null;
 
             if ($.fn.select2) {
-                $('.machine').select2({
+                $('.picker-machine').select2({
                     width: '100%',
                     placeholder: 'اختر الماكينة'
-                });
-
-                $('.gun').select2({
-                    width: '100%',
-                    placeholder: 'اختر المسدس'
                 });
 
                 $('#employee_id').select2({
@@ -309,7 +253,112 @@
             const addInvoiceBtn = document.getElementById('addFuelInvoiceBtn');
             let machines = @json($machines);
             let stockMap = {};
-            let nextRowIndex = 1; // the initial HTML row is index 0
+            let nextRowIndex = 0; // كل صف قراءة يأخذ فهرسًا جديدًا عند إنشائه
+
+            function escapeHtml(str) {
+                return String(str ?? '').replace(/[&<>"']/g, s => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[s]));
+            }
+
+            function getGlobalPriceRaw() {
+                return cleanNumberRaw(document.getElementById('globalPrice')?.value || '');
+            }
+
+            function applyGlobalPriceToRows() {
+                const raw = getGlobalPriceRaw();
+                if (raw === '') return;
+                document.querySelectorAll('.fuel-item').forEach(item => {
+                    const priceInput = item.querySelector('.price');
+                    if (!priceInput) return;
+                    priceInput.value = formatWithCommas(raw);
+                    calculateRow(item);
+                });
+            }
+
+            const globalPriceEl = document.getElementById('globalPrice');
+            if (globalPriceEl) attachLiveFormatter(globalPriceEl, applyGlobalPriceToRows);
+
+            function fetchStockForMachine(machineId, rows) {
+                $.ajax({
+                    url: '{{ url("/machine/stock") }}/' + machineId,
+                    method: 'GET',
+                    success: function(data) {
+                        if (data.stock) {
+                            stockMap[machineId] = data.stock;
+                            rows.forEach(row => {
+                                const label = row.querySelector('.stock-label');
+                                if (label) label.textContent = 'البير: ' + data.stock.name;
+                            });
+                        } else {
+                            delete stockMap[machineId];
+                            rows.forEach(row => {
+                                const label = row.querySelector('.stock-label');
+                                if (label) label.textContent = 'بدون بير';
+                            });
+                        }
+                        renderStocksInfo();
+                    }
+                });
+            }
+
+            // صف قراءة جاهز: ماكينة ومسدس مثبّتان (لكل مسدس صف خاص به)
+            function buildReadingRow(index, machine, gun, priceRaw) {
+                const div = document.createElement('div');
+                div.className =
+                    "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 p-4 pt-8 bg-primary-soft rounded-lg relative";
+                div.innerHTML = `
+                    <button type="button" class="remove-btn absolute top-2 left-2 text-red-500">✖</button>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">الماكينة</label>
+                        <select class="machine w-full p-2 border border-gray-300 rounded-lg bg-gray-100" disabled>
+                            <option value="${machine.id}" selected>${escapeHtml(machine.name)}</option>
+                        </select>
+                        <input type="hidden" name="machine_id[${index}]" value="${machine.id}">
+                        <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">المسدس</label>
+                        <select class="gun w-full p-2 border border-gray-300 rounded-lg bg-gray-100" disabled>
+                            <option value="${gun.id}" selected>${escapeHtml(gun.name)}</option>
+                        </select>
+                        <input type="hidden" name="gun_id[${index}]" value="${gun.id}">
+                    </div>
+
+                    <div class="mr-5">
+                        <label>عداد البداية</label>
+                        <input type="text" name="start_counter[${index}]" placeholder="0" class="start-counter w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label>عداد النهاية</label>
+                        <input type="text" name="end_counter[${index}]" placeholder="0" class="end-counter w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label>صافي اللتر</label>
+                        <input type="hidden" name="is_rollover[${index}]" value="0" class="is-rollover">
+                        <input type="text" name="net[${index}]" readonly class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                    </div>
+
+                    <div>
+                        <label>سعر اللتر</label>
+                        <input type="text" name="price[${index}]" value="${priceRaw ? formatWithCommas(priceRaw) : ''}" class="price w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label>الإجمالي</label>
+                        <input type="text" name="total[${index}]" readonly class="total w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                    </div>
+                `;
+                return div;
+            }
 
             function renderStocksInfo() {
                 const box = document.getElementById('stocksInfoContainer');
@@ -710,7 +759,17 @@
                 const removeBtn = item.querySelector('.remove-btn');
                 if (removeBtn) {
                     removeBtn.addEventListener('click', function() {
+                        const mid = item.querySelector('.machine')?.value;
                         item.remove();
+                        // نظّف بيانات البير إذا لم تعد هناك صفوف تستخدم نفس الماكينة
+                        if (mid) {
+                            const stillUsed = Array.from(document.querySelectorAll('.fuel-item .machine'))
+                                .some(sel => String(sel.value) === String(mid));
+                            if (!stillUsed && stockMap[mid]) {
+                                delete stockMap[mid];
+                                renderStocksInfo();
+                            }
+                        }
                         updateGrandTotals();
                     });
                 }
@@ -737,79 +796,163 @@
                 return options;
             }
 
-            // --- إضافة فاتورة (إن شاء الله الكود دا موجود سابقاً) ---
+            // --- إضافة ماكينة (صف لكل مسدس فيها) ---
             if (addInvoiceBtn) {
                 addInvoiceBtn.addEventListener('click', () => {
-                    const newItem = document.createElement('div');
-                    const index = nextRowIndex++;
-                    newItem.className =
-                        "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 pt-4 bg-primary-soft rounded-lg relative";
-                    newItem.innerHTML = `
+                    const picker = document.createElement('div');
+                    picker.className =
+                        "machine-picker grid grid-cols-1 md:grid-cols-3 gap-4 p-4 pt-8 bg-primary-soft rounded-lg relative";
+                    picker.innerHTML = `
                         <button type="button" class="remove-btn absolute top-2 left-2 text-red-500">✖</button>
 
                         <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">الماكينات</label>
-                            <div class="flex items-center">
-                                {{-- زر الإضافة (معطل) --}}
-
-                                <select name="machine_id[${index}]" required class="machine w-full p-2 border border-gray-300 rounded-lg select2" required>
-                                    ${generateMachineOptions()}
-                                </select>
-                            </div>
-                            <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
+                            <label class="block mb-1 text-sm font-medium text-gray-700">الماكينة</label>
+                            <select class="picker-machine w-full">
+                                ${generateMachineOptions()}
+                            </select>
                         </div>
 
-                        <div>
-                            <label class="block mb-1 text-sm font-medium text-gray-700">المسدسات</label>
-                            <div class="flex items-center">
-                                {{-- زر الإضافة (معطل) --}}
-                                
-                                <select name="gun_id[${index}]" required class="gun w-full p-2 border border-gray-300 rounded-lg select2" required>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mr-5">
-                            <label>عداد البداية</label>
-                            <input type="text" name="start_counter[${index}]" class="start-counter w-full p-2 border border-gray-300 rounded-lg">
-                        </div>
-
-                        <div>
-                            <label>عداد النهاية</label>
-                            <input type="text" name="end_counter[${index}]" class="end-counter w-full p-2 border border-gray-300 rounded-lg">
-                        </div>
-
-                        <div>
-                            <label>صافي اللتر</label>
-                            <input type="hidden" name="is_rollover[${index}]" value="0" class="is-rollover">
-                            <input type="text" name="net[${index}]" readonly class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
-                        </div>
-
-                        <div>
-                            <label>السعر</label>
-                            <input type="text" name="price[${index}]" class="price w-full p-2 border border-gray-300 rounded-lg">
-                        </div>
-
-                        <div>
-                            <label>الإجمالي</label>
-                            <input type="text" name="total[${index}]" readonly class="total w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                        <div class="md:col-span-2 flex items-end pb-1">
+                            <p class="text-xs text-gray-500">عند اختيار الماكينة ستُضاف قراءة لكل مسدس فيها تلقائيًا.</p>
                         </div>
                     `;
 
-                    container.appendChild(newItem);
+                    container.appendChild(picker);
 
                     if ($.fn.select2) {
-                        $(newItem).find('select.select2, select').first().select2({
+                        $(picker).find('.picker-machine').select2({
                             placeholder: 'اختر الماكينة',
                             width: '100%'
                         });
-
-                        $(newItem).find('select.select2, select').last().select2({
-                            placeholder: 'اختر المسدس',
-                            width: '100%'
-                        });
                     }
-                    attachInvoiceEvents(newItem);
+                });
+            }
+
+            // 🔹 إنشاء صفوف قراءة لماكينة (صف لكل مسدس) وإضافتها للحاوية
+            function createRowsForMachine(machine, guns) {
+                const priceRaw = getGlobalPriceRaw();
+                const rows = guns.map(gun => buildReadingRow(nextRowIndex++, machine, gun, priceRaw));
+                rows.forEach(row => {
+                    container.appendChild(row);
+                    attachInvoiceEvents(row);
+                });
+                fetchStockForMachine(machine.id, rows);
+                updateGrandTotals();
+            }
+
+            // الماكينات المُضافة بالفعل (عبر صفوف القراءة الحالية)
+            function getAddedMachineIds() {
+                return Array.from(document.querySelectorAll('.fuel-item input[name^="machine_id"]'))
+                    .map(inp => String(inp.value));
+            }
+
+            // 🔹 عند اختيار الماكينة: أنشئ صفًا لكل مسدس فيها
+            $(document).on('change', '.picker-machine', function() {
+                const machineId = this.value;
+                const picker = this.closest('.machine-picker');
+                if (!machineId || !picker) return;
+
+                const machine = machines.find(m => String(m.id) === String(machineId));
+                if (!machine) return;
+
+                $.ajax({
+                    url: '{{ route('gun.getGun') }}',
+                    method: 'GET',
+                    data: {
+                        machine_id: machineId,
+                        station_id: {{ $station->id }},
+                    },
+                    success: function(data) {
+                        if (!data.success || !data.guns || data.guns.length === 0) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'bottom-end',
+                                icon: 'error',
+                                title: 'لا توجد مسدسات لهذه الماكينة — أضف مسدسًا أولًا',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true
+                            });
+                            return;
+                        }
+
+                        createRowsForMachine(machine, data.guns);
+                        picker.remove();
+                    }
+                });
+            });
+
+            // زر إزالة منتقي الماكينة (قبل التحويل لصفوف قراءة)
+            $(document).on('click', '.machine-picker > .remove-btn', function() {
+                $(this).closest('.machine-picker').remove();
+            });
+
+            // 🔹 إضافة جميع الماكينات المتبقية دفعة واحدة
+            const addAllMachinesBtn = document.getElementById('addAllMachinesBtn');
+            if (addAllMachinesBtn) {
+                addAllMachinesBtn.addEventListener('click', () => {
+                    const addedIds = getAddedMachineIds();
+                    const remaining = machines.filter(m => !addedIds.includes(String(m.id)));
+
+                    if (remaining.length === 0) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'bottom-end',
+                            icon: 'info',
+                            title: 'تمت إضافة جميع الماكينات بالفعل',
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true
+                        });
+                        return;
+                    }
+
+                    // أزل منتقيات الماكينات الفارغة المتبقية
+                    document.querySelectorAll('.machine-picker').forEach(p => p.remove());
+
+                    addAllMachinesBtn.disabled = true;
+
+                    const noGuns = [];
+                    let chain = Promise.resolve();
+                    remaining.forEach(machine => {
+                        chain = chain.then(() => new Promise(resolve => {
+                            $.ajax({
+                                url: '{{ route('gun.getGun') }}',
+                                method: 'GET',
+                                data: {
+                                    machine_id: machine.id,
+                                    station_id: {{ $station->id }},
+                                },
+                                success: function(data) {
+                                    if (data.success && data.guns && data.guns.length > 0) {
+                                        createRowsForMachine(machine, data.guns);
+                                    } else {
+                                        noGuns.push(machine.name);
+                                    }
+                                    resolve();
+                                },
+                                error: function() {
+                                    noGuns.push(machine.name);
+                                    resolve();
+                                }
+                            });
+                        }));
+                    });
+
+                    chain.then(() => {
+                        addAllMachinesBtn.disabled = false;
+                        if (noGuns.length > 0) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'bottom-end',
+                                icon: 'warning',
+                                title: 'ماكينات بدون مسدسات لم تُضف: ' + noGuns.join('، '),
+                                showConfirmButton: false,
+                                timer: 5000,
+                                timerProgressBar: true
+                            });
+                        }
+                    });
                 });
             }
 
@@ -855,94 +998,6 @@
 
             document.querySelector('#addMachineModal > div').addEventListener('click', e => e.stopPropagation());
             document.querySelector('#addGunModal > div').addEventListener('click', e => e.stopPropagation());
-
-            $(document).on('change', '.machine', function() {
-                let machineId = $(this).val();
-                let stationId = {{ $station->id }};
-                let currentItem = $(this).closest('.fuel-item');
-                let prevId = this.dataset.prevMachine || '';
-                if (prevId && prevId !== machineId) delete stockMap[prevId];
-                this.dataset.prevMachine = machineId;
-
-                if (!machineId) {
-                    currentItem.find('.stock-label').text('');
-                    renderStocksInfo();
-                    return;
-                }
-
-                // جلب بيانات البير من الماكينة
-                $.ajax({
-                    url: '{{ url("/machine/stock") }}/' + machineId,
-                    method: 'GET',
-                    success: function(data) {
-                        if (data.stock) {
-                            stockMap[machineId] = data.stock;
-                            currentItem.find('.stock-label').text('البير: ' + data.stock.name);
-                        } else {
-                            delete stockMap[machineId];
-                            currentItem.find('.stock-label').text('بدون بير');
-                        }
-                        renderStocksInfo();
-                    }
-                });
-
-                $.ajax({
-                    url: '{{ route('gun.getGun') }}',
-                    method: 'GET',
-                    data: {
-                        machine_id: machineId,
-                        station_id: stationId,
-                    },
-                    success: function(data) {
-                        if (data.success) {
-
-                            let container = $(this).closest(
-                                '.fuel-item');
-                            let select = container.find('.gun');
-
-                            select.empty();
-
-                            data.guns.forEach(gun => {
-                                select.append(
-                                    `<option value="${gun.id}">${gun.name}</option>`
-                                );
-                            });
-
-                            select.trigger('change');
-                        }
-                    }.bind(this)
-                });
-
-                currentItem.find('.start-counter').val('');
-                currentItem.find('.end-counter').val('');
-                currentItem.find('.net').val('');
-                currentItem.find('.price').val('');
-                currentItem.find('.total').val('');
-                const flag0 = currentItem.find('.is-rollover');
-                if (flag0.length) flag0.val('0');
-                if (currentItem[0]) {
-                    delete currentItem[0].dataset.rolloverConfirmed;
-                    clearRolloverState(currentItem[0]);
-                }
-                calculateRow(currentItem[0]);
-            });
-
-            $(document).on('change', '.gun', function() {
-                let currentItem = $(this).closest('.fuel-item');
-
-                currentItem.find('.start-counter').val('');
-                currentItem.find('.end-counter').val('');
-                currentItem.find('.net').val('');
-                currentItem.find('.price').val('');
-                currentItem.find('.total').val('');
-                const flag1 = currentItem.find('.is-rollover');
-                if (flag1.length) flag1.val('0');
-                if (currentItem[0]) {
-                    delete currentItem[0].dataset.rolloverConfirmed;
-                    clearRolloverState(currentItem[0]);
-                }
-                calculateRow(currentItem[0]);
-            });
 
             $("#addMachineForm").validate({
                 rules: {
