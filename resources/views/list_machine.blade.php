@@ -19,6 +19,9 @@
                         <th class="px-4 py-3 text-right">سعر اللتر</th>
                         <th class="px-4 py-3 text-right">صافي اللتر</th>
                         <th class="px-4 py-3 text-right">الإجمالي</th>
+                        <th class="px-4 py-3 text-right">إجمالي المبيعات (نهاية الوردية)</th>
+                        <th class="px-4 py-3 text-right">المصروفات</th>
+                        <th class="px-4 py-3 text-right">الصافي المستحق على الموظف</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,10 +32,13 @@
                             <td class="px-4 py-3">{{ number_format($dayMachines->first()->price) }}</td>
                             <td class="px-4 py-3">{{ number_format($dayMachines->sum('net')) }}</td>
                             <td class="px-4 py-3">{{ number_format($dayMachines->sum('total')) }}</td>
+                            <td class="px-4 py-3">{{ number_format($summaries[$date]['shift_total'] ?? 0) }}</td>
+                            <td class="px-4 py-3">{{ number_format($summaries[$date]['expenses_total'] ?? 0) }}</td>
+                            <td class="px-4 py-3 font-bold text-primary-strong">{{ number_format($summaries[$date]['net_owed'] ?? 0) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-4">
+                            <td colspan="8" class="text-center bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-lg p-4">
                                 لا توجد أي عمليات متاحة حاليًا.
                             </td>
                         </tr>

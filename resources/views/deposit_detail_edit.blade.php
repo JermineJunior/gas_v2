@@ -44,6 +44,32 @@
             @method('PUT')
             <input type="hidden" value="{{ $deposit->station_id }}" name="station_id">
 
+            <!-- ملخص مطابقة الوردية (للعرض فقط) -->
+            <div class="mb-6 bg-primary-softer border border-primary-soft rounded-xl p-4">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                    <h3 class="text-base font-bold text-heading">ملخص نهاية الوردية — {{ $deposit->station->name }}</h3>
+                    <span class="text-xs text-gray-500">للمطابقة فقط — لا يؤثر على التوريد المُدخل</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">إجمالي المبيعات (نهاية الوردية)</p>
+                        <p id="shiftSales" class="text-lg font-bold text-heading">—</p>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">المصروفات</p>
+                        <p id="shiftExpenses" class="text-lg font-bold text-accent-strong">—</p>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">تم توريده</p>
+                        <p id="shiftDeposited" class="text-lg font-bold text-heading">—</p>
+                    </div>
+                    <div class="bg-primary-soft border border-primary rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">الصافي المستحق على الموظف</p>
+                        <p id="shiftNet" class="text-2xl font-extrabold text-primary-strong">—</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="mb-6">
                 <div class="flex justify-end items-center mb-4">
                     {{-- <h2 class="text-xl font-semibold text-gray-800">بنود التوريد</h2> --}}
@@ -125,6 +151,10 @@
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">التصفية</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
+                    <!-- القيم الخام المعاد بناؤها من السجل المخزّن — تُستخدم في إعادة الحساب، المعروض مشتق منها -->
+                    <input type="hidden" id="total_old_machine_raw" value="{{ $rawOldMachine }}">
+                    <input type="hidden" id="expenses_total_raw" value="{{ $formExpenses + $freshExpenses }}">
+                    <input type="hidden" id="total_new_machine_fresh" value="{{ $freshSum }}">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">المطلوب من العداد القديم</label>
                         <input id="total_old_machine" type="text" name="total_old_machine"
@@ -276,35 +306,9 @@
                 }
             });
 
-            $('#employee_id').on('change', function() {
-                let employee_id = $(this).val();
-                let station_id = {{ $deposit->station_id }};
-
-                $.ajax({
-                    url: "{{ route('employee.get_remaining') }}",
-                    method: "GET",
-                    data: {
-                        employee_id: employee_id,
-                        station_id: station_id
-                    },
-                    success: function(response) {
-                        $('#total_new_machine').val(
-                            Number(response.total_new_machine).toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })
-                        );
-
-                        $('#total_old_machine').val(
-                            Number(response.total_old_machine).toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })
-                        );
-                        calculateRemaining();
-                    }
-                });
-            });
+            // ملاحظة: في صفحة التعديل لا نجلب get_remaining عند تغيير الموظف —
+            // مكونات هذه التصفية مجمّدة من السجل المخزّن (قراءاتها سُوّت status=1)،
+            // والسيرفر يعيد الاحتساب من قيم مخزّنة موثوقة عند الحفظ.
 
             $(document).on('input', '.deposit-amount', function() {
                 let value = parseNumber($(this).val());
@@ -369,10 +373,15 @@
                 attachDepositRow(row, idx);
             });
 
-            function calculateRemaining() {
+            // نموذج الرصيد المرحَّل — نفس صيغة صفحة الإنشاء:
+            // القديم المعروض = القديم الخام (معاد بناؤه من السجل) − التوريد − المصروفات، والمتبقي = القديم + الجديد
+            const NEGATIVE_OLD_CLASSES = 'text-orange-600 dark:text-orange-400 font-semibold';
 
-                let oldMachine = parseNumber($('#total_old_machine').val()); // العداد القديم
-                let newMachine = parseNumber($('#total_new_machine').val()); // العداد الجديد
+            function calculateRemaining() {
+                let totalOldMachine = parseNumber($('#total_old_machine_raw').val()); // القيمة الخام المرحَّلة
+                let totalNewMachine = parseNumber($('#total_new_machine').val());
+                let expensesTotal = parseNumber($('#expenses_total_raw').val());
+                let freshNewMachine = parseNumber($('#total_new_machine_fresh').val()); // قراءات ظهرت بعد الإنشاء
 
                 let totalDeposits = 0;
 
@@ -381,11 +390,46 @@
                     totalDeposits += parseNumber($(this).val());
                 });
 
-                let remaining = (oldMachine + newMachine) - totalDeposits;
+                let oldDisplayed = totalOldMachine - totalDeposits - expensesTotal;
+                let newDisplayed = totalNewMachine + freshNewMachine;
+                let remaining = oldDisplayed + newDisplayed;
 
-                // عرض النتيجة مع تنسيق
+                let $oldField = $('#total_old_machine');
+                $oldField.val(formatWithCommas(oldDisplayed));
+                // سالب القديم حالة صحيحة (التوريد غطى أكثر من الرصيد القديم وحده) — تمييز بلون محايد لا بلون خطأ
+                $oldField.toggleClass(NEGATIVE_OLD_CLASSES, oldDisplayed < 0);
+
                 $('#remaining').val(formatWithCommas(remaining));
             }
+
+            // العرض الابتدائي يعكس الصيغة نفسها فور فتح الصفحة (يشمل القراءات الجديدة إن وُجدت)
+            calculateRemaining();
+
+            // 🔹 ملخص نهاية الوردية — يعيد الحساب عند تغيير التاريخ (عرض فقط)
+            const summaryStationId = {{ $deposit->station_id }};
+            const $shiftDateInput = $('input[name="date"]');
+
+            function refreshShiftSummary() {
+                const date = $shiftDateInput.val();
+                if (!date) {
+                    $('#shiftSales,#shiftExpenses,#shiftDeposited,#shiftNet').text('—');
+                    return;
+                }
+                $.ajax({
+                    url: '{{ route('api.shift-summary') }}',
+                    method: 'GET',
+                    data: { station_id: summaryStationId, date: date },
+                    success: function(res) {
+                        $('#shiftSales').text(formatWithCommas(res.shift_total));
+                        $('#shiftExpenses').text(formatWithCommas(res.expenses_total));
+                        $('#shiftDeposited').text(formatWithCommas(res.already_deposited));
+                        $('#shiftNet').text(formatWithCommas(res.net_owed));
+                    }
+                });
+            }
+
+            $shiftDateInput.on('change', refreshShiftSummary);
+            refreshShiftSummary();
         });
     </script>
 @endsection

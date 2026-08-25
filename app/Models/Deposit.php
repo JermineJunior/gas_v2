@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Deposit extends Model
 {
-    protected $fillable = ['station_id','employee_id','date','total_old_machine','total_new_machine','remaining'];
+    protected $fillable = ['station_id','employee_id','date','total_old_machine','total_new_machine','remaining','expenses_total'];
 
     public function station()
     {

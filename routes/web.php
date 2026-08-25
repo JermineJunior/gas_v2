@@ -104,6 +104,9 @@ Route::group(['middleware' => 'auth'], function () {
         return $query->select('id', 'name')->get();
     })->name('api.employees');
 
+    // ملخص مطابقة الوردية (مبيعات اليوم − مصروفاته) للعرض فقط في صفحات التوريدات
+    Route::get('/api/shift-summary', [DepositDetailController::class, 'shiftSummary'])->name('api.shift-summary');
+
     Route::get('/machine/stock/{machine}', function (\App\Models\Machine $machine) {
         $stock = $machine->stock;
         if (!$stock) {

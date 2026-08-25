@@ -38,6 +38,32 @@
             @csrf
             <input type="hidden" value="{{ $station->id }}" name="station_id">
 
+            <!-- ملخص مطابقة الوردية (للعرض فقط) -->
+            <div class="mb-6 bg-primary-softer border border-primary-soft rounded-xl p-4">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                    <h3 class="text-base font-bold text-heading">ملخص نهاية الوردية — {{ $station->name }}</h3>
+                    <span class="text-xs text-gray-500">للمطابقة فقط — لا يؤثر على التوريد المُدخل</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">إجمالي المبيعات (نهاية الوردية)</p>
+                        <p id="shiftSales" class="text-lg font-bold text-heading">—</p>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">المصروفات</p>
+                        <p id="shiftExpenses" class="text-lg font-bold text-accent-strong">—</p>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">تم توريده</p>
+                        <p id="shiftDeposited" class="text-lg font-bold text-heading">—</p>
+                    </div>
+                    <div class="bg-primary-soft border border-primary rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">الصافي المستحق على الموظف</p>
+                        <p id="shiftNet" class="text-2xl font-extrabold text-primary-strong">—</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="mb-6">
                 <div class="flex justify-end items-center mb-4">
                     {{-- <h2 class="text-xl font-semibold text-gray-800">بنود التوريد</h2> --}}
@@ -89,16 +115,19 @@
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">التصفية</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
+                    <!-- القيم الخام من get_remaining — تُستخدم في إعادة الحساب، المعروض مشتق منها -->
+                    <input type="hidden" id="total_old_machine_raw" value="0">
+                    <input type="hidden" id="expenses_total_raw" value="0">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">المطلوب من العداد القديم</label>
-                        <input id="total_old_machine" type="text" name="total_old_machine"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                        <input id="total_old_machine" type="text" name="total_old_machine" readonly
+                            class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100"
                             value="0">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">المطلوب من العداد الجديد</label>
-                        <input type="text" id="total_new_machine" name="total_new_machine"
-                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                        <input type="text" id="total_new_machine" name="total_new_machine" readonly
+                            class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100"
                             value="0">
 
                     </div>
@@ -238,9 +267,14 @@
                 }
             });
 
+            // عداد لطلبات get_remaining: تبديل سريع للموظف يطلق طلبات متداخلة،
+            // ونتجاهل أي رد وصل بعد طلب أحدث حتى لا تُكتب أرصدة قديمة
+            let remainingRequestId = 0;
+
             $('#employee_id').on('change', function() {
                 let employee_id = $(this).val();
                 let station_id = {{ $station->id }};
+                const reqId = ++remainingRequestId;
 
                 $.ajax({
                     url: "{{ route('employee.get_remaining') }}",
@@ -250,17 +284,18 @@
                         station_id: station_id
                     },
                     success: function(response) {
+                        if (reqId !== remainingRequestId) return; // رد قديم — تجاهله
+
+                        // القيم الخام مخزنة منفصلة عن المعروض؛ الحساب يشتق منها
+                        $('#total_old_machine_raw').val(response.total_old_machine);
+                        $('#expenses_total_raw').val(response.expenses_total);
+
                         $('#total_new_machine').val(
                             Number(response.total_new_machine).toLocaleString('en-US', {
                                 maximumFractionDigits: 2
                             })
                         );
 
-                        $('#total_old_machine').val(
-                            Number(response.total_old_machine).toLocaleString('en-US', {
-                                maximumFractionDigits: 2
-                            })
-                        );
                         calculateRemaining();
                     }
                 });
@@ -328,10 +363,15 @@
                 attachDepositRow(row, idx);
             });
 
-            function calculateRemaining() {
+            // نموذج الرصيد المرحَّل:
+            // القديم المعروض = القديم الخام − التوريد المُدخل − المصروفات (قد يكون سالباً بشكل صحيح)
+            // الجديد المعروض = القراءات غير المسوّاة كما هي، والمتبقي = القديم المعروض + الجديد
+            const NEGATIVE_OLD_CLASSES = 'text-orange-600 dark:text-orange-400 font-semibold';
 
-                let oldMachine = parseNumber($('#total_old_machine').val()); // العداد القديم
-                let newMachine = parseNumber($('#total_new_machine').val()); // العداد الجديد
+            function calculateRemaining() {
+                let totalOldMachine = parseNumber($('#total_old_machine_raw').val()); // القيمة الخام المرحَّلة
+                let totalNewMachine = parseNumber($('#total_new_machine').val());
+                let expensesTotal = parseNumber($('#expenses_total_raw').val());
 
                 let totalDeposits = 0;
 
@@ -340,25 +380,49 @@
                     totalDeposits += parseNumber($(this).val());
                 });
 
-                let remaining = (oldMachine + newMachine) - totalDeposits;
+                let oldDisplayed = totalOldMachine - totalDeposits - expensesTotal;
+                let newDisplayed = totalNewMachine;
+                let remaining = oldDisplayed + newDisplayed;
 
-                // عرض النتيجة مع تنسيق
+                let $oldField = $('#total_old_machine');
+                $oldField.val(formatWithCommas(oldDisplayed));
+                // سالب القديم حالة صحيحة (التوريد غطى أكثر من الرصيد القديم وحده) — تمييز بلون محايد لا بلون خطأ
+                $oldField.toggleClass(NEGATIVE_OLD_CLASSES, oldDisplayed < 0);
+
                 $('#remaining').val(formatWithCommas(remaining));
             }
 
-            $(document).on('input', '#total_old_machine', function() {
-                let value = $(this).val().replace(/,/g, ''); // نحذف الفواصل
-                let formatted = formatWithCommas(value);
-                $(this).val(formatted);
-                calculateRemaining();
-            });
+            // 🔹 ملخص نهاية الوردية — يعيد الحساب عند تغيير التاريخ (عرض فقط)
+            const summaryStationId = {{ $station->id }};
+            const $shiftDateInput = $('input[name="date"]');
 
-            $(document).on('input', '#total_new_machine', function() {
-                let value = $(this).val().replace(/,/g, ''); // نحذف الفواصل
-                let formatted = formatWithCommas(value);
-                $(this).val(formatted);
-                calculateRemaining();
-            });
+            // عداد لطلبات الملخص: تغيير التاريخ بسرعة يطلق طلبات متداخلة،
+            // ونتجاهل أي رد وصل بعد طلب أحدث حتى لا يكتب أرقاماً قديمة
+            let summaryRequestId = 0;
+
+            function refreshShiftSummary() {
+                const date = $shiftDateInput.val();
+                const reqId = ++summaryRequestId;
+                if (!date) {
+                    $('#shiftSales,#shiftExpenses,#shiftDeposited,#shiftNet').text('—');
+                    return;
+                }
+                $.ajax({
+                    url: '{{ route('api.shift-summary') }}',
+                    method: 'GET',
+                    data: { station_id: summaryStationId, date: date },
+                    success: function(res) {
+                        if (reqId !== summaryRequestId) return; // رد قديم — تجاهله
+                        $('#shiftSales').text(formatWithCommas(res.shift_total));
+                        $('#shiftExpenses').text(formatWithCommas(res.expenses_total));
+                        $('#shiftDeposited').text(formatWithCommas(res.already_deposited));
+                        $('#shiftNet').text(formatWithCommas(res.net_owed));
+                    }
+                });
+            }
+
+            $shiftDateInput.on('change', refreshShiftSummary);
+            refreshShiftSummary();
         });
     </script>
 @endsection

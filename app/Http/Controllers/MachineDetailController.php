@@ -84,7 +84,12 @@ class MachineDetailController extends Controller
                 return $group->sortBy('tuncker_no');
             });
 
-        return view('list_machine', compact('machines', 'station'));
+        // ملخص مطابقة الوردية لكل يوم (عرض فقط)
+        $summaries = $machines->mapWithKeys(function ($group, $date) use ($station) {
+            return [$date => MachineDetail::shiftSummary($station->id, $date)];
+        });
+
+        return view('list_machine', compact('machines', 'station', 'summaries'));
     }
 
     public function create(Station $station)

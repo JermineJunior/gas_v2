@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Deposit;
 use App\Models\DepositDetail;
 use App\Models\Employee;
+use App\Models\ExpenseDetail;
 use App\Models\MachineDetail;
 use App\Models\Station;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DepositDetailController extends Controller
 {
@@ -40,39 +42,127 @@ class DepositDetailController extends Controller
         return view('deposit_detail_create', compact('employees', 'station'));
     }
 
-    public function store(Request $request)
+    /**
+     * ملخص مطابقة الوردية لمحطة وتاريخ — للعرض فقط، بدون أي تحقق أو منع.
+     */
+    public function shiftSummary(Request $request)
     {
-        $data = [];
-
-        $deposit = Deposit::create([
-            'station_id' => $request->station_id,
-            'date' => $request->date,
-            'employee_id' => $request->employee_id,
-            'total_new_machine' => $request->total_new_machine,
-            'total_old_machine' => $request->total_old_machine,
-            'remaining' => $request->remaining,
+        $request->validate([
+            'station_id' => 'required|integer|exists:stations,id',
+            'date'       => 'required|date',
         ]);
 
-        foreach ($request->deposit_amount as $index => $amount) {
-            $data[] = [
-                'date' => $request->date,
-                'deposit_id' => $deposit->id,
-                'station_id' => $request->station_id,
-                'deposit_amount' => $amount,
-                'deposit_desc' => $request->deposit_desc[$index],
-            ];
-        }
+        return response()->json(
+            MachineDetail::shiftSummary((int) $request->station_id, $request->date)
+        );
+    }
 
-        DepositDetail::insert($data);
+    /**
+     * نموذج الرصيد المرحَّل لكل موظف/محطة:
+     * القديم الخام (آخر متبقٍ) + الجديد (القراءات غير المسوّاة) − التوريد المُدخل − مصروفات نفس التواريخ
+     * المتبقي الناتج هو ما يُقرأ كـ"قديم" في التصفية التالية، والقراءات المحسوبة تُسوّى (status 0→1)
+     * حتى لا تُعَدّ مرة أخرى. السيرفر هو المرجع: قيم العميل القديم/الجديد/المتبقي تُهمل.
+     */
+    public function store(Request $request)
+    {
+        $stationId  = $request->station_id;
+        $employeeId = $request->employee_id;
+
+        // القراءات غير المسوّاة لهذا الموظف في هذه المحطة (كل الأيام المتراكمة)
+        $unsettledMachines = MachineDetail::where('station_id', $stationId)
+            ->where('employee_id', $employeeId)
+            ->where('status', 0)
+            ->get();
+
+        $totalNewMachine = (float) $unsettledMachines->sum('total');
+        $unsettledDates  = $unsettledMachines->pluck('date')->unique()->all();
+
+        // المصروفات تُطابق بتقاطع التواريخ مع القراءات غير المسوّاة فقط (بلا employee_id ولا حالة تسوية)
+        $expensesTotal = $unsettledDates
+            ? (float) ExpenseDetail::whereHas('expense', function ($q) use ($stationId, $unsettledDates) {
+                $q->where('station_id', $stationId)
+                  ->whereIn('date', $unsettledDates);
+            })->sum('expense_amount')
+            : 0.0;
+
+        // القيمة المرحَّلة من آخر توريد سابق لنفس الموظف/المحطة
+        $rawOldMachine = (float) (Deposit::where('station_id', $stationId)
+            ->where('employee_id', $employeeId)
+            ->latest()
+            ->first()
+            ->remaining ?? 0);
+
+        $depositAmountSum = collect($request->deposit_amount ?? [])
+            ->sum(fn ($a) => (float) str_replace(',', '', $a));
+
+        // القديم المعروض = المرحَّل − التوريد المُدخل − المصروفات (قد يكون سالباً — حالة صحيحة تعني أن
+        // التوريد غطى أكثر من الرصيد القديم وحده)، والمتبقي = القديم المعروض + الجديد
+        $oldDisplayed = $rawOldMachine - $depositAmountSum - $expensesTotal;
+        $remaining    = $oldDisplayed + $totalNewMachine;
+
+        DB::transaction(function () use ($request, $unsettledMachines, $totalNewMachine, $oldDisplayed, $remaining, $expensesTotal) {
+            $deposit = Deposit::create([
+                'station_id'         => $request->station_id,
+                'date'               => $request->date,
+                'employee_id'        => $request->employee_id,
+                'total_new_machine'  => $totalNewMachine,
+                'total_old_machine'  => $oldDisplayed,
+                'remaining'          => $remaining,
+                'expenses_total'     => $expensesTotal,
+            ]);
+
+            $data = [];
+            foreach ($request->deposit_amount as $index => $amount) {
+            $data[] = [
+                'date'           => $request->date,
+                'deposit_id'     => $deposit->id,
+                'station_id'     => $request->station_id,
+                // تطبيع دفاعي: قد تصل القيم بفواصل التنسيق إن تجاوز عميل جافاسكربت
+                'deposit_amount' => str_replace(',', '', $amount),
+                'deposit_desc'   => $request->deposit_desc[$index],
+            ];
+            }
+
+            if (!empty($data)) {
+                DepositDetail::insert($data);
+            }
+
+            // ── تسوية القراءات المحسوبة الآن: status 0→1 حتى لا يعيدها get_remaining مستقبلاً ──
+            if ($unsettledMachines->isNotEmpty()) {
+                MachineDetail::whereIn('id', $unsettledMachines->pluck('id'))
+                    ->update(['status' => 1]);
+            }
+        });
 
         return back()->with('success', 'تم ادخال التوريدات بنجاح');
     }
 
     public function edit(Deposit $deposit)
     {
-        $deposit = $deposit->load(['station']);
-        $employees = Employee::get();
-        return view('deposit_detail_edit', compact('deposit', 'employees'));
+        $deposit = $deposit->load(['station', 'deposit_details']);
+        $station = $deposit->station;
+        $employees = Employee::where('station_id',$station->id)->get();
+
+        // إعادة بناء القديم الخام المرحَّل: المعروض المخزّن + بنود هذا التوريد + مصروفاته المخزّنة
+        $rawOldMachine = (float) $deposit->total_old_machine
+            + (float) $deposit->deposit_details->sum('deposit_amount')
+            + (float) ($deposit->expenses_total ?? 0);
+        $formExpenses = (float) ($deposit->expenses_total ?? 0);
+
+        // قراءات غير مسوّاة ظهرت بعد إنشاء التوريد — سيضمّها الحفظ القادم ويُسويها (عرض مسبق هنا)
+        $freshUnsettled = MachineDetail::where('station_id', $deposit->station_id)
+            ->where('employee_id', $deposit->employee_id)
+            ->where('status', 0)->get();
+        $freshDates = $freshUnsettled->pluck('date')->unique()->all();
+        $freshSum = (float) $freshUnsettled->sum('total');
+        $freshExpenses = $freshDates
+            ? (float) ExpenseDetail::whereHas('expense', function ($q) use ($deposit, $freshDates) {
+                $q->where('station_id', $deposit->station_id)
+                  ->whereIn('date', $freshDates);
+            })->sum('expense_amount')
+            : 0.0;
+
+        return view('deposit_detail_edit', compact('deposit', 'employees', 'rawOldMachine', 'formExpenses', 'freshSum', 'freshExpenses'));
     }
 
     public function update(Deposit $deposit, Request $request)
@@ -107,59 +197,96 @@ class DepositDetailController extends Controller
             return back()->withErrors(implode(' | ', $conflicts))->withInput();
         }
 
-        // ── تحديث رأس التوريد في مكانه (بدون حذف) ──
-        $deposit->update([
-            'station_id'         => $request->station_id,
-            'date'               => $request->date,
-            'employee_id'        => $request->employee_id,
-            'total_new_machine'  => $request->total_new_machine,
-            'total_old_machine'  => $request->total_old_machine,
-            'remaining'          => $request->remaining,
-        ]);
+        // ── إعادة احتساب مكونات التصفية من قيم مخزّنة موثوقة (لا نثق بقيم العميل) ──
+        // القديم الخام = المعروض المخزّن + بنود هذا التوريد قبل التعديل + مصروفاته المخزّنة
+        $existingSumBefore = (float) $existingDetails->sum('deposit_amount');
+        $rawOldMachine = (float) $deposit->total_old_machine
+            + $existingSumBefore
+            + (float) ($deposit->expenses_total ?? 0);
 
-        // ── مطابقة البنود: تعديل المعلق / إنشاء الجديد / تجاهل المعتمد ──
-        $keptIds = [];
+        // قراءات غير مسوّاة ظهرت بعد إنشاء التوريد: تُضم لهذه التصفية وتُسوّى معها
+        $freshUnsettled = MachineDetail::where('station_id', $deposit->station_id)
+            ->where('employee_id', $deposit->employee_id)
+            ->where('status', 0)->get();
+        $freshDates = $freshUnsettled->pluck('date')->unique()->all();
+        $freshExpenses = $freshDates
+            ? (float) ExpenseDetail::whereHas('expense', function ($q) use ($deposit, $freshDates) {
+                $q->where('station_id', $deposit->station_id)
+                  ->whereIn('date', $freshDates);
+            })->sum('expense_amount')
+            : 0.0;
 
-        foreach ($request->detail_ids as $index => $submittedId) {
-            $amount = str_replace(',', '', $request->deposit_amount[$index]);
-            $desc = $request->deposit_desc[$index] ?? '';
+        $depositAmountSum = collect($request->deposit_amount ?? [])
+            ->sum(fn ($a) => (float) str_replace(',', '', $a));
 
-            if ($submittedId && isset($existingDetails[(int) $submittedId])) {
-                $detail = $existingDetails[(int) $submittedId];
+        // نفس صيغة store(): القديم المعروض = الخام − التوريد − المصروفات، المتبقي = القديم المعروض + الجديد
+        $expensesTotal = (float) ($deposit->expenses_total ?? 0) + $freshExpenses;
+        $oldDisplayed  = $rawOldMachine - $depositAmountSum - $expensesTotal;
+        $newDisplayed  = (float) $deposit->total_new_machine + (float) $freshUnsettled->sum('total');
+        $remaining     = $oldDisplayed + $newDisplayed;
 
-                if ($detail->status == 1) {
-                    // بند معتمد: ثابت — لا يُعدّل ولا يُحذف
+        DB::transaction(function () use ($request, $deposit, $freshUnsettled, $expensesTotal, $oldDisplayed, $newDisplayed, $remaining, $existingDetails) {
+            // ── تحديث رأس التوريد في مكانه (بدون حذف) — بقيم محسوبة من السيرفر ──
+            $deposit->update([
+                'station_id'         => $request->station_id,
+                'date'               => $request->date,
+                'employee_id'        => $request->employee_id,
+                'total_new_machine'  => $newDisplayed,
+                'total_old_machine'  => $oldDisplayed,
+                'remaining'          => $remaining,
+                'expenses_total'     => $expensesTotal,
+            ]);
+
+            // ── مطابقة البنود: تعديل المعلق / إنشاء الجديد / تجاهل المعتمد ──
+            $keptIds = [];
+
+            foreach ($request->detail_ids as $index => $submittedId) {
+                $amount = str_replace(',', '', $request->deposit_amount[$index]);
+                $desc = $request->deposit_desc[$index] ?? '';
+
+                if ($submittedId && isset($existingDetails[(int) $submittedId])) {
+                    $detail = $existingDetails[(int) $submittedId];
+
+                    if ($detail->status == 1) {
+                        // بند معتمد: ثابت — لا يُعدّل ولا يُحذف
+                        $keptIds[] = $detail->id;
+                        continue;
+                    }
+
+                    // بند معلق: حدثه بشكل طبيعي
+                    $detail->update([
+                        'date'          => $request->date,
+                        'station_id'    => $request->station_id,
+                        'deposit_amount' => $amount,
+                        'deposit_desc'  => $desc,
+                    ]);
                     $keptIds[] = $detail->id;
-                    continue;
+                } else {
+                    // بند جديد
+                    $newDetail = DepositDetail::create([
+                        'date'           => $request->date,
+                        'deposit_id'     => $deposit->id,
+                        'station_id'     => $request->station_id,
+                        'deposit_amount' => $amount,
+                        'deposit_desc'   => $desc,
+                        'status'         => 0,
+                    ]);
+                    $keptIds[] = $newDetail->id;
                 }
-
-                // بند معلق: حدثه بشكل طبيعي
-                $detail->update([
-                    'date'          => $request->date,
-                    'station_id'    => $request->station_id,
-                    'deposit_amount' => $amount,
-                    'deposit_desc'  => $desc,
-                ]);
-                $keptIds[] = $detail->id;
-            } else {
-                // بند جديد
-                $newDetail = DepositDetail::create([
-                    'date'           => $request->date,
-                    'deposit_id'     => $deposit->id,
-                    'station_id'     => $request->station_id,
-                    'deposit_amount' => $amount,
-                    'deposit_desc'   => $desc,
-                    'status'         => 0,
-                ]);
-                $keptIds[] = $newDetail->id;
             }
-        }
 
-        // ── احذف البنود المعلقة المحذوفة من النموذج فقط (المعتمدة محمية أعلاه) ──
-        $deposit->deposit_details()
-            ->where('status', 0)
-            ->whereNotIn('id', $keptIds)
-            ->delete();
+            // ── احذف البنود المعلقة المحذوفة من النموذج فقط (المعتمدة محمية أعلاه) ──
+            $deposit->deposit_details()
+                ->where('status', 0)
+                ->whereNotIn('id', $keptIds)
+                ->delete();
+
+            // ── تسوية القراءات الجديدة المضمّة الآن: status 0→1 حتى لا تُعَد مستقبلاً ──
+            if ($freshUnsettled->isNotEmpty()) {
+                MachineDetail::whereIn('id', $freshUnsettled->pluck('id'))
+                    ->update(['status' => 1]);
+            }
+        });
 
         return redirect()->route('deposit_detail.index', $deposit->station_id)->with('success', 'تم تحديث  التوريدات بنجاح');
     }

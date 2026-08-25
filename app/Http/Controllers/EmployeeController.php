@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Deposit;
 use App\Models\Employee;
+use App\Models\ExpenseDetail;
 use App\Models\MachineDetail;
 use App\Models\Station;
 use Illuminate\Http\Request;
@@ -41,14 +42,35 @@ class EmployeeController extends Controller
         return back()->with('success', ' تم حذف الموظف بنجاح');
     }
 
+    /**
+     * مكونات التصفية لموظف في محطة — نموذج الرصيد المرحَّل:
+     * - total_new_machine: مجموع القراءات غير المسوّاة (status=0) لهذا الموظف في هذه المحطة
+     *   (ليست مقيدة بتاريخ — تشمل كل الأيام المتراكمة غير المسوّاة)
+     * - expenses_total: مجموع بنود المصروفات التي يطابق تاريخها إحدى تواريخ تلك القراءات
+     *   (المصروفات بلا employee_id ولا حالة تسوية، فالتطبيق بتقاطع التواريخ فقط)
+     * - total_old_machine: متبقي آخر توريد سابق لنفس الموظف/المحطة (0 إن لا يوجد)
+     */
     public function get_remaining(Request $request)
     {
-        $total_new_machine = MachineDetail::where('station_id', $request->station_id)->where('employee_id', $request->employee_id)->where('status', 0)->sum('total');
+        $unsettledMachines = MachineDetail::where('station_id', $request->station_id)
+            ->where('employee_id', $request->employee_id)
+            ->where('status', 0)
+            ->get();
+
+        $total_new_machine = $unsettledMachines->sum('total');
+        $unsettledDates = $unsettledMachines->pluck('date')->unique();
+
+        $expenses_total = ExpenseDetail::whereHas('expense', function ($q) use ($request, $unsettledDates) {
+                $q->where('station_id', $request->station_id)
+                  ->whereIn('date', $unsettledDates);
+            })->sum('expense_amount');
+
         $total_old_machine = Deposit::where('station_id', $request->station_id)->where('employee_id', $request->employee_id)->latest()->first()->remaining ?? 0;
 
         return response()->json([
             'total_new_machine' => $total_new_machine,
             'total_old_machine' => $total_old_machine,
+            'expenses_total' => $expenses_total,
         ]);
     }
 }
