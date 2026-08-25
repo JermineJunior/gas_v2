@@ -12,12 +12,13 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $clients = Client::whereUser_id(Auth::id())
+        $clients = Client::whereUser_id(Auth::id()) // should be per station not user
             ->withSum('details as total_sum', 'total')
             ->withSum('details as paid_sum', 'amount')
             ->addSelect(['last_payment_date' => Detail::selectRaw('MAX(date)')
                 ->whereColumn('client_id', 'clients.id')
                 ->where('amount', '>', 0)])
+                ->orderBy('created_at','desc')
             ->get();
         return view('client', compact('clients'));
     }

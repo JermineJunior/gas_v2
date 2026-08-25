@@ -171,13 +171,13 @@
                     <input type="hidden" name="detail_ids[]" value="">
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ المصروف</label>
-                        <input type="text" name="expense_amount[\${index}]" placeholder="0.00"
+                        <input type="text" name="expense_amount[${index}]" placeholder="0.00"
                             class="expense-amount w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">بيان المصروف</label>
-                        <input type="text" name="expense_desc[\${index}]" placeholder="مثال: صيانة مضخة"
+                        <input type="text" name="expense_desc[${index}]" placeholder="مثال: صيانة مضخة"
                             class="expense-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 

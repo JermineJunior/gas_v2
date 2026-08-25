@@ -84,16 +84,18 @@
                 </div>
 
                 <div id="depositContainer" class="space-y-3">
-                    <div class="fuel-item grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-primary-soft rounded-lg relative">
+                    <div class="fuel-item grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-primary-soft rounded-lg relative">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium text-gray-700">المحطة</label>
+                            <!-- المحطة والموظف ثابتان بعد الإنشاء — للعرض فقط، والقيمة تُرسل مخفية لاستكمال النموذج -->
+                            <input type="text" readonly value="{{ $deposit->station->name }}"
+                                class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> الموظف</label>
-                            <select name="employee_id" id="employee_id" @if($allApproved) disabled @endif>
-                                <option value="">قم باختيار الموظف</option>
-                                @foreach ($employees as $employee)
-                                    <option @selected($employee->id == $deposit->employee_id) value="{{ $employee->id }}">
-                                        {{ $employee->name }}</option>
-                                @endforeach
-                            </select>
+                            <input type="hidden" name="employee_id" value="{{ $deposit->employee_id }}">
+                            <input type="text" readonly value="{{ $deposit->employee->name ?? '' }}"
+                                class="w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700"> التاريخ</label>
@@ -206,10 +208,7 @@
     <script>
         $(document).ready(function() {
 
-            $('#employee_id').select2({
-                width: '100%',
-                placeholder: 'اختر اسم الموظف'
-            });
+            // لا يوجد select للموظف هنا — المحطة/الموظف حقول عرض فقط بقيم مخفية
 
             function formatWithCommas(num) {
                 if (num === null || num === '' || isNaN(Number(num))) return '';

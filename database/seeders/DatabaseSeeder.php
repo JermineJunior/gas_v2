@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder
         // Station::factory(10)->create();
 
         $this->call(StationTableSeeder::class);
+        $this->call(RolePermissionSeeder::class);
         $this->call(UserTableSeeder::class);
         // يجب أن يأتي بعد إنشاء المستخدمين ليتم ربط الأدوار بهم
-        $this->call(RolePermissionSeeder::class);
     }
 }

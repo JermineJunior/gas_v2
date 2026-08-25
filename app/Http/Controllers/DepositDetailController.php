@@ -141,7 +141,6 @@ class DepositDetailController extends Controller
     {
         $deposit = $deposit->load(['station', 'deposit_details']);
         $station = $deposit->station;
-        $employees = Employee::where('station_id',$station->id)->get();
 
         // إعادة بناء القديم الخام المرحَّل: المعروض المخزّن + بنود هذا التوريد + مصروفاته المخزّنة
         $rawOldMachine = (float) $deposit->total_old_machine
@@ -162,11 +161,20 @@ class DepositDetailController extends Controller
             })->sum('expense_amount')
             : 0.0;
 
-        return view('deposit_detail_edit', compact('deposit', 'employees', 'rawOldMachine', 'formExpenses', 'freshSum', 'freshExpenses'));
+        return view('deposit_detail_edit', compact('deposit', 'rawOldMachine', 'formExpenses', 'freshSum', 'freshExpenses'));
     }
 
     public function update(Deposit $deposit, Request $request)
     {
+        //  المحطة والموظف ثابتان بعد إنشاء التوريد (حقولا عرض فقط في النموذج، وقيمهما تُرسل مخفيتين).
+        // السبب: سلسلة الرصيد المرحَّل مبنية على زوج (موظف، محطة) لا يتغير —
+        // total_old_machine وremaining محسوبان من متبقيات توريدات سابقة لنفس الزوج،
+        // وتسوية القراءات (machine_details.status 0→1) تمت لهذا الزوج نفسه؛
+        // تغيير أحدهما بعد الحفظ يربط رصيداً مرحَّلاً بأصلٍ آخر فيفسد السلسلة كلها.
+        // لذلك نتجاهل أي station_id/employee_id يصل من الطلب ونثبّت قيم السجل الأصلي.
+        $stationId  = $deposit->station_id;
+        $employeeId = $deposit->employee_id;
+
         // مصفوفة معرفات البنود المرسلة (فارغة أو غائبة = بند جديد)
         $submittedIds = collect($request->input('detail_ids', []))
             ->map(fn($v) => $v ? (int) $v : null);
@@ -204,14 +212,14 @@ class DepositDetailController extends Controller
             + $existingSumBefore
             + (float) ($deposit->expenses_total ?? 0);
 
-        // قراءات غير مسوّاة ظهرت بعد إنشاء التوريد: تُضم لهذه التصفية وتُسوّى معها
-        $freshUnsettled = MachineDetail::where('station_id', $deposit->station_id)
-            ->where('employee_id', $deposit->employee_id)
+        // قراءات غير مسوّاة ظهرت بعد إنشاء التوريد: تُضم لهذه التصفية وتُسوّى معها (للزوج الأصلي الثابت)
+        $freshUnsettled = MachineDetail::where('station_id', $stationId)
+            ->where('employee_id', $employeeId)
             ->where('status', 0)->get();
         $freshDates = $freshUnsettled->pluck('date')->unique()->all();
         $freshExpenses = $freshDates
-            ? (float) ExpenseDetail::whereHas('expense', function ($q) use ($deposit, $freshDates) {
-                $q->where('station_id', $deposit->station_id)
+            ? (float) ExpenseDetail::whereHas('expense', function ($q) use ($stationId, $freshDates) {
+                $q->where('station_id', $stationId)
                   ->whereIn('date', $freshDates);
             })->sum('expense_amount')
             : 0.0;
@@ -225,12 +233,12 @@ class DepositDetailController extends Controller
         $newDisplayed  = (float) $deposit->total_new_machine + (float) $freshUnsettled->sum('total');
         $remaining     = $oldDisplayed + $newDisplayed;
 
-        DB::transaction(function () use ($request, $deposit, $freshUnsettled, $expensesTotal, $oldDisplayed, $newDisplayed, $remaining, $existingDetails) {
-            // ── تحديث رأس التوريد في مكانه (بدون حذف) — بقيم محسوبة من السيرفر ──
+        DB::transaction(function () use ($request, $deposit, $stationId, $employeeId, $freshUnsettled, $expensesTotal, $oldDisplayed, $newDisplayed, $remaining, $existingDetails) {
+            // ── تحديث رأس التوريد في مكانه (بدون حذف) — بقيم محسوبة من السيرفر، والزوج مثبّت على الأصل ──
             $deposit->update([
-                'station_id'         => $request->station_id,
+                'station_id'         => $stationId,
                 'date'               => $request->date,
-                'employee_id'        => $request->employee_id,
+                'employee_id'        => $employeeId,
                 'total_new_machine'  => $newDisplayed,
                 'total_old_machine'  => $oldDisplayed,
                 'remaining'          => $remaining,
@@ -256,7 +264,7 @@ class DepositDetailController extends Controller
                     // بند معلق: حدثه بشكل طبيعي
                     $detail->update([
                         'date'          => $request->date,
-                        'station_id'    => $request->station_id,
+                        'station_id'    => $stationId,
                         'deposit_amount' => $amount,
                         'deposit_desc'  => $desc,
                     ]);
@@ -266,7 +274,7 @@ class DepositDetailController extends Controller
                     $newDetail = DepositDetail::create([
                         'date'           => $request->date,
                         'deposit_id'     => $deposit->id,
-                        'station_id'     => $request->station_id,
+                        'station_id'     => $stationId,
                         'deposit_amount' => $amount,
                         'deposit_desc'   => $desc,
                         'status'         => 0,
