@@ -302,7 +302,7 @@
             function applyGlobalPriceToRows() {
                 const raw = getGlobalPriceRaw();
                 if (raw === '') return;
-                document.querySelectorAll('.fuel-item').forEach(item => {
+                document.querySelectorAll('.gun-fields').forEach(item => {
                     const priceInput = item.querySelector('.price');
                     if (!priceInput) return;
                     priceInput.value = formatWithCommas(raw);
@@ -313,77 +313,71 @@
             const globalPriceEl = document.getElementById('globalPrice');
             if (globalPriceEl) attachLiveFormatter(globalPriceEl, applyGlobalPriceToRows);
 
-            function fetchStockForMachine(machineId, rows) {
+            function fetchStockForMachine(machineId) {
                 $.ajax({
                     url: '{{ url("/machine/stock") }}/' + machineId,
                     method: 'GET',
                     success: function(data) {
                         if (data.stock) {
                             stockMap[machineId] = data.stock;
-                            rows.forEach(row => {
-                                const label = row.querySelector('.stock-label');
-                                if (label) label.textContent = 'البير: ' + data.stock.name;
-                            });
                         } else {
                             delete stockMap[machineId];
-                            rows.forEach(row => {
-                                const label = row.querySelector('.stock-label');
-                                if (label) label.textContent = 'بدون بير';
-                            });
                         }
                         renderStocksInfo();
                     }
                 });
             }
 
-            // صف قراءة جاهز: ماكينة ومسدس قابلان للتعديل (لكل مسدس صف خاص به)
-            // سيلكت الماكينة يحمل name=machine_id[i] وسيلكت المسدس يحمل name=gun_id[i]
-            function buildReadingRow(index, machine, gun, priceRaw, guns) {
+            // كتلة مسدس واحدة داخل صندوق الماكينة: نفس حقول الصف السابق بالضبط
+            // (machine_id[i], gun_id[i], ...) — كل مسدس يبقى مدخلاً مستقلاً في المصفوفات المُرسلة
+            function buildGunFields(index, machine, gun, priceRaw, guns) {
                 const div = document.createElement('div');
-                div.className =
-                    "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 p-4 pt-8 bg-primary-soft rounded-lg relative";
+                div.className = 'gun-fields';
                 div.innerHTML = `
-                    <button type="button" class="remove-btn absolute top-2 left-2 text-red-500">✖</button>
-
-                    <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-700">الماكينة</label>
-                        <select name="machine_id[${index}]" class="machine w-full p-2 border border-gray-300 rounded-lg">
-                            ${generateMachineOptions(machine.id)}
-                        </select>
-                        <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
+                    <div class="flex items-center mb-1">
+                        <span class="gun-label text-xs font-bold text-gray-600 bg-gray-100 rounded px-2 py-0.5">${escapeHtml(gun.name)}</span>
                     </div>
 
-                    <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-700">المسدس</label>
-                        <select name="gun_id[${index}]" class="gun w-full p-2 border border-gray-300 rounded-lg">
-                            ${generateGunOptions(guns || [], gun.id)}
-                        </select>
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">الماكينة</label>
+                            <select name="machine_id[${index}]" class="machine w-full p-2 border border-gray-300 rounded-lg">
+                                ${generateMachineOptions(machine.id)}
+                            </select>
+                        </div>
 
-                    <div class="mr-5">
-                        <label>عداد البداية</label>
-                        <input type="text" name="start_counter[${index}]" placeholder="0" class="start-counter w-full p-2 border border-gray-300 rounded-lg">
-                    </div>
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">المسدس</label>
+                            <select name="gun_id[${index}]" class="gun w-full p-2 border border-gray-300 rounded-lg">
+                                ${generateGunOptions(guns || [], gun.id)}
+                            </select>
+                        </div>
 
-                    <div>
-                        <label>عداد النهاية</label>
-                        <input type="text" name="end_counter[${index}]" placeholder="0" class="end-counter w-full p-2 border border-gray-300 rounded-lg">
-                    </div>
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">عداد البداية</label>
+                            <input type="text" name="start_counter[${index}]" placeholder="0" class="start-counter w-full p-2 border border-gray-300 rounded-lg">
+                        </div>
 
-                    <div>
-                        <label>صافي اللتر</label>
-                        <input type="hidden" name="is_rollover[${index}]" value="0" class="is-rollover">
-                        <input type="text" name="net[${index}]" readonly class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
-                    </div>
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">عداد النهاية</label>
+                            <input type="text" name="end_counter[${index}]" placeholder="0" class="end-counter w-full p-2 border border-gray-300 rounded-lg">
+                        </div>
 
-                    <div>
-                        <label>سعر اللتر</label>
-                        <input type="text" name="price[${index}]" value="${priceRaw ? formatWithCommas(priceRaw) : ''}" class="price w-full p-2 border border-gray-300 rounded-lg">
-                    </div>
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">صافي اللتر</label>
+                            <input type="hidden" name="is_rollover[${index}]" value="0" class="is-rollover">
+                            <input type="text" name="net[${index}]" readonly class="net w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
 
-                    <div>
-                        <label>الإجمالي</label>
-                        <input type="text" name="total[${index}]" readonly class="total w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">سعر اللتر</label>
+                            <input type="text" name="price[${index}]" value="${priceRaw ? formatWithCommas(priceRaw) : ''}" class="price w-full p-2 border border-gray-300 rounded-lg">
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-xs font-medium text-gray-700">الإجمالي</label>
+                            <input type="text" name="total[${index}]" readonly class="total w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
                     </div>
                 `;
                 div.querySelector('.machine').value = String(machine.id);
@@ -490,7 +484,7 @@
 
                     // منع الحفظ إذا في صفوف ما زالت بحاجة لتصحيح (رفض المستخدم التصفير أو تجاوز الحد الأقصى)
                     let problemRows = [];
-                    document.querySelectorAll('.fuel-item').forEach(item => {
+                    document.querySelectorAll('.gun-fields').forEach(item => {
                         if (item.dataset.needsCorrection === '1') {
                             const m = item.querySelector('.machine');
                             const name = m?.options[m.selectedIndex]?.text?.trim() || 'صف غير محدد';
@@ -509,7 +503,7 @@
 
                     // فحص الرصيد لكل بير على حدة
                     let stockErrors = [];
-                    document.querySelectorAll('.fuel-item').forEach(item => {
+                    document.querySelectorAll('.gun-fields').forEach(item => {
                         let netVal = parseNumber(item.querySelector('.net')?.value);
                         let machineSelect = item.querySelector('.machine');
                         let machineId = machineSelect?.value;
@@ -755,7 +749,7 @@
                 let hasFuelData = false; // للتحقق من وجود بيانات فعلية
 
                 // اجمع القيم من صفوف الوقود
-                document.querySelectorAll('.fuel-item').forEach(item => {
+                document.querySelectorAll('.gun-fields').forEach(item => {
                     const netVal = item.querySelector('.net')?.value.trim();
                     const totalVal = item.querySelector('.total')?.value.trim();
 
@@ -797,25 +791,6 @@
                     end.addEventListener('blur', () => checkRolloverOnBlur(item));
                 }
                 if (price) attachLiveFormatter(price, () => calculateRow(item));
-
-                // زر الحذف في صف الفاتورة
-                const removeBtn = item.querySelector('.remove-btn');
-                if (removeBtn) {
-                    removeBtn.addEventListener('click', function() {
-                        const mid = item.querySelector('.machine')?.value;
-                        item.remove();
-                        // نظّف بيانات البير إذا لم تعد هناك صفوف تستخدم نفس الماكينة
-                        if (mid) {
-                            const stillUsed = Array.from(document.querySelectorAll('.fuel-item .machine'))
-                                .some(sel => String(sel.value) === String(mid));
-                            if (!stillUsed && stockMap[mid]) {
-                                delete stockMap[mid];
-                                renderStocksInfo();
-                            }
-                        }
-                        updateGrandTotals();
-                    });
-                }
 
                 // لو فيه حقول رقمية إضافية داخل الصف (مثل expense/expense) سننصّب الفورماتر تلقائياً
                 item.querySelectorAll('input[type="text"]').forEach(inp => {
@@ -863,24 +838,114 @@
                 });
             }
 
-            // 🔹 إنشاء صفوف قراءة لماكينة (صف لكل مسدس) وإضافتها للحاوية
-            function createRowsForMachine(machine, guns) {
-                const priceRaw = getGlobalPriceRaw();
-                const rows = guns.map(gun => buildReadingRow(nextRowIndex++, machine, gun, priceRaw, guns));
-                rows.forEach(row => {
-                    container.appendChild(row);
-                    attachInvoiceEvents(row);
+            // 🔹 صندوق ماكينة واحد: زر ✖ واحد وداخله كتلة حقول لكل مسدس (مصفوفة)
+            function buildMachineBox(machine, guns, priceRaw) {
+                const box = document.createElement('div');
+                box.className = 'fuel-item grid grid-cols-1 gap-2 p-4 pt-8 bg-primary-soft rounded-lg relative';
+                box.dataset.mid = String(machine.id);
+                box.innerHTML = `
+                    <button type="button" class="remove-btn absolute top-2 left-2 text-red-500" title="إزالة الماكينة">✖</button>
+                `;
+                guns.forEach((gun, gi) => {
+                    const fields = buildGunFields(nextRowIndex++, machine, gun, priceRaw, guns);
+                    if (gi > 0) fields.classList.add('border-t', 'pt-2');
+                    box.appendChild(fields);
                 });
-                fetchStockForMachine(machine.id, rows);
+                return box;
+            }
+
+            // 🔹 إنشاء صندوق ماكينة كامل وإضافته للحاوية
+            function createMachineBox(machine, guns) {
+                const priceRaw = getGlobalPriceRaw();
+                const box = buildMachineBox(machine, guns, priceRaw);
+                container.appendChild(box);
+                const fields = Array.from(box.querySelectorAll('.gun-fields'));
+                fields.forEach(item => attachInvoiceEvents(item));
+                fetchStockForMachine(machine.id);
                 updateGrandTotals();
             }
 
-            // الماكينات المُضافة بالفعل (عبر صفوف القراءة الحالية)
-            function getAddedMachineIds() {
-                return Array.from(document.querySelectorAll('.fuel-item select[name^="machine_id"]'))
-                    .map(sel => sel.value ? String(sel.value) : null)
-                    .filter(Boolean);
+            // 🔹 إعادة ترقيم فهارس كتل المسدسات لتكون متسلسلة 0..n-1 حسب ترتيب DOM
+            function renumberFuelItems() {
+                const fields = container.querySelectorAll('.gun-fields');
+                fields.forEach((field, i) => {
+                    field.querySelectorAll('input, select').forEach(el => {
+                        if (el.name) el.name = el.name.replace(/\[\d+\]$/, '[' + i + ']');
+                    });
+                });
+                nextRowIndex = fields.length;
             }
+
+            // 🔹 إزالة صندوق ماكينة كامل (كل مسدساتها داخله) ثم إعادة الترقيم
+            function handleBoxRemove(box) {
+                const mid = box.querySelector('.gun-fields .machine')?.value;
+                box.remove();
+                if (mid) cleanupStockIfUnused(mid);
+                renumberFuelItems();
+                updateGrandTotals();
+            }
+
+            // 🔹 إزالة جميع صناديق الماكينات الموجودة (مهما كانت طريقة إضافتها) ثم تصفير الحالة
+            function clearAllMachineBoxes() {
+                container.querySelectorAll('.fuel-item').forEach(box => box.remove());
+                stockMap = {};
+                nextRowIndex = 0;
+                renderStocksInfo();
+                updateGrandTotals();
+            }
+
+            // 🔹 إعادة بناء كل صناديق الماكينات المطابقة للفلتر الحالي من الصفر (سلسلة AJAX متسلسلة)
+            function rebuildAllMachineBoxes() {
+                const addBtn = document.getElementById('addAllMachinesBtn');
+                if (addBtn) addBtn.disabled = true;
+
+                const noGuns = [];
+                let chain = Promise.resolve();
+                getFilteredMachines().forEach(machine => {
+                    chain = chain.then(() => new Promise(resolve => {
+                        $.ajax({
+                            url: '{{ route('gun.getGun') }}',
+                            method: 'GET',
+                            data: {
+                                machine_id: machine.id,
+                                station_id: {{ $station->id }},
+                            },
+                            success: function(data) {
+                                if (data.success && data.guns && data.guns.length > 0) {
+                                    createMachineBox(machine, data.guns);
+                                } else {
+                                    noGuns.push(machine.name);
+                                }
+                                resolve();
+                            },
+                            error: function() {
+                                noGuns.push(machine.name);
+                                resolve();
+                            }
+                        });
+                    }));
+                });
+
+                return chain.then(() => {
+                    if (addBtn) addBtn.disabled = false;
+                    if (noGuns.length > 0) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'bottom-end',
+                            icon: 'warning',
+                            title: 'ماكينات بدون مسدسات لم تُضف: ' + noGuns.join('، '),
+                            showConfirmButton: false,
+                            timer: 5000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            }
+
+            // إزالة صندوق الماكينة كله عبر الزر ✖ أعلى الصندوق
+            $(document).on('click', '.fuel-item > .remove-btn', function() {
+                handleBoxRemove($(this).closest('.fuel-item')[0]);
+            });
 
             // 🔹 عند اختيار الماكينة: أنشئ صفًا لكل مسدس فيها
             $(document).on('change', '.picker-machine', function() {
@@ -912,7 +977,7 @@
                             return;
                         }
 
-                        createRowsForMachine(machine, data.guns);
+                        createMachineBox(machine, data.guns);
                         picker.remove();
                     }
                 });
@@ -923,19 +988,16 @@
                 $(this).closest('.machine-picker').remove();
             });
 
-            // 🔹 إضافة جميع الماكينات المتبقية دفعة واحدة
+            // 🔹 إضافة جميع الماكينات المطابقة للفلتر الحالي: يُمسح كل شيء أولًا ثم يُعاد البناء
             const addAllMachinesBtn = document.getElementById('addAllMachinesBtn');
             if (addAllMachinesBtn) {
                 addAllMachinesBtn.addEventListener('click', () => {
-                    const addedIds = getAddedMachineIds();
-                    const remaining = getFilteredMachines().filter(m => !addedIds.includes(String(m.id)));
-
-                    if (remaining.length === 0) {
+                    if (getFilteredMachines().length === 0) {
                         Swal.fire({
                             toast: true,
                             position: 'bottom-end',
                             icon: 'info',
-                            title: 'تمت إضافة جميع الماكينات بالفعل',
+                            title: 'لا توجد ماكينات مطابقة للفلتر الحالي',
                             showConfirmButton: false,
                             timer: 4000,
                             timerProgressBar: true
@@ -943,58 +1005,18 @@
                         return;
                     }
 
+                    clearAllMachineBoxes();
+
                     // أزل منتقيات الماكينات الفارغة المتبقية
                     document.querySelectorAll('.machine-picker').forEach(p => p.remove());
 
-                    addAllMachinesBtn.disabled = true;
-
-                    const noGuns = [];
-                    let chain = Promise.resolve();
-                    remaining.forEach(machine => {
-                        chain = chain.then(() => new Promise(resolve => {
-                            $.ajax({
-                                url: '{{ route('gun.getGun') }}',
-                                method: 'GET',
-                                data: {
-                                    machine_id: machine.id,
-                                    station_id: {{ $station->id }},
-                                },
-                                success: function(data) {
-                                    if (data.success && data.guns && data.guns.length > 0) {
-                                        createRowsForMachine(machine, data.guns);
-                                    } else {
-                                        noGuns.push(machine.name);
-                                    }
-                                    resolve();
-                                },
-                                error: function() {
-                                    noGuns.push(machine.name);
-                                    resolve();
-                                }
-                            });
-                        }));
-                    });
-
-                    chain.then(() => {
-                        addAllMachinesBtn.disabled = false;
-                        if (noGuns.length > 0) {
-                            Swal.fire({
-                                toast: true,
-                                position: 'bottom-end',
-                                icon: 'warning',
-                                title: 'ماكينات بدون مسدسات لم تُضف: ' + noGuns.join('، '),
-                                showConfirmButton: false,
-                                timer: 5000,
-                                timerProgressBar: true
-                            });
-                        }
-                    });
+                    rebuildAllMachineBoxes();
                 });
             }
 
             // 🔹 عند تغيير الماكينة في صف قراءة: حدّث مسدسات الصف والبير وأعد الحساب
-            $(document).on('change', '.fuel-item .machine', function() {
-                const item = this.closest('.fuel-item');
+            $(document).on('change', '.gun-fields .machine', function() {
+                const item = this.closest('.gun-fields');
                 const machineId = this.value;
                 const oldMid = item.dataset.mid;
 
@@ -1002,8 +1024,6 @@
                 if (!machineId) {
                     const gunSel = item.querySelector('.gun');
                     if (gunSel) gunSel.innerHTML = '<option value="">اختر المسدس</option>';
-                    const label = item.querySelector('.stock-label');
-                    if (label) label.textContent = '';
                     item.dataset.mid = '';
                     // تنظيف البير القديم إن لم تعد هناك صفوف تستخدمه
                     cleanupStockIfUnused(oldMid);
@@ -1035,7 +1055,7 @@
                             gunSel.innerHTML = generateGunOptions(guns, prevGun);
                         }
                         // حدّث بيانات البير (stock) للماكينة الجديدة
-                        fetchStockForMachine(machine.id, [item]);
+                        fetchStockForMachine(machine.id);
                         calculateRow(item);
                         updateGrandTotals();
                     },
@@ -1051,7 +1071,7 @@
             // تنظيف بيانات البير لمعرّف ماكينة إن لم تعد هناك أي صفوف تستخدمه
             function cleanupStockIfUnused(mid) {
                 if (!mid) return;
-                const stillUsed = Array.from(document.querySelectorAll('.fuel-item .machine'))
+                const stillUsed = Array.from(document.querySelectorAll('.gun-fields .machine'))
                     .some(sel => String(sel.value) === String(mid));
                 if (!stillUsed && stockMap[mid]) {
                     delete stockMap[mid];
@@ -1060,38 +1080,25 @@
             }
 
             // 🔹 عند تغيير المسدس في صف قراءة: أعد الحساب فقط
-            $(document).on('change', '.fuel-item .gun', function() {
-                const item = this.closest('.fuel-item');
+            $(document).on('change', '.gun-fields .gun', function() {
+                const item = this.closest('.gun-fields');
                 calculateRow(item);
                 updateGrandTotals();
             });
 
-            // 🔹 عند تغيير فلتر نوع الوقود: حدّث منتقيات الماكينات واحذف الصفوف غير المطابقة
+            // 🔹 عند تغيير فلتر نوع الوقود: حدّث منتقيات الماكينات وأعد بناء جميع الصفوف إن وُجدت
             const fuelFilterEl = document.getElementById('fuelFilter');
             if (fuelFilterEl) {
                 fuelFilterEl.addEventListener('change', function() {
-                    // حدّث خيارات كل سيلكت ماكينة في الصفوف الحالية
-                    document.querySelectorAll('.fuel-item .machine').forEach(sel => {
-                        const current = sel.value;
-                        sel.innerHTML = generateMachineOptions(current);
-                    });
-                    // حدّث خيارات منتقيات الماكينات (picker) الحالية
+                    // حدّث خيارات منتقيات الماكينات (picker) الحالية حسب الفلتر الجديد
                     document.querySelectorAll('.picker-machine').forEach(sel => {
-                        const current = sel.value;
-                        $(sel).html(generateMachineOptions(current)).val(current || null).trigger('change');
+                        sel.innerHTML = generateMachineOptions(sel.value);
                     });
-                    // احذف صفوف القراءة التي أصبحت ماكينتها خارج الفلتر
-                    document.querySelectorAll('.fuel-item').forEach(item => {
-                        const sel = item.querySelector('.machine');
-                        if (!sel || !sel.value) return;
-                        const m = machines.find(x => String(x.id) === String(sel.value));
-                        if (m && !getFilteredMachines().some(x => String(x.id) === String(m.id))) {
-                            const mid = sel.value;
-                            item.remove();
-                            cleanupStockIfUnused(mid);
-                        }
-                    });
-                    updateGrandTotals();
+                    // أعد بناء كل صناديق الماكينات حسب الفلتر الجديد إن وُجدت أي صناديق
+                    if (container.querySelectorAll('.fuel-item').length > 0) {
+                        clearAllMachineBoxes();
+                        rebuildAllMachineBoxes();
+                    }
                 });
             }
 
@@ -1114,7 +1121,7 @@
 
                     // نخزن الـ select المرتبط بنفس السطر
                     currentSelectGun = addBtnGun.closest('div').querySelector('select.gun');
-                    currentSelectMachine = addBtnGun.closest('.fuel-item').querySelector('select.machine');
+                    currentSelectMachine = addBtnGun.closest('.gun-fields').querySelector('select.machine');
                     $('#machineId').val(currentSelectMachine.value);
                 }
 
@@ -1335,7 +1342,8 @@
 
 
             // attach to existing fuel items on load
-            container.querySelectorAll('.fuel-item').forEach(item => attachInvoiceEvents(item));
+            container.querySelectorAll('.gun-fields').forEach(item => attachInvoiceEvents(item));
+            renumberFuelItems();
 
             // قائمة الموبايل (الهامبرجر)
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');

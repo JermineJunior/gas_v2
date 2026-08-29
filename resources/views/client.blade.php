@@ -75,112 +75,138 @@
             </div>
         </div>
 
-        <!-- بطاقات الحسابات -->
-        <div id="clientGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach ($clients as $client)
-                <div data-type="{{ $client->type }}" x-show="activeTab === 'all' || activeTab == '{{ $client->type }}'"
-                    class="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
+        <!-- جدول الحسابات -->
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="px-3 py-2.5 text-center text-sm font-semibold">اسم العميل</th>
+                        <th class="px-3 py-2.5 text-center text-sm font-semibold">النوع</th>
+                        <th class="px-3 py-2.5 text-center text-sm font-semibold">الرصيد الإجمالي</th>
+                        <th class="px-3 py-2.5 text-center text-sm font-semibold">آخر توريدة/سداد</th>
+                        <th class="px-3 py-2.5 text-center text-sm font-semibold">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="clientTableBody">
+                    @if ($clients->isEmpty())
+                        <tr>
+                            <td colspan="5" class="px-3 py-6 text-center text-gray-600">لا يوجد عملاء مسجلون حالياً.</td>
+                        </tr>
+                    @else
+                        @foreach ($clients as $client)
+                            @php $clientBalance = $client->total_sum - $client->paid_sum; @endphp
+                            <tr data-type="{{ $client->type }}"
+                                x-show="activeTab === 'all' || activeTab == '{{ $client->type }}'"
+                                class="border-b border-gray-100 hover:bg-gray-50 transition">
 
-                    <!-- زر ثلاث نقاط + قائمة منسدلة -->
-                    <div x-data="{ openMenu: false }" class="absolute top-3 left-3">
-                        <button @click="openMenu = !openMenu"
-                            class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" viewBox="0 0 24 24"
-                                fill="currentColor">
-                                <circle cx="5" cy="12" r="2" />
-                                <circle cx="12" cy="12" r="2" />
-                                <circle cx="19" cy="12" r="2" />
-                            </svg>
-                        </button>
+                                <!-- اسم العميل -->
+                                <td class="px-3 py-3">
+                                    <a href="{{ route('client.show', $client->id) }}"
+                                        class="font-semibold text-gray-800 hover:text-primary-strong hover:underline transition-colors">
+                                        {{ $client->name }}
+                                    </a>
+                                </td>
 
-                        <!-- القائمة المنسدلة -->
-                        <div x-show="openMenu" @click.away="openMenu = false"
-                            class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
+                                <!-- النوع -->
+                                <td class="px-3 py-3 text-center">
+                                    <span
+                                        class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $client->type == 2 ? 'bg-purple-100 text-purple-700' : 'bg-primary-soft text-primary-strong' }}">
+                                        {{ $client->type == 2 ? 'باص' : 'عميل' }}
+                                    </span>
+                                </td>
 
-                            <!-- تعديل -->
-                            @can('clients.edit')
-                            <button
-                                @click="$dispatch('edit-client', {
-                                    id: {{ $client->id }},
-                                    name: '{{ $client->name }}',
-                                    phone: '{{ $client->phone }}',
-                                    type: '{{ $client->type }}',
+                                <!-- الرصيد الإجمالي -->
+                                <td class="px-3 py-3 text-center font-bold {{ $clientBalance >= 0 ? 'text-primary-strong' : 'text-red-600' }}">
+                                    {{ formatNumber($clientBalance) }} ج.س
+                                </td>
 
-                                })"
-                                class="w-full text-right px-4 py-2 hover:bg-gray-100 text-green-600">
-                                تعديل
-                            </button>
-                            @endcan
+                                <!-- آخر توريدة/سداد -->
+                                <td class="px-3 py-3 text-center text-sm {{ $client->last_payment_date ? 'text-gray-500' : 'text-red-600 font-semibold' }}">
+                                    @if ($client->last_payment_date)
+                                        آخر توريدة/سداد: {{ \Carbon\Carbon::parse($client->last_payment_date)->diffForHumans() }}
+                                    @else
+                                        لم يقم بأي توريدة/سداد
+                                    @endif
+                                </td>
 
+                                <!-- الإجراءات -->
+                                <td class="px-3 py-3">
+                                    <div class="flex items-center justify-center gap-2 flex-wrap">
+                                        <a href="{{ route('client.show', $client->id) }}"
+                                            class="text-xs text-center bg-white border border-primary-strong text-primary-strong px-3 py-1.5 rounded-lg hover:bg-primary-soft transition font-semibold inline-flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                            </svg>
+                                            المديونيات
+                                        </a>
 
-                            <!-- حذف -->
-                            @can('clients.delete')
-                            <form action="{{ route('client.delete', $client->id) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button"
-                                    class="delete-btn w-full text-right px-4 py-2 hover:bg-gray-100 text-red-600">
-                                    حذف
-                                </button>
-                            </form>
-                            @endcan
-                        </div>
-                    </div>
+                                        <a href="{{ route('revenue.index', $client->id) }}"
+                                            class="text-xs text-center bg-white border border-green-600 text-green-600 px-3 py-1.5 rounded-lg hover:bg-green-50 transition font-semibold inline-flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                            الإيرادات
+                                        </a>
 
-                    <!-- اسم + الرصيد -->
-                    @php $clientBalance = $client->total_sum - $client->paid_sum; @endphp
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                            <a href="{{ route('client.show', $client->id) }}"
-                                class="hover:text-primary-strong hover:underline transition-colors">
-                                {{ $client->name }}
-                            </a>
-                        </h3>
-                        <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
-                        <p
-                            class="text-2xl font-bold {{ $clientBalance >= 0 ? 'text-primary-strong' : 'text-red-600' }} mb-1">
-                            {{ formatNumber($clientBalance) }}
-                            ج.س
-                        </p>
-                        @if ($clientBalance > 0)
-                            <p class="text-xs mb-3 {{ $client->last_payment_date ? 'text-gray-500' : 'text-red-600 font-semibold' }}">
-                                @if ($client->last_payment_date)
-                                    آخر توريدة/سداد: {{ \Carbon\Carbon::parse($client->last_payment_date)->diffForHumans() }}
-                                @else
-                                    لم يقم بأي توريدة/سداد
-                                @endif
-                            </p>
-                        @else
-                            <p class="mb-3">&nbsp;</p>
-                        @endif
-                    </div>
+                                        <!-- زر ثلاث نقاط + قائمة منسدلة -->
+                                        <div x-data="{ openMenu: false }" class="relative">
+                                            <button @click="openMenu = !openMenu"
+                                                class="bg-gray-200 hover:bg-gray-300 p-1.5 rounded-full transition">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600"
+                                                    viewBox="0 0 24 24" fill="currentColor">
+                                                    <circle cx="5" cy="12" r="2" />
+                                                    <circle cx="12" cy="12" r="2" />
+                                                    <circle cx="19" cy="12" r="2" />
+                                                </svg>
+                                            </button>
 
-                    <!-- الأزرار -->
-                    <div class="flex justify-between gap-2 mt-4">
+                                            <!-- القائمة المنسدلة -->
+                                            <div x-show="openMenu" @click.away="openMenu = false"
+                                                class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
 
-                        <!-- زر المديونيات -->
-                        <a href="{{ route('client.show', $client->id) }}"
-                            class="w-1/2 text-center bg-primary-strong text-white py-2 rounded-lg hover:bg-primary-strong transition font-semibold">
-                            المديونيات
-                        </a>
+                                                <!-- تعديل -->
+                                                @can('clients.edit')
+                                                <button
+                                                    @click="$dispatch('edit-client', {
+                                                        id: {{ $client->id }},
+                                                        name: '{{ $client->name }}',
+                                                        phone: '{{ $client->phone }}',
+                                                        type: '{{ $client->type }}',
 
-                        <!-- زر الإيرادات -->
-                        <a href="{{ route('revenue.index', $client->id) }}"
-                            class="w-1/2 text-center bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
-                            الإيرادات
-                        </a>
-                    </div>
-                </div>
-            @endforeach
+                                                    })"
+                                                    class="w-full text-right px-4 py-2 hover:bg-gray-100 text-green-600">
+                                                    تعديل
+                                                </button>
+                                                @endcan
+
+                                                <!-- حذف -->
+                                                @can('clients.delete')
+                                                <form action="{{ route('client.delete', $client->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        class="delete-btn w-full text-right px-4 py-2 hover:bg-gray-100 text-red-600">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                                @endcan
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
+                </tbody>
+            </table>
         </div>
 
-
-        @if ($clients->isEmpty())
-            <p class="text-center text-gray-600 mt-6">لا يوجد عملاء مسجلون حالياً.</p>
-        @endif
-
         <!-- 🟦 مودال إضافة عميل جديد -->
-        <div x-show="showAddModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+        <div x-show="showAddModal" x-cloak class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
             x-transition>
             <div @click.away="showAddModal = false" class="bg-white w-full max-w-md rounded-2xl shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">إضافة عميل جديد</h2>
@@ -300,7 +326,7 @@
                         },
 
                         success: function(response) {
-                            $("#clientGrid").empty();
+                            $("#clientTableBody").empty();
 
                             let filtered = activeTab === 'all' ? response : response.filter(c => String(c.type) === String(activeTab));
 
@@ -312,40 +338,44 @@
                             $("#totalBalanceVal").text((sumTotal - sumPaid).toLocaleString() + ' ج.س');
 
                             if (filtered.length === 0) {
-                                $("#clientGrid").html(
-                                    '<p class="text-center col-span-3 text-gray-600 mt-6">لا توجد نتائج مطابقة.</p>'
+                                $("#clientTableBody").html(
+                                    '<tr><td colspan="5" class="px-3 py-6 text-center text-gray-600">لا توجد نتائج مطابقة.</td></tr>'
                                 );
                                 return;
                             }
 
                             filtered.forEach(client => {
 
-                                let balance = (client.total_sum - client
-                                    .paid_sum) || 0;
-                                balance = balance.toLocaleString();
+                                let balanceNum = (Number(client.total_sum) - Number(client
+                                    .paid_sum)) || 0;
+                                let balance = balanceNum.toLocaleString();
 
                                 let lastPaymentHtml = '';
-                                if (balance > 0) {
-                                    if (client.last_payment_date) {
-                                        let days = Math.floor((Date.now() - new Date(client.last_payment_date).getTime()) / 86400000);
-                                        let rtf = new Intl.RelativeTimeFormat('ar', {
-                                            numeric: 'auto'
-                                        });
-                                        let rel;
-                                        if (days < 30) rel = rtf.format(-days, 'day');
-                                        else if (days < 365) rel = rtf.format(-Math.floor(days / 30), 'month');
-                                        else rel = rtf.format(-Math.floor(days / 365), 'year');
-                                        lastPaymentHtml =
-                                            `<p class="text-xs mb-3 text-gray-500">آخر توريدة/سداد: ${rel}</p>`;
-                                    } else {
-                                        lastPaymentHtml =
-                                            `<p class="text-xs mb-3 text-red-600 font-semibold">لم يقم بأي توريدة/سداد</p>`;
-                                    }
+                                if (client.last_payment_date) {
+                                    let days = Math.floor((Date.now() - new Date(client.last_payment_date).getTime()) / 86400000);
+                                    let rtf = new Intl.RelativeTimeFormat('ar', {
+                                        numeric: 'auto'
+                                    });
+                                    let rel;
+                                    if (days < 30) rel = rtf.format(-days, 'day');
+                                    else if (days < 365) rel = rtf.format(-Math.floor(days / 30), 'month');
+                                    else rel = rtf.format(-Math.floor(days / 365), 'year');
+                                    lastPaymentHtml =
+                                        `<span class="text-gray-500">آخر توريدة/سداد: ${rel}</span>`;
+                                } else {
+                                    lastPaymentHtml =
+                                        `<span class="text-red-600 font-semibold">لم يقم بأي توريدة/سداد</span>`;
                                 }
+
+                                let typeLabel = String(client.type) === '2' ? 'باص' : 'عميل';
+                                let typeBadgeClass = String(client.type) === '2' ? 'bg-purple-100 text-purple-700' : 'bg-primary-soft text-primary-strong';
 
                                 let revenueBtn = `
                                         <a href="/revenue/${client.id}"
-                                            class="w-1/2 text-center bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                                            class="text-xs text-center bg-white border border-green-600 text-green-600 px-3 py-1.5 rounded-lg hover:bg-green-50 transition font-semibold inline-flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
                                             الإيرادات
                                         </a>
                                     `;
@@ -356,8 +386,7 @@
                                         <form action="/client/delete/${client.id}" method="POST" class="w-full">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                class="w-full text-right px-4 py-2 hover:bg-gray-100 text-red-600">
+                                            <button type="button" class="delete-btn w-full text-right px-4 py-2 hover:bg-gray-100 text-red-600">
                                                 حذف
                                             </button>
                                         </form>
@@ -375,69 +404,91 @@
                                     `;
                                 @endcan
 
-                                $("#clientGrid").append(`
-                        <div data-type="${client.type}" x-show="activeTab === 'all' || activeTab == '${client.type}'" class="relative bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
+                                $("#clientTableBody").append(`
+                        <tr data-type="${client.type}" x-show="activeTab === 'all' || activeTab == '${client.type}'" class="border-b border-gray-100 hover:bg-gray-50 transition">
 
-                            <div x-data="{ openMenu: false }" class="absolute top-3 left-3">
-                                <button @click="openMenu = !openMenu" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
-                                        <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                                    </svg>
-                                </button>
-                                <div x-show="openMenu" @click.away="openMenu = false" class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
-                                    ${editBtn}
-                                    ${deleteBtn}
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800 mb-2">${client.name}</h3>
-                                <p class="text-sm text-gray-600 mb-1">الرصيد الإجمالي:</p>
-                                <p class="text-2xl font-bold text-primary-strong mb-1">
-                                    ${balance} ج.س
-                                </p>
-                                ${lastPaymentHtml}
-                                ${lastPaymentHtml ? '' : '<p class="mb-3">&nbsp;</p>'}
-                            </div>
-
-                            <div class="flex justify-between gap-2 mt-4">
-                                <a href="/client/${client.id}"
-                                    class="w-1/2 text-center bg-primary-strong text-white py-2 rounded-lg hover:bg-primary-strong transition font-semibold">
-                                    المديونيات
+                            <td class="px-3 py-3">
+                                <a href="/client/${client.id}" class="font-semibold text-gray-800 hover:text-primary-strong hover:underline transition-colors">
+                                    ${client.name}
                                 </a>
-                                ${revenueBtn}
-                            </div>
+                            </td>
 
-                        </div>
+                            <td class="px-3 py-3 text-center">
+                                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${typeBadgeClass}">
+                                    ${typeLabel}
+                                </span>
+                            </td>
+
+                            <td class="px-3 py-3 text-center font-bold ${balanceNum >= 0 ? 'text-primary-strong' : 'text-red-600'}">
+                                ${balance} ج.س
+                            </td>
+
+                            <td class="px-3 py-3 text-center text-sm">
+                                ${lastPaymentHtml}
+                            </td>
+
+                            <td class="px-3 py-3">
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    <a href="/client/${client.id}"
+                                        class="text-xs text-center bg-white border border-primary-strong text-primary-strong px-3 py-1.5 rounded-lg hover:bg-primary-soft transition font-semibold inline-flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                        </svg>
+                                        المديونيات
+                                    </a>
+                                    ${revenueBtn}
+
+                                    <div x-data="{ openMenu: false }" class="relative">
+                                        <button @click="openMenu = !openMenu" class="bg-gray-200 hover:bg-gray-300 p-1.5 rounded-full transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                                                <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+                                            </svg>
+                                        </button>
+                                        <div x-show="openMenu" @click.away="openMenu = false" class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden z-50">
+                                            ${editBtn}
+                                            ${deleteBtn}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                     `);
                             });
 
-                            Alpine.initTree(document.getElementById('clientGrid'));
+                            Alpine.initTree(document.getElementById('clientTableBody'));
+                            bindDeleteButtons();
                         }
                     });
                 }, 400);
             });
 
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    let form = this.closest('form'); // نحصل على الفورم التابع للزر
+            function bindDeleteButtons() {
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    if (button.dataset.bound) return;
+                    button.dataset.bound = '1';
 
-                    Swal.fire({
-                        title: 'هل أنت متأكد؟',
-                        text: "لن تتمكن من التراجع عن هذه العملية!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'نعم، احذفها',
-                        cancelButtonText: 'إلغاء'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit(); // ينفذ الحذف
-                        }
-                    })
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        let form = this.closest('form'); // نحصل على الفورم التابع للزر
+
+                        Swal.fire({
+                            title: 'هل أنت متأكد؟',
+                            text: "لن تتمكن من التراجع عن هذه العملية!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'نعم، احذفها',
+                            cancelButtonText: 'إلغاء'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit(); // ينفذ الحذف
+                            }
+                        })
+                    });
                 });
-            });
+            }
+            bindDeleteButtons();
 
             // قائمة الموبايل (الهامبرجر)
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');

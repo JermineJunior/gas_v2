@@ -27,6 +27,16 @@
     @hasSection('no_header')
     @else
         @include('header')
+
+        @auth
+            @unless (request()->routeIs('login', 'register', 'password.*', 'verification.*', 'stations.hub', 'warehouses.create', 'warehouses.edit', 'warehouse_withdrawals.create', 'warehouse_withdrawals.edit', 'warehouse_transactions.create', 'warehouse_transactions.edit', 'warehouse_transfers.create', 'roles.create', 'roles.edit'))
+                <div class="max-w-6xl mx-auto mb-2">
+                    <a href="#"
+                        onclick="event.preventDefault(); var p = document.referrer; if (p && p !== location.href) { window.location.href = p; return; } history.go(-1);"
+                        class="text-gray-400 hover:text-gray-600 text-sm">←&nbsp;رجوع</a>
+                </div>
+            @endunless
+        @endauth
     @endif
 
     @yield('content')
