@@ -122,5 +122,23 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- إجماليات أسفل التقرير -->
+        @if($operations->isNotEmpty())
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-500 mb-1">إجمالي الفواتير</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ formatNumber($totalBill) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-500 mb-1">إجمالي المدفوع</p>
+                    <p class="text-2xl font-bold text-green-700">{{ formatNumber($totalAmount) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-500 mb-1">إجمالي المتبقي</p>
+                    <p class="text-2xl font-bold text-red-600">{{ formatNumber($totalRemaining) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                </div>
+            </div>
+        @endif
     </div>
 @endsection

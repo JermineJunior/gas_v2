@@ -7,12 +7,14 @@ use App\Models\Machine;
 use App\Models\Station;
 use App\Models\Stock;
 use App\Models\StockDetail;
+use App\Models\StockDetailPhoto;
 use App\Models\Supplier;
 use App\Models\Tuncker;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class TunckerController extends Controller
 {
@@ -58,6 +60,11 @@ class TunckerController extends Controller
 
     public function store(Request $request)
     {
+        // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)
+        $request->validate([
+            'meter_photos.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
         try {
             DB::beginTransaction();
             $tuncker = Tuncker::create([
@@ -78,23 +85,33 @@ class TunckerController extends Controller
                 'date' => $request->date,
                 'user_id' => Auth::id(),
             ]);
-            $data = [];
+
             //عند التفريغ في بير واحد اواكثر
             foreach ($request->stock_id as $index => $stock_id) {
-                $data[] = [
+                $stockDetail = StockDetail::create([
                     'tuncker_id' => $tuncker->id,
                     'station_id' => $request->station_id,
                     'stock_id' => $stock_id,
                     'qty' => $request->qty[$index],
-                ];
+                ]);
 
                 $stock = Stock::find($stock_id);
                 $stock->update([
                     'qty' => $stock->qty + $request->qty[$index],
                 ]);
+
+                // صور اختيارية مرفوعة لهذا الصف — المفتاح $index يطابق qty[$index]/stock_id[$index]
+                if ($request->hasFile("meter_photos.$index")) {
+                    foreach ($request->file("meter_photos.$index") as $file) {
+                        $path = Storage::disk('public')->putFile('meter_photos', $file);
+                        StockDetailPhoto::create([
+                            'stock_detail_id' => $stockDetail->id,
+                            'path' => $path,
+                        ]);
+                    }
+                }
             }
 
-            StockDetail::insert($data);
             DB::commit();
             return redirect('/')->with('success', 'تم اضافة البيانات بنجاح');
         } catch (Exception $e) {
@@ -105,7 +122,7 @@ class TunckerController extends Controller
 
     public function edit(Tuncker $tuncker)
     {
-        $tuncker = $tuncker->load('station', 'stockDetail');
+        $tuncker = $tuncker->load('station', 'stockDetail.photos');
         $suppliers = Supplier::get();
         $stocks = Stock::where('station_id', $tuncker->station_id)->where('type', $tuncker->fuel_type)->get();
         return view('edit_tuncker', compact('tuncker', 'suppliers', 'stocks'));
@@ -113,14 +130,23 @@ class TunckerController extends Controller
 
     public function update(Tuncker $tuncker, Request $request)
     {
+        // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)
+        $request->validate([
+            'meter_photos.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
         try {
             DB::beginTransaction();
-            $old_stock_details = $tuncker->stockDetail;
+            $old_stock_details = $tuncker->stockDetail->load('photos');
             foreach ($old_stock_details as $stock_detail) {
                 $stock = Stock::find($stock_detail->stock_id);
                 $stock->update([
                     'qty' => $stock->qty - $stock_detail->qty,
                 ]);
+                // حذف ملفات الصور القديمة مع صفوفها (صفوف الصور تُحذف تلقائياً بالـ cascade)
+                foreach ($stock_detail->photos as $photo) {
+                    Storage::disk('public')->delete($photo->path);
+                }
             }
 
             $tuncker->delete();
@@ -143,23 +169,31 @@ class TunckerController extends Controller
                 'date' => $request->date,
                 'user_id' => Auth::id(),
             ]);
-            $data = [];
 
             foreach ($request->stock_id as $index => $stock_id) {
-                $data[] = [
+                $stockDetail = StockDetail::create([
                     'tuncker_id' => $tuncker->id,
                     'station_id' => $request->station_id,
                     'stock_id' => $stock_id,
                     'qty' => $request->qty[$index],
-                ];
+                ]);
 
                 $stock = Stock::find($stock_id);
                 $stock->update([
                     'qty' => $stock->qty + $request->qty[$index],
                 ]);
-            }
 
-            StockDetail::insert($data);
+                // صور اختيارية مرفوعة لهذا الصف — المفتاح $index يطابق qty[$index]/stock_id[$index]
+                if ($request->hasFile("meter_photos.$index")) {
+                    foreach ($request->file("meter_photos.$index") as $file) {
+                        $path = Storage::disk('public')->putFile('meter_photos', $file);
+                        StockDetailPhoto::create([
+                            'stock_detail_id' => $stockDetail->id,
+                            'path' => $path,
+                        ]);
+                    }
+                }
+            }
 
             DB::commit();
             return redirect()->route('tuncker.index', $tuncker->station_id)->with('success', 'تم تحديث البيانات بنجاح');
@@ -176,6 +210,9 @@ class TunckerController extends Controller
                 $stock->update([
                     'qty' => $stock->qty - $stockDetail->qty,
                 ]);
+            foreach ($stockDetail->photos as $photo) {
+                Storage::disk('public')->delete($photo->path);
+            }
         }
         $tuncker->delete();
         return back()->with('success', 'تم حذف البيانات بنجاح');

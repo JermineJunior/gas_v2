@@ -248,6 +248,9 @@
                     @can('reports.expense_summary')
                         <a href="{{ route('reports.expense_summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص المصروفات</a>
                     @endcan
+                    @can('reports.supplier')
+                        <a href="{{ route('reports.supplier') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير الموردين</a>
+                    @endcan
                     @can('reports.machine_report')
                         <a href="{{ route('reports.machine_report') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات</a>
                     @endcan

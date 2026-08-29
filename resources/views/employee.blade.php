@@ -10,7 +10,7 @@
 @endsection
 
 @section('content')
-    <div x-data="{ openAdd: false, openEdit: false, editemployee: { id: '', name: '', phone: '' } }">
+    <div x-data="{ openAdd: false, openEdit: false, editemployee: { id: '', name: '', phone_number: '', national_id: '', address: '', date_of_birth: '' } }">
         <!-- جدول المستخدمين -->
         <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">
@@ -29,6 +29,10 @@
                         <tr>
                             <th class="px-4 py-3 text-right">#</th>
                             <th class="px-4 py-3 text-right">الاسم</th>
+                            <th class="px-4 py-3 text-right">رقم الهاتف</th>
+                            <th class="px-4 py-3 text-right">الرقم الوطني</th>
+                            <th class="px-4 py-3 text-right">العنوان</th>
+                            <th class="px-4 py-3 text-right">تاريخ الميلاد</th>
                             <th class="px-4 py-3 text-right">الإجراءات</th>
                         </tr>
                     </thead>
@@ -37,11 +41,15 @@
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-3">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3">{{ $employee->name }}</td>
+                                <td class="px-4 py-3">{{ $employee->phone_number }}</td>
+                                <td class="px-4 py-3">{{ $employee->national_id }}</td>
+                                <td class="px-4 py-3">{{ $employee->address }}</td>
+                                <td class="px-4 py-3">{{ $employee->date_of_birth ? $employee->date_of_birth->format('Y-m-d') : '' }}</td>
                                 <td class="px-4 py-3 flex gap-2">
                                     @can('employees.edit')
                                     <button
                                         @click="
-                                        editemployee = {id:{{ $employee->id }}, name:'{{ $employee->name }}'};
+                                        editemployee = {id:{{ $employee->id }}, name:'{{ $employee->name }}', phone_number:'{{ $employee->phone_number }}', national_id:'{{ $employee->national_id }}', address:'{{ $employee->address }}', date_of_birth:'{{ optional($employee->date_of_birth)->format('Y-m-d') }}'};
                                         openEdit = true;
                                     "
                                         class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">
@@ -79,6 +87,26 @@
                         <input type="text" name="name" required
                             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">رقم الهاتف</label>
+                        <input type="text" name="phone_number"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">الرقم الوطني</label>
+                        <input type="text" name="national_id"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">العنوان</label>
+                        <input type="text" name="address"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">تاريخ الميلاد</label>
+                        <input type="date" name="date_of_birth"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
                     <div class="flex justify-end">
                         <button type="submit"
                             class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
@@ -103,6 +131,26 @@
                     <div>
                         <label class="block text-gray-700 mb-1">الاسم</label>
                         <input type="text" name="name" :value="editemployee.name" required
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">رقم الهاتف</label>
+                        <input type="text" name="phone_number" :value="editemployee.phone_number"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">الرقم الوطني</label>
+                        <input type="text" name="national_id" :value="editemployee.national_id"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">العنوان</label>
+                        <input type="text" name="address" :value="editemployee.address"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">تاريخ الميلاد</label>
+                        <input type="date" name="date_of_birth" :value="editemployee.date_of_birth"
                             class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div class="flex justify-end">

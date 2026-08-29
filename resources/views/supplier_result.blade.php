@@ -83,53 +83,97 @@
             </div>
         </div>
 
-        <!-- جدول النتائج -->
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse rounded-lg overflow-hidden shadow">
-                <thead>
-                    <tr class="bg-primary-strong text-white text-sm">
-                        <th class="p-3 text-center">#</th>
-                        <th class="p-3 text-center">التاريخ</th>
-                        @if (!$supplier)
-                            <th class="p-3 text-center">المورد</th>
-                        @endif
-                        <th class="p-3 text-center">كمية الوقود</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($operations as $sup)
-                        <tr class="odd:bg-white even:bg-gray-50 hover:bg-[#F7ECEE] transition">
-                            <td class="p-3 text-center">{{ $loop->iteration }}</td>
-                            <td class="p-3 text-center">{{ $sup->date->format('Y/m/d') }}</td>
-
+        <!-- طلبات الوقود (الكمية المطلوبة) -->
+        <div class="mb-8">
+            <h3 class="text-lg font-bold text-gray-700 mb-3">طلبات الوقود (الكمية المطلوبة)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse rounded-lg overflow-hidden shadow">
+                    <thead>
+                        <tr class="bg-primary-strong text-white text-sm">
+                            <th class="p-3 text-center">#</th>
+                            <th class="p-3 text-center">التاريخ</th>
                             @if (!$supplier)
-                                <td class="p-3 text-center">{{ $sup->supplier->name ?? '-' }}</td>
+                                <th class="p-3 text-center">المورد</th>
                             @endif
-                            <td class="p-3 text-center">{{ formatNumber($sup->quantity) }}</td>
+                            <th class="p-3 text-center">الكمية المطلوبة</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="p-4 text-center text-gray-500">لا توجد بيانات لعرضها</td>
+                    </thead>
+                    <tbody>
+                        @forelse($orders as $order)
+                            <tr class="odd:bg-white even:bg-gray-50 hover:bg-[#F7ECEE] transition">
+                                <td class="p-3 text-center">{{ $loop->iteration }}</td>
+                                <td class="p-3 text-center">{{ $order->date->format('Y/m/d') }}</td>
+
+                                @if (!$supplier)
+                                    <td class="p-3 text-center">{{ $order->supplier->name ?? '-' }}</td>
+                                @endif
+                                <td class="p-3 text-center">{{ formatNumber($order->quantity) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-gray-500">لا توجد طلبات لعرضها</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-[#F7ECEE] font-bold">
+                            <td colspan="{{ $supplier ? 2 : 3 }}" class="p-3 text-center">إجمالي الطلبات</td>
+                            <td class="p-3 text-center text-blue-700">{{ formatNumber($total_requested) }}</td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </tfoot>
+                </table>
+            </div>
         </div>
 
-        <!-- اجماليات الموردين -->
-        @php
-            $supplierTotals = $operations->pluck('supplier')->filter()->unique('id');
-        @endphp
-        @if ($supplierTotals->isNotEmpty())
-            <div class="mt-6 flex flex-wrap gap-3">
-                @foreach ($supplierTotals as $sup)
-                    <div class="bg-primary-soft rounded-full px-5 py-2 flex items-center gap-4 text-sm shadow-sm">
-                        <span class="font-bold text-gray-800">{{ $sup->name }}</span>
-                        <span class="text-blue-700">الطلبات: <b>{{ formatNumber($sup->total_orders ?? 0) }}</b></span>
-                        <span class="text-green-700">التوريدات: <b>{{ formatNumber($sup->total_deliveries ?? 0) }}</b></span>
-                    </div>
-                @endforeach
+        <!-- توريدات الوقود (الكمية الموردة للمحطات) -->
+        <div class="mb-8">
+            <h3 class="text-lg font-bold text-gray-700 mb-3">توريدات الوقود (الكمية الموردة للمحطات)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse rounded-lg overflow-hidden shadow">
+                    <thead>
+                        <tr class="bg-primary-strong text-white text-sm">
+                            <th class="p-3 text-center">#</th>
+                            <th class="p-3 text-center">التاريخ</th>
+                            @if (!$supplier)
+                                <th class="p-3 text-center">المورد</th>
+                            @endif
+                            <th class="p-3 text-center">المحطة</th>
+                            <th class="p-3 text-center">الكمية الموردة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($deliveries as $delivery)
+                            <tr class="odd:bg-white even:bg-gray-50 hover:bg-[#F7ECEE] transition">
+                                <td class="p-3 text-center">{{ $loop->iteration }}</td>
+                                <td class="p-3 text-center">{{ $delivery->date->format('Y/m/d') }}</td>
+
+                                @if (!$supplier)
+                                    <td class="p-3 text-center">{{ $delivery->supplier->name ?? '-' }}</td>
+                                @endif
+                                <td class="p-3 text-center">{{ $delivery->station->name ?? '-' }}</td>
+                                <td class="p-3 text-center">{{ formatNumber($delivery->quantity) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-gray-500">لا توجد توريدات لعرضها</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-[#F7ECEE] font-bold">
+                            <td colspan="{{ $supplier ? 3 : 4 }}" class="p-3 text-center">إجمالي التوريدات</td>
+                            <td class="p-3 text-center text-green-700">{{ formatNumber($total_delivered) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-        @endif
+        </div>
+
+        <!-- ملخص المطلوب مقابل المورد -->
+        <div class="mt-6 bg-[#F7ECEE] rounded-lg p-4 flex flex-wrap items-center justify-center gap-6 text-md font-semibold print-inline">
+            <span class="text-blue-700">إجمالي المطلوب: <b>{{ formatNumber($total_requested) }}</b></span>
+            <span class="text-green-700">إجمالي المورد: <b>{{ formatNumber($total_delivered) }}</b></span>
+            <span class="text-gray-700">الفرق: <b>{{ formatNumber($total_requested - $total_delivered) }}</b></span>
+        </div>
     </div>
 @endsection

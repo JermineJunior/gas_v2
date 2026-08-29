@@ -38,7 +38,15 @@
             <input type="hidden" value="{{ $station->id }}" name="station_id">
 
             <div class="mb-6">
-                <div class="flex justify-end items-center gap-2 mb-4"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
+                <div class="flex justify-end items-center gap-2 mb-4 flex-wrap"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
+                    <div class="flex items-center gap-2 mr-auto">
+                        <label class="text-sm font-medium text-gray-700">نوع الوقود:</label>
+                        <select id="fuelFilter" class="w-44 p-2 border border-gray-300 rounded-lg">
+                            <option value="">الكل</option>
+                            <option value="1">جازولين</option>
+                            <option value="2">بنزين</option>
+                        </select>
+                    </div>
                     <button type="button" id="addAllMachinesBtn"
                         class="flex items-center bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700">
                         إضافة جميع الماكينات
@@ -255,6 +263,28 @@
             let stockMap = {};
             let nextRowIndex = 0; // كل صف قراءة يأخذ فهرسًا جديدًا عند إنشائه
 
+            // الماكينات المرشّحة حسب نوع الوقود المحدد (الكل = كل الماكينات، معرّفات العنصر
+            // machine.fuel_type_id: 1 جازولين / 2 بنزين — من accessor في النموذج)
+            function getFuelFilter() {
+                return document.getElementById('fuelFilter')?.value || '';
+            }
+
+            function getFilteredMachines() {
+                const filter = getFuelFilter();
+                if (!filter) return machines;
+                return machines.filter(m => String(m.fuel_type_id) === String(filter));
+            }
+
+            // خيارات الماكينات — مقيدة بنوع الوقود المحدد، مع تحديد القيمة الحالية إن وُجدت
+            function generateMachineOptions(selectedId) {
+                let options = `<option value="">اختر الماكينة</option>`;
+                getFilteredMachines().forEach(machine => {
+                    const sel = String(machine.id) === String(selectedId) ? 'selected' : '';
+                    options += `<option value="${machine.id}" ${sel}>${escapeHtml(machine.name)}</option>`;
+                });
+                return options;
+            }
+
             function escapeHtml(str) {
                 return String(str ?? '').replace(/[&<>"']/g, s => ({
                     '&': '&amp;',
@@ -306,8 +336,9 @@
                 });
             }
 
-            // صف قراءة جاهز: ماكينة ومسدس مثبّتان (لكل مسدس صف خاص به)
-            function buildReadingRow(index, machine, gun, priceRaw) {
+            // صف قراءة جاهز: ماكينة ومسدس قابلان للتعديل (لكل مسدس صف خاص به)
+            // سيلكت الماكينة يحمل name=machine_id[i] وسيلكت المسدس يحمل name=gun_id[i]
+            function buildReadingRow(index, machine, gun, priceRaw, guns) {
                 const div = document.createElement('div');
                 div.className =
                     "fuel-item grid grid-cols-1 md:grid-cols-7 gap-4 p-4 pt-8 bg-primary-soft rounded-lg relative";
@@ -316,19 +347,17 @@
 
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">الماكينة</label>
-                        <select class="machine w-full p-2 border border-gray-300 rounded-lg bg-gray-100" disabled>
-                            <option value="${machine.id}" selected>${escapeHtml(machine.name)}</option>
+                        <select name="machine_id[${index}]" class="machine w-full p-2 border border-gray-300 rounded-lg">
+                            ${generateMachineOptions(machine.id)}
                         </select>
-                        <input type="hidden" name="machine_id[${index}]" value="${machine.id}">
                         <span class="stock-label block text-xs text-green-700 mt-1 font-semibold"></span>
                     </div>
 
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">المسدس</label>
-                        <select class="gun w-full p-2 border border-gray-300 rounded-lg bg-gray-100" disabled>
-                            <option value="${gun.id}" selected>${escapeHtml(gun.name)}</option>
+                        <select name="gun_id[${index}]" class="gun w-full p-2 border border-gray-300 rounded-lg">
+                            ${generateGunOptions(guns || [], gun.id)}
                         </select>
-                        <input type="hidden" name="gun_id[${index}]" value="${gun.id}">
                     </div>
 
                     <div class="mr-5">
@@ -357,17 +386,31 @@
                         <input type="text" name="total[${index}]" readonly class="total w-full p-2 border border-gray-300 rounded-lg bg-gray-100">
                     </div>
                 `;
+                div.querySelector('.machine').value = String(machine.id);
                 return div;
+            }
+
+            // خيارات المسدسات — مع تحديد القيمة الحالية إن وُجدت
+            function generateGunOptions(guns, selectedId) {
+                if (!guns || guns.length === 0) return `<option value="">لا توجد مسدسات</option>`;
+                let options = '';
+                guns.forEach(g => {
+                    const sel = String(g.id) === String(selectedId) ? 'selected' : '';
+                    options += `<option value="${g.id}" ${sel}>${escapeHtml(g.name)}</option>`;
+                });
+                return options;
             }
 
             function renderStocksInfo() {
                 const box = document.getElementById('stocksInfoContainer');
-                const keys = Object.keys(stockMap);
-                if (keys.length === 0) { box.innerHTML = ''; return; }
+                // كل بير يظهر مرة واحدة فقط مهما تعددت الماكينات التي تستخدمه (stockMap مفهرس بمعرّف الماكينة)
+                const stocks = new Map();
+                Object.values(stockMap).forEach(s => {
+                    if (s && s.id != null) stocks.set(s.id, s);
+                });
+                if (stocks.size === 0) { box.innerHTML = ''; return; }
                 let html = '';
-                keys.forEach(mid => {
-                    const s = stockMap[mid];
-                    if (!s) return;
+                stocks.forEach(s => {
                     html += `<div class="flex items-center gap-6 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -788,14 +831,6 @@
                 });
             }
 
-            function generateMachineOptions() {
-                let options = `<option value="">اختر الماكينة</option>`;
-                machines.forEach(machine => {
-                    options += `<option value="${machine.id}">${machine.name}</option>`;
-                });
-                return options;
-            }
-
             // --- إضافة ماكينة (صف لكل مسدس فيها) ---
             if (addInvoiceBtn) {
                 addInvoiceBtn.addEventListener('click', () => {
@@ -831,7 +866,7 @@
             // 🔹 إنشاء صفوف قراءة لماكينة (صف لكل مسدس) وإضافتها للحاوية
             function createRowsForMachine(machine, guns) {
                 const priceRaw = getGlobalPriceRaw();
-                const rows = guns.map(gun => buildReadingRow(nextRowIndex++, machine, gun, priceRaw));
+                const rows = guns.map(gun => buildReadingRow(nextRowIndex++, machine, gun, priceRaw, guns));
                 rows.forEach(row => {
                     container.appendChild(row);
                     attachInvoiceEvents(row);
@@ -842,8 +877,9 @@
 
             // الماكينات المُضافة بالفعل (عبر صفوف القراءة الحالية)
             function getAddedMachineIds() {
-                return Array.from(document.querySelectorAll('.fuel-item input[name^="machine_id"]'))
-                    .map(inp => String(inp.value));
+                return Array.from(document.querySelectorAll('.fuel-item select[name^="machine_id"]'))
+                    .map(sel => sel.value ? String(sel.value) : null)
+                    .filter(Boolean);
             }
 
             // 🔹 عند اختيار الماكينة: أنشئ صفًا لكل مسدس فيها
@@ -892,7 +928,7 @@
             if (addAllMachinesBtn) {
                 addAllMachinesBtn.addEventListener('click', () => {
                     const addedIds = getAddedMachineIds();
-                    const remaining = machines.filter(m => !addedIds.includes(String(m.id)));
+                    const remaining = getFilteredMachines().filter(m => !addedIds.includes(String(m.id)));
 
                     if (remaining.length === 0) {
                         Swal.fire({
@@ -956,7 +992,108 @@
                 });
             }
 
+            // 🔹 عند تغيير الماكينة في صف قراءة: حدّث مسدسات الصف والبير وأعد الحساب
+            $(document).on('change', '.fuel-item .machine', function() {
+                const item = this.closest('.fuel-item');
+                const machineId = this.value;
+                const oldMid = item.dataset.mid;
 
+                // لا توجد ماكينة محددة
+                if (!machineId) {
+                    const gunSel = item.querySelector('.gun');
+                    if (gunSel) gunSel.innerHTML = '<option value="">اختر المسدس</option>';
+                    const label = item.querySelector('.stock-label');
+                    if (label) label.textContent = '';
+                    item.dataset.mid = '';
+                    // تنظيف البير القديم إن لم تعد هناك صفوف تستخدمه
+                    cleanupStockIfUnused(oldMid);
+                    calculateRow(item);
+                    updateGrandTotals();
+                    return;
+                }
+
+                const machine = machines.find(m => String(m.id) === String(machineId));
+                if (!machine) return;
+                item.dataset.mid = machineId;
+
+                // نظّف بيانات البير القديم إن لم تعد هناك صفوف تستخدمه
+                cleanupStockIfUnused(oldMid);
+
+                // اجلب مسدسات الماكينة الجديدة وأعد بناء سيلكت المسدس
+                $.ajax({
+                    url: '{{ route('gun.getGun') }}',
+                    method: 'GET',
+                    data: {
+                        machine_id: machineId,
+                        station_id: {{ $station->id }},
+                    },
+                    success: function(data) {
+                        const guns = (data.success && data.guns) ? data.guns : [];
+                        const gunSel = item.querySelector('.gun');
+                        if (gunSel) {
+                            const prevGun = gunSel.value;
+                            gunSel.innerHTML = generateGunOptions(guns, prevGun);
+                        }
+                        // حدّث بيانات البير (stock) للماكينة الجديدة
+                        fetchStockForMachine(machine.id, [item]);
+                        calculateRow(item);
+                        updateGrandTotals();
+                    },
+                    error: function() {
+                        const gunSel = item.querySelector('.gun');
+                        if (gunSel) gunSel.innerHTML = '<option value="">اختر المسدس</option>';
+                        calculateRow(item);
+                        updateGrandTotals();
+                    }
+                });
+            });
+
+            // تنظيف بيانات البير لمعرّف ماكينة إن لم تعد هناك أي صفوف تستخدمه
+            function cleanupStockIfUnused(mid) {
+                if (!mid) return;
+                const stillUsed = Array.from(document.querySelectorAll('.fuel-item .machine'))
+                    .some(sel => String(sel.value) === String(mid));
+                if (!stillUsed && stockMap[mid]) {
+                    delete stockMap[mid];
+                    renderStocksInfo();
+                }
+            }
+
+            // 🔹 عند تغيير المسدس في صف قراءة: أعد الحساب فقط
+            $(document).on('change', '.fuel-item .gun', function() {
+                const item = this.closest('.fuel-item');
+                calculateRow(item);
+                updateGrandTotals();
+            });
+
+            // 🔹 عند تغيير فلتر نوع الوقود: حدّث منتقيات الماكينات واحذف الصفوف غير المطابقة
+            const fuelFilterEl = document.getElementById('fuelFilter');
+            if (fuelFilterEl) {
+                fuelFilterEl.addEventListener('change', function() {
+                    // حدّث خيارات كل سيلكت ماكينة في الصفوف الحالية
+                    document.querySelectorAll('.fuel-item .machine').forEach(sel => {
+                        const current = sel.value;
+                        sel.innerHTML = generateMachineOptions(current);
+                    });
+                    // حدّث خيارات منتقيات الماكينات (picker) الحالية
+                    document.querySelectorAll('.picker-machine').forEach(sel => {
+                        const current = sel.value;
+                        $(sel).html(generateMachineOptions(current)).val(current || null).trigger('change');
+                    });
+                    // احذف صفوف القراءة التي أصبحت ماكينتها خارج الفلتر
+                    document.querySelectorAll('.fuel-item').forEach(item => {
+                        const sel = item.querySelector('.machine');
+                        if (!sel || !sel.value) return;
+                        const m = machines.find(x => String(x.id) === String(sel.value));
+                        if (m && !getFilteredMachines().some(x => String(x.id) === String(m.id))) {
+                            const mid = sel.value;
+                            item.remove();
+                            cleanupStockIfUnused(mid);
+                        }
+                    });
+                    updateGrandTotals();
+                });
+            }
 
             document.addEventListener('click', function(e) {
                 const addBtnMachine = e.target.closest('.add-machine-btn');

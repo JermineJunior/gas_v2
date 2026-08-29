@@ -8,6 +8,13 @@ class FuelDeliviery extends Model
 {
     protected $fillable = ['tuncker_id', 'supplier_id', 'quantity', 'user_id', 'date', 'station_id'];
 
+    protected function casts()
+    {
+        return [
+            'date' => 'date'
+        ];
+    }
+
     public function station()
     {
         return $this->belongsTo(Station::class);

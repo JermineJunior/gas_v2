@@ -94,7 +94,17 @@ class MachineDetailController extends Controller
 
     public function create(Station $station)
     {
-        $machines = Machine::where('station_id', $station->id)->get();
+        // الماكينات مع البير (لنوع الوقود) ومرتبة طبيعياً حسب الاسم (مكنة 2 قبل مكنة 10)
+        $machines = Machine::where('station_id', $station->id)
+            ->with('stock')
+            ->get()
+            ->sortBy(fn($m) => (string) $m->name, SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            // نُخرج العربية فقط أساساً البير محمَّل، مع إضافة fuel_type للاستخدام في الواجهة
+            ->map(function ($m) {
+                return $m->load('stock');
+            });
+
         $employees = Employee::where('station_id', $station->id)->get();
         $stocks = Stock::where('station_id', $station->id)->get();
         return view('machine_detail_create', compact('machines', 'station', 'employees', 'stocks'));
@@ -217,7 +227,12 @@ class MachineDetailController extends Controller
     public function edit(MachineDetail $machine_detail)
     {
         $machine_detail = $machine_detail->load('station');
-        $machines = Machine::get();
+        // ماكينات نفس المحطة فقط، مع البير (لنوع الوقود)، مرتبة طبيعياً حسب الاسم
+        $machines = Machine::where('station_id', $machine_detail->station_id)
+            ->with('stock')
+            ->get()
+            ->sortBy(fn($m) => (string) $m->name, SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
         $employees = Employee::where('station_id', $machine_detail->station_id)->get();
         $guns = Gun::where('station_id', $machine_detail->station_id)->where('machine_id', $machine_detail->machine_id)->get();
         return view('machine_detail_edit', compact('machine_detail', 'machines', 'employees', 'guns'));

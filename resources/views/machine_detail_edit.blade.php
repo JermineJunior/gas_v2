@@ -39,7 +39,15 @@
             <input type="hidden" value="{{ $machine_detail->station_id }}" name="station_id">
 
             <div class="mb-6">
-                <div class="flex justify-end items-center mb-4"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
+                <div class="flex justify-end items-center gap-2 mb-4 flex-wrap"> {{-- <h2 class="text-xl font-semibold text-gray-800">تفاصيل البيع </h2> --}}
+                    <div class="flex items-center gap-2 mr-auto">
+                        <label class="text-sm font-medium text-gray-700">نوع الوقود:</label>
+                        <select id="fuelFilter" class="w-44 p-2 border border-gray-300 rounded-lg">
+                            <option value="">الكل</option>
+                            <option value="1">جازولين</option>
+                            <option value="2">بنزين</option>
+                        </select>
+                    </div>
                     <button type="button" id="addFuelInvoiceBtn"
                         class="flex items-center bg-primary-strong text-white px-3 py-2 rounded-lg hover:bg-primary-strong">
                         إضافة عداد جديد
@@ -316,12 +324,14 @@
 
             function renderStocksInfo() {
                 const box = document.getElementById('stocksInfoContainer');
-                const keys = Object.keys(stockMap);
-                if (keys.length === 0) { box.innerHTML = ''; return; }
+                // كل بير يظهر مرة واحدة فقط مهما تعددت الماكينات التي تستخدمه (stockMap مفهرس بمعرّف الماكينة)
+                const stocks = new Map();
+                Object.values(stockMap).forEach(s => {
+                    if (s && s.id != null) stocks.set(s.id, s);
+                });
+                if (stocks.size === 0) { box.innerHTML = ''; return; }
                 let html = '';
-                keys.forEach(mid => {
-                    const s = stockMap[mid];
-                    if (!s) return;
+                stocks.forEach(s => {
                     html += `<div class="flex items-center gap-6 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -737,10 +747,22 @@
                 });
             }
 
-            function generateMachineOptions() {
+            // الماكينات المرشّحة حسب نوع الوقود المحدد (الكل = كل الماكينات، machine.fuel_type_id: 1 جازولين / 2 بنزين)
+            function getFuelFilter() {
+                return document.getElementById('fuelFilter')?.value || '';
+            }
+
+            function getFilteredMachines() {
+                const filter = getFuelFilter();
+                if (!filter) return machines;
+                return machines.filter(m => String(m.fuel_type_id) === String(filter));
+            }
+
+            function generateMachineOptions(selectedId) {
                 let options = `<option value="">اختر الماكينة</option>`;
-                machines.forEach(machine => {
-                    options += `<option value="${machine.id}">${machine.name}</option>`;
+                getFilteredMachines().forEach(machine => {
+                    const sel = String(machine.id) === String(selectedId) ? 'selected' : '';
+                    options += `<option value="${machine.id}" ${sel}>${machine.name}</option>`;
                 });
                 return options;
             }

@@ -17,4 +17,9 @@ class StockDetail extends Model
     {
         return $this->belongsTo(Stock::class);
     }
+
+    public function photos()
+    {
+        return $this->hasMany(StockDetailPhoto::class);
+    }
 }

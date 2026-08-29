@@ -19,9 +19,21 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'national_id' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:255',
+            'date_of_birth' => 'nullable|date',
+        ]);
+
         Employee::create([
             'name' => $request->name,
             'station_id' => $request->station_id,
+            'phone_number' => $request->phone_number,
+            'national_id' => $request->national_id,
+            'address' => $request->address,
+            'date_of_birth' => $request->date_of_birth,
         ]);
 
         return back()->with('success', 'تم ادخال الموظف بنجاح');
@@ -29,8 +41,20 @@ class EmployeeController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'national_id' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:255',
+            'date_of_birth' => 'nullable|date',
+        ]);
+
         Employee::find($request->id)->update([
             'name' => $request->name,
+            'phone_number' => $request->phone_number,
+            'national_id' => $request->national_id,
+            'address' => $request->address,
+            'date_of_birth' => $request->date_of_birth,
         ]);
 
         return back()->with('success', 'تم تعديل الموظف بنجاح');

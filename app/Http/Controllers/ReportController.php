@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\DepositDetail;
 use App\Models\Detail;
+use App\Models\FuelDeliviery;
 use App\Models\FuelOrder;
 use App\Models\MachineDetail;
 use App\Models\Station;
@@ -112,10 +113,8 @@ class ReportController extends Controller
         $start_date = $request->start_date;
         $end_date = $request->end_date;
         $supplier = Supplier::find($request->supplier_id) ?? null;
-        $operations = FuelOrder::with(['supplier' => function ($q) {
-            $q->withSum('fuelOrders as total_orders', 'quantity')
-                ->withSum('fuelDeliveries as total_deliveries', 'quantity');
-        }])
+
+        $orders = FuelOrder::with('supplier')
             ->when($request->supplier_id, function ($query) use ($request) {
                 return $query->where('supplier_id', $request->supplier_id);
             })
@@ -125,8 +124,28 @@ class ReportController extends Controller
             ->when($request->end_date, function ($query) use ($request) {
                 return $query->whereDate('date', '<=', $request->end_date);
             })
+            ->orderBy('date')
+            ->orderBy('id')
             ->get();
-        return view('supplier_result', compact('operations', 'start_date', 'end_date', 'supplier'));
+
+        $deliveries = FuelDeliviery::with('supplier', 'station')
+            ->when($request->supplier_id, function ($query) use ($request) {
+                return $query->where('supplier_id', $request->supplier_id);
+            })
+            ->when($request->start_date, function ($query) use ($request) {
+                return $query->whereDate('date', '>=', $request->start_date);
+            })
+            ->when($request->end_date, function ($query) use ($request) {
+                return $query->whereDate('date', '<=', $request->end_date);
+            })
+            ->orderBy('date')
+            ->orderBy('id')
+            ->get();
+
+        $total_requested = $orders->sum('quantity');
+        $total_delivered = $deliveries->sum('quantity');
+
+        return view('supplier_result', compact('orders', 'deliveries', 'total_requested', 'total_delivered', 'start_date', 'end_date', 'supplier'));
     }
 
     public function debt()
@@ -157,7 +176,13 @@ class ReportController extends Controller
                 return $query->whereDate('date', '<=', $request->end_date);
             })
             ->get();
-        return view('debt_result', compact('operations', 'start_date', 'end_date', 'client'));
+
+        // ── إجماليات أسفل التقرير: المدفوع (الإيراد) والمتبقي (الإجمالي − الإيراد) ──
+        $totalAmount  = $operations->sum('amount');
+        $totalBill    = $operations->sum('total');
+        $totalRemaining = $totalBill - $totalAmount;
+
+        return view('debt_result', compact('operations', 'start_date', 'end_date', 'client', 'totalAmount', 'totalBill', 'totalRemaining'));
     }
 
     // ── Machine Report (no time filter) ──

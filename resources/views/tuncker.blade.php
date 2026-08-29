@@ -34,7 +34,7 @@
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6">
 
         <!-- Form -->
-        <form action="{{ route('tuncker.store') }}" method="POST" id="storeForm">
+        <form action="{{ route('tuncker.store') }}" method="POST" id="storeForm" enctype="multipart/form-data">
             @csrf
             <div class="flex justify-between items-start mb-6">
                 <div class="flex items-center">
@@ -147,6 +147,12 @@
                             <label class="block mb-1 text-sm font-medium text-gray-700">البير</label>
                             <select name="stock_id[0]" class="stock_id w-full" required></select>
                         </div>
+                        <div class="md:col-span-2">
+                            <label class="block mb-1 text-sm font-medium text-gray-700">صور العداد (اختياري)</label>
+                            <input type="file" name="meter_photos[0][]" multiple accept="image/*"
+                                class="meter-photos-input w-full p-2 border border-gray-300 rounded-lg cursor-pointer">
+                            <div class="meter-photos-preview mt-2 flex flex-wrap gap-2"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -210,6 +216,9 @@
             const depositContainer = document.getElementById('depositContainer');
             const addDepositBtn = document.getElementById('addDepositBtn');
 
+            // فهرس الصف التالي — عداد تصاعدي دائم حتى لا تتكرر المفاتيح بعد حذف صف وسطي
+            let nextRowIndex = depositContainer.querySelectorAll('.deposit-item').length;
+
 
             if (addDepositBtn) addDepositBtn.addEventListener('click', addDepositRow);
 
@@ -254,7 +263,7 @@
             });
 
             function addDepositRow() {
-                let index = depositContainer.querySelectorAll('.deposit-item').length;
+                let index = nextRowIndex++;
                 const row = document.createElement('div');
                 row.className =
                     "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
@@ -272,6 +281,13 @@
                     </div>
 
                     <button type="button" class="remove-deposit-row text-red-600 font-bold text-lg mt-6">✖</button>
+
+                    <div class="md:col-span-3">
+                        <label class="block mb-1 text-sm font-medium text-gray-700">صور العداد (اختياري)</label>
+                        <input type="file" name="meter_photos[${index}][]" multiple accept="image/*"
+                            class="meter-photos-input w-full p-2 border border-gray-300 rounded-lg cursor-pointer">
+                        <div class="meter-photos-preview mt-2 flex flex-wrap gap-2"></div>
+                    </div>
                 `;
                 depositContainer.appendChild(row);
                 $('.stock_id').select2({
@@ -304,13 +320,29 @@
                         updateSettlementAndRemaining && updateSettlementAndRemaining();
                     });
                 }
+
+                attachMeterPhotosEvents(row);
             }
 
-            if (addDepositBtn) addDepositBtn.addEventListener('click', addDepositRow);
+            // معاينة الصور المختارة (بدون رفع) — بسيطة: عرض مصغرات، والإعادة اختيار/مسح الحقل كاملاً
+            function attachMeterPhotosEvents(row) {
+                const input = row.querySelector('.meter-photos-input');
+                const preview = row.querySelector('.meter-photos-preview');
+                if (!input || !preview) return;
 
-            depositContainer.querySelectorAll(':scope > .deposit-item').forEach((row, idx) => {
-                attachDepositRow(row, idx);
-            });
+                input.addEventListener('change', function() {
+                    preview.querySelectorAll('img').forEach(img => URL.revokeObjectURL(img.src));
+                    preview.innerHTML = '';
+                    Array.from(input.files || []).forEach(file => {
+                        const img = document.createElement('img');
+                        img.src = URL.createObjectURL(file);
+                        img.className = 'w-16 h-16 object-cover rounded border cursor-pointer';
+                        img.title = file.name;
+                        img.onclick = () => window.open(img.src, '_blank');
+                        preview.appendChild(img);
+                    });
+                });
+            }
 
             $("#storeForm").validate({
                 rules: {
