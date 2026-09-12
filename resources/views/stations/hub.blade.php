@@ -104,7 +104,7 @@
                     <a href="{{ route('tuncker.index', $station->id) }}" class="hub-sublink">قائمة التناكر</a>
                 @endcan
 
-                <p class="px-3 pt-3 pb-1 text-xs font-bold text-gray-400">الودائع</p>
+                <p class="px-3 pt-3 pb-1 text-xs font-bold text-gray-400">التوريدات</p>
                 @can('deposit_details.create')
                     <a href="{{ route('deposit_detail.create', $station->id) }}" class="hub-sublink">تسجيل التوريدات</a>
                 @endcan

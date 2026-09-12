@@ -96,6 +96,7 @@
                         <th class="p-3 text-center">اسم السائق</th>
                         <th class="p-3 text-center">رقم التنكر</th>
                         <th class="p-3 text-center">كمية الوقود</th>
+                        <th class="p-3 text-center">نوع الوقود</th>
                         <th class="p-3 text-center"> المورد</th>
                     </tr>
                 </thead>
@@ -111,6 +112,7 @@
                             <td class="p-3 text-center">{{ $tuncker->driver_name }}</td>
                             <td class="p-3 text-center">{{ $tuncker->tuncker_no }}</td>
                             <td class="p-3 text-center">{{ formatNumber($tuncker->fuel_quantity) }}</td>
+                            <td class="p-3 text-center">{{ $tuncker->fuel_type == 1 ? 'جازولين' : 'بنزين'  }}</td>
                             <td class="p-3 text-center">{{ $tuncker->supplier->name }}</td>
                         </tr>
                     @empty

@@ -94,6 +94,7 @@
                         </tr>
                     @else
                         @foreach ($clients as $client)
+                        
                             @php $clientBalance = $client->total_sum - $client->paid_sum; @endphp
                             <tr data-type="{{ $client->type }}"
                                 x-show="activeTab === 'all' || activeTab == '{{ $client->type }}'"
@@ -123,7 +124,8 @@
                                 <!-- آخر توريدة/سداد -->
                                 <td class="px-3 py-3 text-center text-sm {{ $client->last_payment_date ? 'text-gray-500' : 'text-red-600 font-semibold' }}">
                                     @if ($client->last_payment_date)
-                                        آخر توريدة/سداد: {{ \Carbon\Carbon::parse($client->last_payment_date)->diffForHumans() }}
+                                     آخر توريدة/سداد: {{ $client->last_payment_date ? \Carbon\Carbon::parse($client->last_payment_date, config('app.timezone'))->diffForHumans() : 'لا يوجد' }}
+
                                     @else
                                         لم يقم بأي توريدة/سداد
                                     @endif
