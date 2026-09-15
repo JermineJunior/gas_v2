@@ -199,6 +199,47 @@
                 </div> --}}
             </div>
 
+            <!-- ملخص حسابات العملاء -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                {{-- العملاء (type 1) --}}
+                <div class="bg-white rounded-2xl shadow-lg p-5">
+                    <h3 class="text-sm font-bold text-gray-500 mb-3">العملاء</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <div class="bg-primary-soft rounded-xl px-4 py-2.5 min-w-[140px] flex-1">
+                            <p class="text-xs text-gray-500 mb-0.5">المديونيات</p>
+                            <p class="text-lg font-bold text-primary-strong">{{ number_format($clientTotals['1']['total']) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                        </div>
+                        <div class="bg-green-50 rounded-xl px-4 py-2.5 min-w-[140px] flex-1">
+                            <p class="text-xs text-gray-500 mb-0.5">الإيرادات</p>
+                            <p class="text-lg font-bold text-green-700">{{ number_format($clientTotals['1']['paid']) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                        </div>
+                        <div class="bg-accent-soft rounded-xl px-4 py-2.5 min-w-[140px] flex-1">
+                            <p class="text-xs text-gray-500 mb-0.5">الرصيد المتبقي</p>
+                            <p class="text-lg font-bold text-accent-strong">{{ number_format($clientTotals['1']['total'] - $clientTotals['1']['paid']) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- الباصات (type 2) --}}
+                <div class="bg-white rounded-2xl shadow-lg p-5">
+                    <h3 class="text-sm font-bold text-gray-500 mb-3">الباصات</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <div class="bg-primary-soft rounded-xl px-4 py-2.5 min-w-[140px] flex-1">
+                            <p class="text-xs text-gray-500 mb-0.5">المديونيات</p>
+                            <p class="text-lg font-bold text-primary-strong">{{ number_format($clientTotals['2']['total']) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                        </div>
+                        <div class="bg-green-50 rounded-xl px-4 py-2.5 min-w-[140px] flex-1">
+                            <p class="text-xs text-gray-500 mb-0.5">الإيرادات</p>
+                            <p class="text-lg font-bold text-green-700">{{ number_format($clientTotals['2']['paid']) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                        </div>
+                        <div class="bg-accent-soft rounded-xl px-4 py-2.5 min-w-[140px] flex-1">
+                            <p class="text-xs text-gray-500 mb-0.5">الرصيد المتبقي</p>
+                            <p class="text-lg font-bold text-accent-strong">{{ number_format($clientTotals['2']['total'] - $clientTotals['2']['paid']) }} <span class="text-xs text-gray-400">ج.س</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- نظرة عامة -->
             <div class="bg-white rounded-2xl shadow-lg p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">نظرة عامة</h2>

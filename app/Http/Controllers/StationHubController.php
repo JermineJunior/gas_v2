@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Deposit;
 use App\Models\DepositDetail;
 use App\Models\ExpenseDetail;
@@ -48,6 +49,26 @@ class StationHubController extends Controller
             ->sum('d.remaining');
         $stats['remaining'] = $latestRemaining;
 
-        return view('stations.hub', compact('station', 'stats'));
+        // مديونيات وإيرادات العملاء حسب النوع
+        $accountUser = $station->users()->where('type', 3)->first()
+            ?? $station->users()->where('type', 2)->first();
+
+        $clientTotals = ['1' => ['total' => 0, 'paid' => 0], '2' => ['total' => 0, 'paid' => 0]];
+
+        if ($accountUser) {
+            $clients = Client::where('user_id', $accountUser->id)
+                ->withSum('details as total_sum', 'total')
+                ->withSum('details as paid_sum', 'amount')
+                ->get();
+
+            foreach ($clients as $c) {
+                $key = (string) $c->type;
+                if (!isset($clientTotals[$key])) continue;
+                $clientTotals[$key]['total'] += (float) $c->total_sum;
+                $clientTotals[$key]['paid']  += (float) $c->paid_sum;
+            }
+        }
+
+        return view('stations.hub', compact('station', 'stats', 'clientTotals'));
     }
 }
