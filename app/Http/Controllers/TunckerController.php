@@ -128,6 +128,16 @@ class TunckerController extends Controller
         return view('edit_tuncker', compact('tuncker', 'suppliers', 'stocks'));
     }
 
+    public function show(Tuncker $tuncker)
+    {
+        $stationIds = Auth::user()->stations()->pluck('station_id')->toArray();
+        if (!in_array($tuncker->station_id, $stationIds)) {
+            return back();
+        }
+        $tuncker->load('station', 'supplier', 'stockDetail.stock', 'stockDetail.photos');
+        return view('show_tuncker', compact('tuncker'));
+    }
+
     public function update(Tuncker $tuncker, Request $request)
     {
         // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)

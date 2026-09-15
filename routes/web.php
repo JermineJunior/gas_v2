@@ -136,6 +136,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('tuncker/{station}/create', [TunckerController::class, 'create'])->name('tuncker.create');
     Route::post('tuncker', [TunckerController::class, 'store'])->name('tuncker.store');
     Route::get('tuncker/{tuncker}', [TunckerController::class, 'edit'])->name('tuncker.edit');
+    Route::get('tuncker/{tuncker}/show', [TunckerController::class, 'show'])->name('tuncker.show');
     Route::put('tuncker/{tuncker}', [TunckerController::class, 'update'])->name('tuncker.update');
     Route::delete('tuncker/{tuncker}', [TunckerController::class, 'delete'])->name('tuncker.delete');
 

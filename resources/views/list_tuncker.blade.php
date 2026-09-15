@@ -112,7 +112,7 @@
                                             <th class="px-4 py-3 text-right">نوع الوقود</th>
                                             <th class="px-4 py-3 text-right">كمية الوقود</th>
                                             <th class="px-4 py-3 text-right">اسم المورد</th>
-                                            @canany(['tunckers.edit', 'tunckers.delete'])
+                                            @canany(['tunckers.view', 'tunckers.edit', 'tunckers.delete'])
                                                 <th class="px-4 py-3 text-right">الاجراءات</th>
                                             @endcanany
                                         </tr>
@@ -128,8 +128,12 @@
                                                 </td>
                                                 <td class="px-4 py-3">{{ number_format($tuncker->fuel_quantity) }}</td>
                                                 <td class="px-4 py-3">{{ $tuncker->supplier->name }}</td>
-                                                @canany(['tunckers.edit', 'tunckers.delete'])
+                                                @canany(['tunckers.view', 'tunckers.edit', 'tunckers.delete'])
                                                     <td class="px-4 py-3 flex gap-2">
+                                                        @can('tunckers.view')
+                                                            <a href="{{ route('tuncker.show', $tuncker->id) }}"
+                                                                class="bg-sky-600 text-white px-3 py-1 rounded-lg hover:bg-sky-700">عرض</a>
+                                                        @endcan
                                                         @can('tunckers.edit')
                                                             <a href="{{ route('tuncker.edit', $tuncker->id) }}"
                                                                 class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
