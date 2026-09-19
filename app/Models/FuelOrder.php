@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class FuelOrder extends Model
 {
-    protected $fillable = ['user_id','quantity','supplier_id','date'];
+    protected $fillable = ['user_id', 'quantity', 'supplier_id', 'date', 'fuel_type', 'price_per_liter', 'total'];
 
     protected function casts()
     {
         return [
-            'date' => 'date'
+            'date' => 'date',
+            'fuel_type' => 'integer',
+            'price_per_liter' => 'decimal:2',
+            'total' => 'decimal:2',
         ];
     }
 

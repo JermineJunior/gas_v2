@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-<div x-data="{ openAdd: false, openEdit: false, editsupplier: { id: '', date: '', quantity: '' } }">
+<div x-data="{ openAdd: false, openEdit: false, editsupplier: { id: '', date: '', quantity: '', fuel_type: '', price_per_liter: '', total: '' } }">
     <!-- جدول المستخدمين -->
     <div class="max-w-7xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
@@ -28,7 +28,10 @@
                     <tr>
                         <th class="px-4 py-3 text-right">#</th>
                         <th class="px-4 py-3 text-right">التاريخ</th>
-                        <th class="px-4 py-3 text-right">كمية الوقود المطلوبة</th>
+<th class="px-4 py-3 text-right">كمية الوقود المطلوبة</th>
+                         <th class="px-4 py-3 text-right">نوع الوقود</th>
+                         <th class="px-4 py-3 text-right">سعر اللتر</th>
+                         <th class="px-4 py-3 text-right">الإجمالي</th>
                         <th class="px-4 py-3 text-right">الإجراءات</th>
                     </tr>
                 </thead>
@@ -38,11 +41,14 @@
                             <td class="px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $fuel_order->date->format('Y-m-d') }}</td>
                             <td class="px-4 py-3">{{ number_format($fuel_order->quantity) }}</td>
+                            <td class="px-4 py-3">{{ $fuel_order->fuel_type == 1 ? 'جازولين' : ($fuel_order->fuel_type == 2 ? 'بنزين' : '—') }}</td>
+                            <td class="px-4 py-3">{{ $fuel_order->price_per_liter !== null ? number_format($fuel_order->price_per_liter, 2) : '—' }}</td>
+                            <td class="px-4 py-3">{{ $fuel_order->total !== null ? number_format($fuel_order->total, 2) : '—' }}</td>
                             <td class="px-4 py-3 flex gap-2">
                                 @can('fuel_orders.edit')
                                     <button
                                         @click="
-                                        editsupplier = {id:{{ $fuel_order->id }}, quantity:'{{ number_format($fuel_order->quantity) }}', date:'{{ $fuel_order->date }}'};
+                                        editsupplier = {id:{{ $fuel_order->id }}, quantity:'{{ $fuel_order->quantity !== null ? number_format($fuel_order->quantity) : '' }}', date:'{{ $fuel_order->date }}', fuel_type:'{{ $fuel_order->fuel_type }}', price_per_liter:'{{ $fuel_order->price_per_liter !== null ? number_format($fuel_order->price_per_liter, 2) : '' }}', total:'{{ $fuel_order->total !== null ? number_format($fuel_order->total, 2) : '' }}'};
                                         openEdit = true;
                                     "
                                         class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">
@@ -86,6 +92,25 @@
                     <input type="text" name="quantity" required
                         class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
                 </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">نوع الوقود</label>
+                    <select name="fuel_type" required
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
+                        <option value="">اختر نوع الوقود</option>
+                        <option value="1">جازولين</option>
+                        <option value="2">بنزين</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">سعر اللتر</label>
+                    <input type="text" name="price_per_liter" required
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">الإجمالي (يُحسب تلقائيًا — يمكن تعديله)</label>
+                    <input type="text" name="total" required
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
+                </div>
                 <div class="flex justify-end">
                     <button type="submit"
                         class="bg-primary-strong text-white px-5 py-2 rounded-lg shadow hover:bg-primary-strong transition">
@@ -101,7 +126,7 @@
         class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" style="display: none;">
         <div class="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative">
             <button @click="openEdit = false" class="absolute top-3 left-3 text-gray-500 hover:text-gray-700">✖</button>
-            <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">تعديل مستخدم</h2>
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">تعديل طلب الوقود</h2>
 
             <form id="FormEdit" action="{{ route('fuel_order.update') }}" method="POST" class="space-y-4">
                 @csrf
@@ -116,6 +141,25 @@
                 <div>
                     <label class="block text-gray-700 mb-1"> الكمية</label>
                     <input type="text" name="quantity" :value="editsupplier.quantity"
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">نوع الوقود</label>
+                    <select name="fuel_type" required
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
+                        <option value="">اختر نوع الوقود</option>
+                        <option value="1" :selected="editsupplier.fuel_type == '1'">جازولين</option>
+                        <option value="2" :selected="editsupplier.fuel_type == '2'">بنزين</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">سعر اللتر</label>
+                    <input type="text" name="price_per_liter" :value="editsupplier.price_per_liter" required
+                        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-1">الإجمالي (يُحسب تلقائيًا — يمكن تعديله)</label>
+                    <input type="text" name="total" :value="editsupplier.total" required
                         class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-strong focus:outline-none">
                 </div>
                 <div class="flex justify-end">
@@ -178,9 +222,34 @@
                 update();
             }
 
-            document.querySelectorAll('input[name="quantity"]').forEach(function(input) {
-                attachLiveFormatter(input);
-            });
+            function initTotalCalculator(form) {
+                if (!form) return;
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                const priceInput = form.querySelector('input[name="price_per_liter"]');
+                const totalInput = form.querySelector('input[name="total"]');
+                if (!quantityInput || !priceInput || !totalInput) return;
+
+                [quantityInput, priceInput, totalInput].forEach(function(input) {
+                    attachLiveFormatter(input);
+                });
+
+                function recalc() {
+                    // يُملأ الحقل تلقائيًا بـ الكمية × سعر اللتر، لكن يبقى قابلاً للتعديل اليدوي
+                    const qtyRaw = quantityInput.value.trim();
+                    const priceRaw = priceInput.value.trim();
+                    if (!qtyRaw || !priceRaw) {
+                        totalInput.value = '';
+                        return;
+                    }
+                    totalInput.value = formatWithCommas(parseNumber(qtyRaw) * parseNumber(priceRaw));
+                }
+
+                quantityInput.addEventListener('input', recalc);
+                priceInput.addEventListener('input', recalc);
+            }
+
+            initTotalCalculator(document.getElementById('FormStore'));
+            initTotalCalculator(document.getElementById('FormEdit'));
 
             $("#FormStore, #FormEdit").validate({
                 rules: {
@@ -191,6 +260,15 @@
                     quantity: {
                         required: true,
                     },
+                    fuel_type: {
+                        required: true,
+                    },
+                    price_per_liter: {
+                        required: true,
+                    },
+                    total: {
+                        required: true,
+                    },
                 },
                 messages: {
                     date: {
@@ -199,6 +277,15 @@
                     },
                     quantity: {
                         required: "يجب ادخال الكمية"
+                    },
+                    fuel_type: {
+                        required: "يجب تحديد نوع الوقود"
+                    },
+                    price_per_liter: {
+                        required: "يجب ادخال سعر اللتر"
+                    },
+                    total: {
+                        required: "يجب ادخال الإجمالي"
                     },
 
                 },
