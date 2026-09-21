@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Check;
 use App\Models\Operation;
 use App\Models\Station;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -29,6 +30,12 @@ class StationController extends Controller
         $station->name = $validated['name'];
         $station->order = $orderNum;
         $station->save();
+
+        // إرفاق المحطة تلقائيًا بكل مستخدم يملك دور admin
+        // حتى تظهر لديهم فورًا في صفحة المحطات دون حاجة لتحديد يدوي
+        User::role('admin')->get()->each(
+            fn ($user) => $user->stations()->syncWithoutDetaching([$station->id])
+        );
 
         // إعادة توجيه مع رسالة نجاح
         return redirect()->route('station.index')->with('success', 'تمت إضافة الطرمبة بنجاح ✅');
