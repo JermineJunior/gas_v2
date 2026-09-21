@@ -130,6 +130,18 @@
                     </div>
                 </div>
 
+                <!-- الصف الثالث: أمر التوريد -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">أمر التوريد (إلزامي)</label>
+                        <select name="fuel_order_id" id="fuel_order_id"
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="">اختر المورد أولاً</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">يعرض الكمية المتبقية لكل طلب — النوع والكمية يُملآن تلقائيًا</p>
+                    </div>
+                </div>
+
             </div>
 
             <div class="mb-6">
@@ -217,7 +229,71 @@
                 placeholder: 'اسم العميل'
             });
 
+            $('#fuel_order_id').select2({
+                width: '100%',
+                placeholder: 'أمر التوريد'
+            });
+
             $('.stock_id').select2();
+
+            // --- تحميل أوامر التوريد حسب المورد المختار ---
+            function loadFuelOrders(supplierId, includeOrderId) {
+                const $select = $('#fuel_order_id');
+                if (!supplierId) {
+                    $select.html('<option value="">اختر المورد أولاً</option>');
+                    return;
+                }
+                $select.html('<option value="">جاري التحميل...</option>');
+                $.ajax({
+                    url: '/api/fuel-orders',
+                    type: 'GET',
+                    data: {
+                        supplier_id: supplierId,
+                        include_order_id: includeOrderId || ''
+                    },
+                    success: function(orders) {
+                        if (!orders.length) {
+                            $select.html('<option value="">لا توجد أوامر توريد متاحة</option>');
+                            return;
+                        }
+                        let options = '<option value="">اختر أمر التوريد</option>';
+                        orders.forEach(function(o) {
+                            options += `<option value="${o.id}" data-fuel-type="${o.fuel_type}" data-remaining="${o.remaining_quantity}">
+                                #${o.id} — ${o.date} — ${o.fuel_type_text} — متبقي ${formatWithCommas(o.remaining_quantity)} لتر
+                            </option>`;
+                        });
+                        $select.html(options);
+                        // لو مررنا طلبًا محددًا (الطلب المرتبط حاليًا بالتسليم) نعيد اختياره
+                        if (includeOrderId && orders.some(o => o.id == includeOrderId)) {
+                            $select.val(String(includeOrderId)).trigger('change');
+                        }
+                    }
+                });
+            }
+
+            $('#supplier_id').on('change', function() {
+                $('#fuel_order_id').val('').trigger('change');
+                loadFuelOrders($(this).val(), null);
+            });
+
+            $('#fuel_order_id').on('change', function() {
+                const opt = $(this).find('option:selected');
+                const type = opt.data('fuel-type');
+                const remaining = opt.data('remaining');
+                if (!type) return;
+                // نوع الوقود يأتي من أمر التوريد — ولا بد أن يطابقه التسليم
+                $('#fuel_type').val(type).trigger('change');
+                // الكمية تُملأ بالمتبقي فقط لو لم يدخل المستخدم قيمة بعد
+                const qtyVal = fuelQuantityInput.value.trim();
+                if (!qtyVal && remaining) {
+                    fuelQuantityInput.value = formatWithCommas(remaining);
+                }
+            });
+
+            // عند الفتح نحمّل طلبات مورد التسليم ونحدد الطلب المرتبط حاليًا
+            let initialSupplier = $('#supplier_id').val();
+            let currentOrderId = {{ $currentOrderId ?? 'null' }};
+            if (initialSupplier) loadFuelOrders(initialSupplier, currentOrderId);
 
 
             // --- دوال مساعدة ---
@@ -395,6 +471,9 @@
                     },
                     supplier_id: {
                         required: true
+                    },
+                    fuel_order_id: {
+                        required: true
                     }
 
                 },
@@ -417,6 +496,9 @@
                     },
                     supplier_id: {
                         required: "يجب ادخال اسم المورد"
+                    },
+                    fuel_order_id: {
+                        required: "يجب اختيار أمر التوريد"
                     }
                 },
                 errorElement: "span",

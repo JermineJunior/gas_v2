@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class TunckerController extends Controller
 {
@@ -63,6 +64,14 @@ class TunckerController extends Controller
         // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)
         $request->validate([
             'meter_photos.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            // أمر التوريد إلزامي ومقيّد بأن يكون تابعًا لنفس المورد المختار في النموذج
+            'fuel_order_id' => [
+                'required',
+                'integer',
+                Rule::exists('fuel_orders', 'id')->where('supplier_id', $request->supplier_id),
+            ],
+            'supplier_id' => 'required|exists:suppliers,id',
+            'fuel_quantity' => 'required|numeric|min:0',
         ]);
 
         try {
@@ -81,6 +90,7 @@ class TunckerController extends Controller
                 'tuncker_id' => $tuncker->id,
                 'station_id' => $request->station_id,
                 'supplier_id' => $request->supplier_id,
+                'fuel_order_id' => $request->fuel_order_id,
                 'quantity' => $request->fuel_quantity,
                 'date' => $request->date,
                 'user_id' => Auth::id(),
@@ -125,7 +135,8 @@ class TunckerController extends Controller
         $tuncker = $tuncker->load('station', 'stockDetail.photos');
         $suppliers = Supplier::get();
         $stocks = Stock::where('station_id', $tuncker->station_id)->where('type', $tuncker->fuel_type)->get();
-        return view('edit_tuncker', compact('tuncker', 'suppliers', 'stocks'));
+        $currentOrderId = FuelDeliviery::where('tuncker_id', $tuncker->id)->value('fuel_order_id');
+        return view('edit_tuncker', compact('tuncker', 'suppliers', 'stocks', 'currentOrderId'));
     }
 
     public function show(Tuncker $tuncker)
@@ -143,6 +154,14 @@ class TunckerController extends Controller
         // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)
         $request->validate([
             'meter_photos.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            // أمر التوريد إلزامي ومقيّد بأن يكون تابعًا لنفس المورد المختار في النموذج
+            'fuel_order_id' => [
+                'required',
+                'integer',
+                Rule::exists('fuel_orders', 'id')->where('supplier_id', $request->supplier_id),
+            ],
+            'supplier_id' => 'required|exists:suppliers,id',
+            'fuel_quantity' => 'required|numeric|min:0',
         ]);
 
         try {
@@ -175,6 +194,7 @@ class TunckerController extends Controller
                 'tuncker_id' => $tuncker->id,
                 'station_id' => $request->station_id,
                 'supplier_id' => $request->supplier_id,
+                'fuel_order_id' => $request->fuel_order_id,
                 'quantity' => $request->fuel_quantity,
                 'date' => $request->date,
                 'user_id' => Auth::id(),

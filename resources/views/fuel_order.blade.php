@@ -29,6 +29,8 @@
                         <th class="px-4 py-3 text-right">#</th>
                         <th class="px-4 py-3 text-right">التاريخ</th>
 <th class="px-4 py-3 text-right">كمية الوقود المطلوبة</th>
+                         <th class="px-4 py-3 text-right">تم تسليمه</th>
+                         <th class="px-4 py-3 text-right">المتبقي</th>
                          <th class="px-4 py-3 text-right">نوع الوقود</th>
                          <th class="px-4 py-3 text-right">سعر اللتر</th>
                          <th class="px-4 py-3 text-right">الإجمالي</th>
@@ -41,6 +43,8 @@
                             <td class="px-4 py-3">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3">{{ $fuel_order->date->format('Y-m-d') }}</td>
                             <td class="px-4 py-3">{{ number_format($fuel_order->quantity) }}</td>
+                            <td class="px-4 py-3">{{ number_format($fuel_order->delivered_quantity) }}</td>
+                            <td class="px-4 py-3">{{ number_format($fuel_order->remaining_quantity) }}</td>
                             <td class="px-4 py-3">{{ $fuel_order->fuel_type == 1 ? 'جازولين' : ($fuel_order->fuel_type == 2 ? 'بنزين' : '—') }}</td>
                             <td class="px-4 py-3">{{ $fuel_order->price_per_liter !== null ? number_format($fuel_order->price_per_liter, 2) : '—' }}</td>
                             <td class="px-4 py-3">{{ $fuel_order->total !== null ? number_format($fuel_order->total, 2) : '—' }}</td>

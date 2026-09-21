@@ -22,7 +22,21 @@ class FuelOrder extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+    
+    public function deliveries()
+    {
+        return $this->hasMany(FuelDeliviery::class);
+    }
 
+    public function getDeliveredQuantityAttribute()
+    {
+        return $this->deliveries->sum('quantity');
+    }
+
+    public function getRemainingQuantityAttribute()
+    {
+        return $this->quantity - $this->delivered_quantity;
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

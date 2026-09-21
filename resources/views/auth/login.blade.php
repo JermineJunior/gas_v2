@@ -499,7 +499,7 @@
                     </ul>
                 </div>
 
-                <p class="aside-foot">&copy; 2026 جميع الحقوق محفوظة</p>
+                <p class="aside-foot">&copy;  جميع الحقوق محفوظة شركة بيان 2026</p>
             </div>
         </div>
     </div>

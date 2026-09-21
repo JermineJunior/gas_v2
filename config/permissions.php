@@ -111,6 +111,8 @@ return [
         'reports.employee_account'      => 'تقرير حساب الموظف',
         'reports.expense_list'          => 'تقرير المصروفات',
         'reports.expense_summary'       => 'ملخص المصروفات',
+        'reports.stations_summary'      => 'ملخص مبيعات المحطات',
+        'reports.stations_details'      => 'تفاصيل مبيعات المحطات',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',

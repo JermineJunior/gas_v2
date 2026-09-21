@@ -16,6 +16,8 @@ use App\Http\Controllers\StationHubController;
 use App\Http\Controllers\StationSetupController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\StationSummaryReportController;
+use App\Http\Controllers\StationDetailReportController;
 use App\Http\Controllers\TunckerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
@@ -83,6 +85,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/reports/expenses-summary', [ReportController::class, 'expense_summary'])->name('reports.expense_summary');
     Route::post('report/expenses-summary', [ReportController::class, 'expense_summary_result'])->name('reports.expense_summary.result');
 
+    Route::get('/reports/stations-summary', [StationSummaryReportController::class, 'index'])->name('reports.stations_summary')->middleware('can:reports.stations_summary');
+    Route::match(['get', 'post'], 'report/stations-summary', [StationSummaryReportController::class, 'result'])->name('reports.stations_summary.result')->middleware('can:reports.stations_summary');
+
+    Route::get('/reports/stations-details', [StationDetailReportController::class, 'index'])->name('reports.stations_details')->middleware('can:reports.stations_details');
+    Route::match(['get', 'post'], 'report/stations-details', [StationDetailReportController::class, 'result'])->name('reports.stations_details.result')->middleware('can:reports.stations_details');
+
     
     Route::post('/machines/store', [MachineController::class, 'storeAjax'])->name('machines.store.ajax');
 
@@ -97,6 +105,30 @@ Route::group(['middleware' => 'auth'], function () {
         if ($request->station_id) $query->where('station_id', $request->station_id);
         return $query->select('id', 'name')->get();
     })->name('api.machines');
+
+    // أوامر توريد الوقود المتاحة لاختيارها في نموذج التسليم — مقصورة على مورد معيّن
+    // ويعرض المتبقي فقط ما لم يُمرَّر include_order_id لإبقاء الطلب المرتبط حاليًا ظاهرًا
+    Route::get('/api/fuel-orders', function (\Illuminate\Http\Request $request) {
+        $query = \App\Models\FuelOrder::withSum('deliveries as delivered_quantity', 'quantity');
+        if ($request->supplier_id) $query->where('supplier_id', $request->supplier_id);
+        $include = (int) $request->integer('include_order_id');
+        $query->where(function ($q) use ($include) {
+            $q->whereRaw('fuel_orders.quantity > COALESCE((SELECT SUM(quantity) FROM fuel_delivieries d WHERE d.fuel_order_id = fuel_orders.id), 0)');
+            if ($include) $q->orWhere('fuel_orders.id', $include);
+        });
+        return $query->orderBy('date')->orderBy('id')->get()->map(function ($o) {
+            return [
+                'id'                => $o->id,
+                'fuel_type'         => $o->fuel_type,
+                'fuel_type_text'    => $o->fuel_type == 1 ? 'جازولين' : 'بنزين',
+                'date'              => $o->date->format('Y-m-d'),
+                'quantity'          => (float) $o->quantity,
+                'delivered_quantity' => (float) $o->delivered_quantity,
+                'remaining_quantity' => (float) max($o->quantity - $o->delivered_quantity, 0),
+                'price_per_liter'   => (float) $o->price_per_liter,
+            ];
+        });
+    })->name('api.fuel-orders');
 
     Route::get('/api/employees', function (\Illuminate\Http\Request $request) {
         $query = \App\Models\Employee::query();

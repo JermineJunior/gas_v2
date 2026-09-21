@@ -11,7 +11,7 @@ class FuelOrderController extends Controller
 {
     public function index(Supplier $supplier)
     {
-        $fuel_orders = FuelOrder::where('supplier_id',$supplier->id)->orderByDesc('id')->get();
+        $fuel_orders = FuelOrder::with('deliveries')->where('supplier_id', $supplier->id)->orderByDesc('id')->get();
         return view('fuel_order',compact('fuel_orders','supplier'));
     }
 

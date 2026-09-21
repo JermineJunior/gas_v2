@@ -217,7 +217,7 @@
             </div>
             @endcanany
 
-            @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary'])
+@canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary', 'reports.stations_summary', 'reports.stations_details'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -256,6 +256,12 @@
                     @endcan
                     @can('reports.machine_report_time')
                         <a href="{{ route('reports.machine_report_time') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات بالفترة</a>
+                    @endcan
+                    @can('reports.stations_summary')
+                        <a href="{{ route('reports.stations_summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص مبيعات المحطات</a>
+                    @endcan
+                    @can('reports.stations_details')
+                        <a href="{{ route('reports.stations_details') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تفاصيل مبيعات المحطات</a>
                     @endcan
                 </div>
             </div>

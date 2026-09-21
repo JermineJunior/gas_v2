@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FuelDeliviery extends Model
 {
-    protected $fillable = ['tuncker_id', 'supplier_id', 'quantity', 'user_id', 'date', 'station_id'];
+    protected $fillable = ['tuncker_id', 'fuel_order_id', 'supplier_id', 'quantity', 'user_id', 'date', 'station_id'];
 
     protected function casts()
     {
@@ -14,7 +14,10 @@ class FuelDeliviery extends Model
             'date' => 'date'
         ];
     }
-
+    public function fuelOrder()
+    {
+        return $this->belongsTo(FuelOrder::class);
+    }
     public function station()
     {
         return $this->belongsTo(Station::class);
@@ -28,5 +31,10 @@ class FuelDeliviery extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function tuncker()
+    {
+        return $this->belongsTo(Tuncker::class);
     }
 }
