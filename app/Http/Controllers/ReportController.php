@@ -128,7 +128,9 @@ class ReportController extends Controller
             ->orderBy('id')
             ->get();
 
-        $deliveries = FuelDeliviery::with('supplier', 'station')
+        // نوع الوقود وسعر اللتر والتكلفة للتوريدات تأتي من أمر التوريد المرتبط بها
+        // فالتسليم أصبح مرتبطًا بأمر عبر fuel_order_id
+        $deliveries = FuelDeliviery::with('supplier', 'station', 'fuelOrder')
             ->when($request->supplier_id, function ($query) use ($request) {
                 return $query->where('supplier_id', $request->supplier_id);
             })
@@ -145,7 +147,13 @@ class ReportController extends Controller
         $total_requested = $orders->sum('quantity');
         $total_delivered = $deliveries->sum('quantity');
 
-        return view('supplier_result', compact('orders', 'deliveries', 'total_requested', 'total_delivered', 'start_date', 'end_date', 'supplier'));
+        // قيمة الطلبات بالجنيه (من حقل الإجمالي المحفوظ) وتكلفة التوريدات (كمية × سعر اللتر من أمر التوريد)
+        $total_requested_value = $orders->sum(fn ($order) => (float) $order->total);
+        $total_delivered_value = $deliveries->sum(fn ($delivery) => $delivery->fuelOrder
+            ? (float) $delivery->quantity * (float) $delivery->fuelOrder->price_per_liter
+            : 0);
+
+        return view('supplier_result', compact('orders', 'deliveries', 'total_requested', 'total_delivered', 'total_requested_value', 'total_delivered_value', 'start_date', 'end_date', 'supplier'));
     }
 
     public function debt()

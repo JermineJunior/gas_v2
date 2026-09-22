@@ -47,6 +47,9 @@
 @endsection
 
 @section('content')
+    @php
+        $fuelLabels = [1 => 'جازولين', 2 => 'بنزين'];
+    @endphp
     <div class="max-w-6xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6 print-card">
 
         <!-- شعار + العنوان -->
@@ -96,6 +99,9 @@
                                 <th class="p-3 text-center">المورد</th>
                             @endif
                             <th class="p-3 text-center">الكمية المطلوبة</th>
+                            <th class="p-3 text-center">نوع الوقود</th>
+                            <th class="p-3 text-center">سعر اللتر</th>
+                            <th class="p-3 text-center">الإجمالي</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,17 +114,21 @@
                                     <td class="p-3 text-center">{{ $order->supplier->name ?? '-' }}</td>
                                 @endif
                                 <td class="p-3 text-center">{{ formatNumber($order->quantity) }}</td>
+                                <td class="p-3 text-center">{{ $fuelLabels[$order->fuel_type] ?? 'غير محدد' }}</td>
+                                <td class="p-3 text-center">{{ $order->price_per_liter !== null ? formatNumber($order->price_per_liter) : '-' }}</td>
+                                <td class="p-3 text-center">{{ $order->total !== null ? formatNumber($order->total) : '-' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="p-4 text-center text-gray-500">لا توجد طلبات لعرضها</td>
+                                <td colspan="7" class="p-4 text-center text-gray-500">لا توجد طلبات لعرضها</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="bg-[#F7ECEE] font-bold">
-                            <td colspan="{{ $supplier ? 2 : 3 }}" class="p-3 text-center">إجمالي الطلبات</td>
-                            <td class="p-3 text-center text-blue-700">{{ formatNumber($total_requested) }}</td>
+                            <td colspan="{{ $supplier ? 4 : 5 }}" class="p-3 text-center">إجمالي الطلبات</td>
+                            <td class="p-3 text-center text-blue-700">{{ formatNumber($total_requested) }} لتر</td>
+                            <td class="p-3 text-center text-blue-700">{{ formatNumber($total_requested_value) }} جنيه</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -139,6 +149,9 @@
                             @endif
                             <th class="p-3 text-center">المحطة</th>
                             <th class="p-3 text-center">الكمية الموردة</th>
+                            <th class="p-3 text-center">نوع الوقود</th>
+                            <th class="p-3 text-center">سعر اللتر</th>
+                            <th class="p-3 text-center">التكلفة</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -152,17 +165,21 @@
                                 @endif
                                 <td class="p-3 text-center">{{ $delivery->station->name ?? '-' }}</td>
                                 <td class="p-3 text-center">{{ formatNumber($delivery->quantity) }}</td>
+                                <td class="p-3 text-center">{{ $delivery->fuelOrder ? ($fuelLabels[$delivery->fuelOrder->fuel_type] ?? 'غير محدد') : 'غير مرتبط' }}</td>
+                                <td class="p-3 text-center">{{ $delivery->fuelOrder ? formatNumber($delivery->fuelOrder->price_per_liter) : '-' }}</td>
+                                <td class="p-3 text-center">{{ $delivery->fuelOrder ? formatNumber($delivery->quantity * $delivery->fuelOrder->price_per_liter) : '-' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="p-4 text-center text-gray-500">لا توجد توريدات لعرضها</td>
+                                <td colspan="8" class="p-4 text-center text-gray-500">لا توجد توريدات لعرضها</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="bg-[#F7ECEE] font-bold">
-                            <td colspan="{{ $supplier ? 3 : 4 }}" class="p-3 text-center">إجمالي التوريدات</td>
-                            <td class="p-3 text-center text-green-700">{{ formatNumber($total_delivered) }}</td>
+                            <td colspan="{{ $supplier ? 5 : 6 }}" class="p-3 text-center">إجمالي التوريدات</td>
+                            <td class="p-3 text-center text-green-700">{{ formatNumber($total_delivered) }} لتر</td>
+                            <td class="p-3 text-center text-green-700">{{ formatNumber($total_delivered_value) }} جنيه</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -171,9 +188,9 @@
 
         <!-- ملخص المطلوب مقابل المورد -->
         <div class="mt-6 bg-[#F7ECEE] rounded-lg p-4 flex flex-wrap items-center justify-center gap-6 text-md font-semibold print-inline">
-            <span class="text-blue-700">إجمالي المطلوب: <b>{{ formatNumber($total_requested) }}</b></span>
-            <span class="text-green-700">إجمالي المورد: <b>{{ formatNumber($total_delivered) }}</b></span>
-            <span class="text-gray-700">الفرق: <b>{{ formatNumber($total_requested - $total_delivered) }}</b></span>
+            <span class="text-blue-700">إجمالي المطلوب: <b>{{ formatNumber($total_requested) }}</b> لتر / <b>{{ formatNumber($total_requested_value) }}</b> جنيه</span>
+            <span class="text-green-700">إجمالي المورد: <b>{{ formatNumber($total_delivered) }}</b> لتر / <b>{{ formatNumber($total_delivered_value) }}</b> جنيه</span>
+            <span class="text-gray-700">الفرق: <b>{{ formatNumber($total_requested - $total_delivered) }}</b> لتر / <b>{{ formatNumber($total_requested_value - $total_delivered_value) }}</b> جنيه</span>
         </div>
     </div>
 @endsection
