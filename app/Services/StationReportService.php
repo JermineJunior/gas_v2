@@ -126,6 +126,21 @@ class StationReportService
         });
     }
 
+    /**
+     * عدد التوريدات غير المرتبطة بأمر توريد ضمن المحطات والفترة —
+     * تُعرض بجانب ملاحظة التقرير لأنها مستبعدة من أرقام التكلفة
+     * (الربط بأمر التوريد join داخلي في fuelReceivedByType / fuelCostByStation).
+     */
+    public function unmatchedDeliveriesCount(array $stationIds, ?string $startDate, ?string $endDate): int
+    {
+        return FuelDeliviery::query()
+            ->whereNull('fuel_order_id')
+            ->when($stationIds, fn($q) => $q->whereIn('station_id', $stationIds))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
+            ->count();
+    }
+
     public function deliveries(array $stationIds, ?string $startDate, ?string $endDate): LengthAwarePaginator
     {
         return FuelDeliviery::with('station', 'supplier', 'tuncker', 'fuelOrder')

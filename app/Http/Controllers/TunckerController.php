@@ -25,7 +25,7 @@ class TunckerController extends Controller
         if (!in_array($station->id, $stationIds)) {
             return back();
         }
-        $tunckers = Tuncker::where('station_id', $station->id)
+        $tunckers = Tuncker::with('fuelDelivery')->where('station_id', $station->id)
             ->orderBy('date', 'desc') // أولاً نرتب بالتاريخ من الأحدث للأقدم
             ->get()
             ->groupBy(function ($item) {
@@ -64,9 +64,10 @@ class TunckerController extends Controller
         // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)
         $request->validate([
             'meter_photos.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            // أمر التوريد إلزامي ومقيّد بأن يكون تابعًا لنفس المورد المختار في النموذج
+            // أمر التوريد اختياري عند إنشاء التسليم (يمكن ربطه لاحقًا) —
+            // لو أُرسل فيجب أن يكون تابعًا لنفس المورد المختار في النموذج
             'fuel_order_id' => [
-                'required',
+                'nullable',
                 'integer',
                 Rule::exists('fuel_orders', 'id')->where('supplier_id', $request->supplier_id),
             ],
@@ -154,9 +155,10 @@ class TunckerController extends Controller
         // صور العدادات اختيارية — لو وُجدت تُفحص كصور (بحد أقصى 5 ميغا لكل صورة)
         $request->validate([
             'meter_photos.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            // أمر التوريد إلزامي ومقيّد بأن يكون تابعًا لنفس المورد المختار في النموذج
+            // أمر التوريد اختياري عند التعديل (يمكن ربطه لاحقًا) —
+            // لو أُرسل فيجب أن يكون تابعًا لنفس المورد المختار في النموذج
             'fuel_order_id' => [
-                'required',
+                'nullable',
                 'integer',
                 Rule::exists('fuel_orders', 'id')->where('supplier_id', $request->supplier_id),
             ],
@@ -231,6 +233,53 @@ class TunckerController extends Controller
             DB::rollBack();
             return back()->withInput()->with('error', 'حدث خطأ ما يرجى المحاولة مرة اخرى');
         }
+    }
+
+    /**
+     * ربط توريدة غير مرتبطة بأمر توريد (ربط لاحق).
+     * الأمر المختار يجب أن يكون لنفس مورد التوريدة — نفس شرط المطابقة
+     * المستخدم في نموذج الإنشاء، مع الفرق أن المصدر هنا التوريدة نفسها.
+     */
+    public function attachFuelOrder(Request $request)
+    {
+        $delivery = FuelDeliviery::findOrFail($request->delivery_id);
+
+        $validated = $request->validate([
+            'delivery_id' => 'required|integer|exists:fuel_delivieries,id',
+            'fuel_order_id' => [
+                'required',
+                'integer',
+                Rule::exists('fuel_orders', 'id')->where('supplier_id', $delivery->supplier_id),
+            ],
+        ]);
+
+        $delivery->update(['fuel_order_id' => $validated['fuel_order_id']]);
+
+        return back()->with('success', 'تم ربط التوريدة بأمر التوريد بنجاح');
+    }
+
+    /**
+     * قائمة المتابعة: كل التوريدات غير المرتبطة بطلبية عبر المحطات المتاحة للمستخدم.
+     * مدير المحطة يرى محطاته فقط، والمدير يرى الكل (لأنه مرتبط بكل المحطات).
+     */
+    public function unmatchedDeliveries(Request $request)
+    {
+        $userStationIds = Auth::user()->stations()->pluck('station_id')->toArray();
+
+        $deliveries = FuelDeliviery::with('station', 'supplier', 'tuncker.fuelDelivery')
+            ->whereNull('fuel_order_id')
+            ->whereIn('station_id', $userStationIds)
+            ->when($request->station_id, fn ($q) => $q->where('station_id', $request->station_id))
+            ->when($request->start_date, fn ($q) => $q->whereDate('date', '>=', $request->start_date))
+            ->when($request->end_date, fn ($q) => $q->whereDate('date', '<=', $request->end_date))
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(20);
+
+        $stations = Auth::user()->stations;
+        $appends = $request->except(['_token', 'page']);
+
+        return view('tuncker_unmatched', compact('deliveries', 'stations', 'appends'));
     }
 
     public function delete(Tuncker $tuncker)

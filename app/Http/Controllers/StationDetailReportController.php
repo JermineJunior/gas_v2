@@ -37,6 +37,7 @@ class StationDetailReportController extends Controller
         $deliveries = $this->reportService->deliveries($stationIds, $start_date, $end_date);
         $expenseDetails = $this->reportService->expenseDetails($stationIds, $start_date, $end_date);
         $salesDetails = $this->reportService->salesDetails($stationIds, $start_date, $end_date);
+        $unmatchedCount = $this->reportService->unmatchedDeliveriesCount($stationIds, $start_date, $end_date);
 
         // تُحفظ مع روابط الترقيم حتى لا تضيع الفلاتر عند الانتقال لصفحة أخرى
         $appends = $request->except(['_token', 'page']);
@@ -48,6 +49,7 @@ class StationDetailReportController extends Controller
             'deliveries',
             'expenseDetails',
             'salesDetails',
+            'unmatchedCount',
             'appends',
             'start_date',
             'end_date'

@@ -58,6 +58,12 @@
                             <p class="text-sm font-bold text-accent-strong">{{ number_format($total_amount) }}</p>
                         </div>
                     </div>
+                    @canany(['tunckers.view', 'tunckers.edit'])
+                        <a href="{{ route('tuncker.unmatched') }}"
+                            class="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-full hover:bg-amber-600 transition text-sm font-semibold">
+                            غير مرتبطة بطلبية
+                        </a>
+                    @endcanany
                 </div>
             </div>
 
@@ -125,6 +131,10 @@
                                                 <td class="px-4 py-3">{{ $tuncker->tuncker_no }}</td>
                                                 <td class="px-4 py-3">{{ $tuncker->driver_name }}</td>
                                                 <td class="px-4 py-3">{{ $tuncker->fuel_type == 1 ? 'جازولين' : 'بنزين' }}
+                                                    @if (empty($tuncker->fuelDelivery?->fuel_order_id))
+                                                        <span
+                                                            class="inline-block mr-1 bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2 py-0.5 text-[11px] font-semibold">بدون طلبية</span>
+                                                    @endif
                                                 </td>
                                                 <td class="px-4 py-3">{{ number_format($tuncker->fuel_quantity) }}</td>
                                                 <td class="px-4 py-3">{{ $tuncker->supplier->name }}</td>
@@ -137,6 +147,14 @@
                                                         @can('tunckers.edit')
                                                             <a href="{{ route('tuncker.edit', $tuncker->id) }}"
                                                                 class="bg-primary-strong text-white px-3 py-1 rounded-lg hover:bg-primary-strong">تعديل</a>
+
+                                                            @if (empty($tuncker->fuelDelivery?->fuel_order_id) && $tuncker->fuelDelivery)
+                                                                <button type="button"
+                                                                    class="attach-btn bg-amber-500 text-white px-3 py-1 rounded-lg hover:bg-amber-600"
+                                                                    data-delivery-id="{{ $tuncker->fuelDelivery->id }}"
+                                                                    data-supplier-id="{{ $tuncker->supplier_id }}">ربط
+                                                                    طلبية</button>
+                                                            @endif
                                                         @endcan
                                                         @can('tunckers.delete')
                                                             <form action="{{ route('tuncker.delete', $tuncker->id) }}"
@@ -164,6 +182,34 @@
             </div>
         </div>
     </div>
+
+    <!-- مودال ربط التوريدة بأمر توريد -->
+    <div id="attachModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">ربط التوريدة بأمر توريد</h3>
+                <button type="button" onclick="closeAttachModal()"
+                    class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">اختر أمر التوريد التابع لنفس مورد هذه التوريدة لربطها.</p>
+            <form id="attachForm" method="POST" action="/">
+                @csrf
+                <input type="hidden" name="delivery_id" id="attachDeliveryId">
+                <select name="fuel_order_id" id="attachFuelOrderId"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    <option value="">جاري التحميل...</option>
+                </select>
+                <p id="attachNoOrders" class="hidden text-xs text-amber-600 mt-2">لا توجد أوامر توريد متاحة لهذا المورد
+                    — اختر موردًا آخر أو سجّل أمر توريد جديدًا</p>
+                <div class="flex gap-3 pt-5">
+                    <button type="submit"
+                        class="bg-primary-strong text-white px-4 py-2 rounded-lg hover:bg-primary-strong transition-colors">ربط</button>
+                    <button type="button" onclick="closeAttachModal()"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -181,6 +227,47 @@
             content.classList.toggle('hidden');
             icon.classList.toggle('rotate-180');
         }
+
+        function closeAttachModal() {
+            document.getElementById('attachModal').classList.add('hidden');
+        }
+
+        function formatNumber(num) {
+            if (num === null || num === '' || isNaN(Number(num))) return '';
+            return Number(num).toLocaleString('en-US', {
+                maximumFractionDigits: 2
+            });
+        }
+
+        function loadAttachOrders(supplierId) {
+            const $sel = $('#attachFuelOrderId');
+            $('#attachNoOrders').addClass('hidden');
+            if (!supplierId) {
+                $sel.html('<option value="">اختر المورد أولاً</option>');
+                return;
+            }
+            $sel.html('<option value="">جاري التحميل...</option>');
+            $.ajax({
+                url: '/api/fuel-orders',
+                type: 'GET',
+                data: {
+                    supplier_id: supplierId
+                },
+                success: function(orders) {
+                    if (!orders || !orders.length) {
+                        $sel.html('<option value="">لا توجد أوامر توريد متاحة</option>');
+                        $('#attachNoOrders').removeClass('hidden');
+                        return;
+                    }
+                    let options = '<option value="">اختر أمر التوريد</option>';
+                    orders.forEach(function(o) {
+                        options += `<option value="${o.id}">#${o.id} — ${o.date} — ${o.fuel_type_text} — متبقي ${formatNumber(o.remaining_quantity)} لتر</option>`;
+                    });
+                    $sel.html(options);
+                }
+            });
+        }
+
         $(document).ready(function() {
             // قائمة الموبايل (الهامبرجر)
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -217,6 +304,18 @@
                             form.submit(); // ينفذ الحذف
                         }
                     })
+                });
+            });
+
+            // ربط توريدة غير مرتبطة بأمر توريد
+            document.querySelectorAll('.attach-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const deliveryId = this.getAttribute('data-delivery-id');
+                    const supplierId = this.getAttribute('data-supplier-id');
+                    document.getElementById('attachDeliveryId').value = deliveryId;
+                    document.getElementById('attachForm').action = '/fuel-delivery/' + deliveryId + '/attach-order';
+                    loadAttachOrders(supplierId);
+                    document.getElementById('attachModal').classList.remove('hidden');
                 });
             });
         });

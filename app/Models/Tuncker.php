@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Tuncker extends Model
 {
@@ -29,5 +30,10 @@ class Tuncker extends Model
     public function stockDetail()
     {
         return $this->hasMany(StockDetail::class);
+    }
+
+    public function fuelDelivery(): HasOne
+    {
+        return $this->hasOne(FuelDeliviery::class, 'tuncker_id');
     }
 }

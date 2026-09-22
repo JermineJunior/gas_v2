@@ -46,7 +46,12 @@
     </table>
 </div>
 
-<!-- المبيعات وتكلفة الوقود والمصروفات وصافي الربح لكل محطة -->
+@if (!empty($unmatchedCount))
+    <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6">
+        ملاحظة: لا تشمل أرقام التكلفة أعلاه التوريدات غير المرتبطة بطلبية — عددها في الفترة المدروسة: {{ number_format($unmatchedCount) }}.
+        يمكن ربطها لاحقًا من قائمة التناكر.
+    </p>
+@endif
 <h3 class="text-lg font-bold text-gray-700 mb-2">المبيعات وتكلفة الوقود والمصروفات وصافي الربح لكل محطة</h3>
 <div class="overflow-x-auto mb-4">
     <table class="w-full border-collapse rounded-lg overflow-hidden shadow">

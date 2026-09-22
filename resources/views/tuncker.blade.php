@@ -128,12 +128,13 @@
                 <!-- الصف الثالث: أمر التوريد -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">أمر التوريد (إلزامي)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">أمر التوريد (اختياري)</label>
                         <select name="fuel_order_id" id="fuel_order_id"
                             class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                             <option value="">اختر المورد أولاً</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">يظهر بعد اختيار المورد ويعرض الكمية المتبقية لكل طلب</p>
+                        <p class="text-xs text-gray-500 mt-1">يظهر بعد اختيار المورد ويعرض الكمية المتبقية لكل طلب —
+                            يمكن تسجيل التوريدة بدون طلبية مرتبطة وربطها لاحقًا من قائمة التناكر</p>
                     </div>
                 </div>
 
@@ -442,9 +443,6 @@
                     },
                     supplier_id: {
                         required: true
-                    },
-                    fuel_order_id: {
-                        required: true
                     }
 
                 },
@@ -467,9 +465,6 @@
                     },
                     supplier_id: {
                         required: "يجب ادخال اسم المورد"
-                    },
-                    fuel_order_id: {
-                        required: "يجب اختيار أمر التوريد"
                     }
                 },
                 errorElement: "span",

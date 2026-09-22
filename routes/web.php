@@ -165,6 +165,13 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::get('tuncker/station/{station}', [TunckerController::class, 'index'])->name('tuncker.index');
+
+    // قائمة المتابعة: التوريدات غير المرتبطة بأمر توريد عبر محطات المستخدم
+    Route::get('tunckers/unmatched', [TunckerController::class, 'unmatchedDeliveries'])->name('tuncker.unmatched')->middleware('can:tunckers.view');
+
+    // الربط اللاحق لتوريدة بأمر توريد — نفس صلاحية تعديل التنكر
+    Route::post('fuel-delivery/{delivery}/attach-order', [TunckerController::class, 'attachFuelOrder'])->name('tuncker.attachOrder')->middleware('can:tunckers.edit');
+
     Route::get('tuncker/{station}/create', [TunckerController::class, 'create'])->name('tuncker.create');
     Route::post('tuncker', [TunckerController::class, 'store'])->name('tuncker.store');
     Route::get('tuncker/{tuncker}', [TunckerController::class, 'edit'])->name('tuncker.edit');

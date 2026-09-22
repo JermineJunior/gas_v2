@@ -34,7 +34,8 @@ class StationSummaryReportController extends Controller
         $stations = $this->reportService->stationsByIds($stationIds);
         $fuelByType = $this->reportService->fuelReceivedByType($stationIds, $start_date, $end_date);
         $stationSummaries = $this->reportService->stationSummaries($stationIds, $start_date, $end_date);
+        $unmatchedCount = $this->reportService->unmatchedDeliveriesCount($stationIds, $start_date, $end_date);
 
-        return view('station_summary_result', compact('stations', 'fuelByType', 'stationSummaries', 'start_date', 'end_date'));
+        return view('station_summary_result', compact('stations', 'fuelByType', 'stationSummaries', 'unmatchedCount', 'start_date', 'end_date'));
     }
 }

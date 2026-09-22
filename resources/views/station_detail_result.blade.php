@@ -114,7 +114,13 @@
                             <td class="p-3 text-center">{{ $delivery->station->name ?? '-' }}</td>
                             <td class="p-3 text-center">{{ $delivery->fuelOrder ? ($fuelLabels[$delivery->fuelOrder->fuel_type] ?? 'غير محدد') : 'غير مرتبط' }}</td>
                             <td class="p-3 text-center">{{ formatNumber($delivery->quantity) }}</td>
-                            <td class="p-3 text-center">{{ $delivery->fuelOrder ? '#' . $delivery->fuelOrder->id . ' (' . $delivery->fuelOrder->date->format('Y/m/d') . ')' : '-' }}</td>
+                            <td class="p-3 text-center">
+                                @if ($delivery->fuelOrder)
+                                    #{{ $delivery->fuelOrder->id }} ({{ $delivery->fuelOrder->date->format('Y/m/d') }})
+                                @else
+                                    <span class="inline-block bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2.5 py-0.5 text-xs font-semibold">بدون طلبية</span>
+                                @endif
+                            </td>
                             <td class="p-3 text-center">{{ $delivery->fuelOrder ? formatNumber($delivery->fuelOrder->price_per_liter) . ' جنيه' : '-' }}</td>
                             <td class="p-3 text-center">{{ $delivery->fuelOrder ? formatNumber($delivery->quantity * $delivery->fuelOrder->price_per_liter) . ' جنيه' : '-' }}</td>
                             <td class="p-3 text-center">{{ $delivery->supplier->name ?? '-' }}</td>
