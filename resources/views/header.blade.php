@@ -257,12 +257,12 @@
                     @can('reports.machine_report_time')
                         <a href="{{ route('reports.machine_report_time') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير العدادات بالماكينات بالفترة</a>
                     @endcan
-                    @can('reports.stations_summary')
+                   {{--  @can('reports.stations_summary')
                         <a href="{{ route('reports.stations_summary') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">ملخص مبيعات المحطات</a>
                     @endcan
                     @can('reports.stations_details')
                         <a href="{{ route('reports.stations_details') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تفاصيل مبيعات المحطات</a>
-                    @endcan
+                    @endcan --}}
                 </div>
             </div>
             @endcanany

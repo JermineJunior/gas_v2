@@ -119,6 +119,15 @@
                 @can('expenses.view')
                     <a href="{{ route('expense.index', $station->id) }}" class="hub-sublink">قائمة المصروفات</a>
                 @endcan
+                @canany(['reports.stations_summary','reports.stations_details'])
+                <p class="px-3 pt-3 pb-1 text-xs font-bold text-gray-400"> مبيعات المحطة </p>
+                  @can('reports.stations_summary')
+                        <a href="{{ route('reports.stations_summary') }}" class="hub-sublink">ملخص مبيعات المحطات</a>
+                    @endcan
+                    @can('reports.stations_details')
+                        <a href="{{ route('reports.stations_details') }}" class="hub-sublink">تفاصيل مبيعات المحطات</a>
+                    @endcan
+                    @endcanany
                 {{--
                 <p class="px-3 pt-3 pb-1 text-xs font-bold text-gray-400">الحسابات</p>
                  @can('clients.view')
