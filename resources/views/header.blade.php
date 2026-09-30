@@ -239,6 +239,9 @@
                     @can('reports.stock_movement')
                         <a href="{{ route('reports.stock_movement') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حركة البير</a>
                     @endcan
+                     @can('reports.deposit_detail')
+                         <a href="{{ route('reports.deposit_detail') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير التوريد</a>
+                      @endcan
                     @can('reports.employee_account')
                         <a href="{{ route('reports.employee_account') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حساب الموظف</a>
                     @endcan

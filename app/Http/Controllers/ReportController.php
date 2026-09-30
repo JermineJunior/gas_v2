@@ -18,6 +18,28 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    /**
+     * Determine which stations the current user is allowed to see.
+     * Scoping is by the station_user pivot only — no role is exempt.
+     * A submitted station_id must belong to the user (403 otherwise);
+     * with no selection the report spans all of their stations.
+     *
+     * @return array<int>
+     */
+    private function resolveStationIds(Request $request): array
+    {
+        $userStationIds = Auth::user()->stations->pluck('id')->map(fn($id) => (int) $id)->all();
+
+        if ($request->filled('station_id')) {
+            if (!in_array((int) $request->station_id, $userStationIds, true)) {
+                abort(403, 'ليس لديك صلاحية الوصول لهذه المحطة');
+            }
+            return [(int) $request->station_id];
+        }
+
+        return $userStationIds;
+    }
+
     public function deposit_detail()
     {
         $stations = Auth::user()->stations;
@@ -28,14 +50,10 @@ class ReportController extends Controller
     {
         $start_date = $request->start_date;
         $end_date = $request->end_date;
-        $request->merge([
-            'station_id' => Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id,
-        ]);
-        $station = Station::find($request->station_id) ?? null;
+        $stationIds = $this->resolveStationIds($request);
+        $station = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
         $operations = DepositDetail::with('deposit.employee')
-            ->when($request->station_id, function ($query) use ($request) {
-                return $query->where('station_id', $request->station_id);
-            })
+            ->whereIn('station_id', $stationIds)
             ->when($request->start_date, function ($query) use ($request) {
                 return $query->whereDate('date', '>=', $request->start_date);
             })
@@ -56,13 +74,9 @@ class ReportController extends Controller
     {
         $start_date = $request->start_date;
         $end_date = $request->end_date;
-        $request->merge([
-            'station_id' => Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id,
-        ]);
-        $station = Station::find($request->station_id) ?? null;
-        $operations = MachineDetail::when($request->station_id, function ($query) use ($request) {
-            return $query->where('station_id', $request->station_id);
-        })
+        $stationIds = $this->resolveStationIds($request);
+        $station = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
+        $operations = MachineDetail::whereIn('station_id', $stationIds)
             ->when($request->start_date, function ($query) use ($request) {
                 return $query->whereDate('date', '>=', $request->start_date);
             })
@@ -85,13 +99,9 @@ class ReportController extends Controller
     {
         $start_date = $request->start_date;
         $end_date = $request->end_date;
-        $request->merge([
-            'station_id' => Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id,
-        ]);
-        $station = Station::find($request->station_id) ?? null;
-        $operations = Tuncker::when($request->station_id, function ($query) use ($request) {
-            return $query->where('station_id', $request->station_id);
-        })
+        $stationIds = $this->resolveStationIds($request);
+        $station = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
+        $operations = Tuncker::whereIn('station_id', $stationIds)
             ->when($request->start_date, function ($query) use ($request) {
                 return $query->whereDate('date', '>=', $request->start_date);
             })
@@ -148,8 +158,8 @@ class ReportController extends Controller
         $total_delivered = $deliveries->sum('quantity');
 
         // قيمة الطلبات بالجنيه (من حقل الإجمالي المحفوظ) وتكلفة التوريدات (كمية × سعر اللتر من أمر التوريد)
-        $total_requested_value = $orders->sum(fn ($order) => (float) $order->total);
-        $total_delivered_value = $deliveries->sum(fn ($delivery) => $delivery->fuelOrder
+        $total_requested_value = $orders->sum(fn($order) => (float) $order->total);
+        $total_delivered_value = $deliveries->sum(fn($delivery) => $delivery->fuelOrder
             ? (float) $delivery->quantity * (float) $delivery->fuelOrder->price_per_liter
             : 0);
 
@@ -203,12 +213,12 @@ class ReportController extends Controller
 
     public function machine_report_result(Request $request)
     {
-        $stationId = $request->station_id;
         $machineId = $request->machine_id;
         $fuelType = $request->fuel_type;
+        $stationIds = $this->resolveStationIds($request);
 
         $machinesQuery = \App\Models\Machine::query()->with('stock.station');
-        if ($stationId) $machinesQuery->where('station_id', $stationId);
+        $machinesQuery->whereIn('station_id', $stationIds);
         if ($machineId) $machinesQuery->where('id', $machineId);
         if ($fuelType) $machinesQuery->whereHas('stock', fn($q) => $q->where('type', $fuelType));
         $machines = $machinesQuery->get();
@@ -246,7 +256,7 @@ class ReportController extends Controller
             ];
         });
 
-        $station = $stationId ? Station::find($stationId) : null;
+        $station = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
         return view('machine_report_result', compact('results', 'station'));
     }
 
@@ -263,6 +273,9 @@ class ReportController extends Controller
             'station_id'  => 'required|exists:stations,id',
             'employee_id' => 'required|exists:employees,id',
         ]);
+
+        // المحطة إلزامية هنا، لذا تعيد الدالة محطة واحدة مُتحقق منها (أو 403)
+        $this->resolveStationIds($request);
 
         $startDate = $request->start_date;
         $endDate = $request->end_date;
@@ -284,9 +297,9 @@ class ReportController extends Controller
 
         // كل التوريدات
         $depositsQuery = DepositDetail::whereHas('deposit', function ($q) use ($request) {
-                $q->where('station_id', $request->station_id)
-                    ->where('employee_id', $request->employee_id);
-            })
+            $q->where('station_id', $request->station_id)
+                ->where('employee_id', $request->employee_id);
+        })
             ->with(['deposit.employee', 'approver']);
         if ($startDate) $depositsQuery->whereDate('date', '>=', $startDate);
         if ($endDate) $depositsQuery->whereDate('date', '<=', $endDate);
@@ -320,14 +333,15 @@ class ReportController extends Controller
     public function expense_list_result(Request $request)
     {
         $request->validate(['station_id' => 'required|exists:stations,id']);
+        $this->resolveStationIds($request); // 403 if the station isn't theirs
 
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
         $query = \App\Models\ExpenseDetail::whereHas('expense', function ($q) use ($request) {
-                $q->where('station_id', $request->station_id)
-                    ->when($request->user_id, fn($u) => $u->where('user_id', $request->user_id));
-            })
+            $q->where('station_id', $request->station_id)
+                ->when($request->user_id, fn($u) => $u->where('user_id', $request->user_id));
+        })
             ->with(['expense.user', 'approver']);
 
         if ($startDate) $query->whereDate('date', '>=', $startDate);
@@ -339,7 +353,12 @@ class ReportController extends Controller
         $totalPending = $details->where('status', 0)->sum('expense_amount');
 
         return view('expense_report_result', compact(
-            'details', 'total', 'totalApproved', 'totalPending', 'startDate', 'endDate'
+            'details',
+            'total',
+            'totalApproved',
+            'totalPending',
+            'startDate',
+            'endDate'
         ));
     }
 
@@ -353,6 +372,7 @@ class ReportController extends Controller
     public function expense_summary_result(Request $request)
     {
         $request->validate(['station_id' => 'required|exists:stations,id']);
+        $this->resolveStationIds($request); // 403 if the station isn't theirs
 
         $startDate = $request->start_date;
         $endDate = $request->end_date;
@@ -374,7 +394,11 @@ class ReportController extends Controller
         $station = Station::find($request->station_id);
 
         return view('expense_summary_result', compact(
-            'byMonth', 'grandTotal', 'station', 'startDate', 'endDate'
+            'byMonth',
+            'grandTotal',
+            'station',
+            'startDate',
+            'endDate'
         ));
     }
 
@@ -387,14 +411,14 @@ class ReportController extends Controller
 
     public function machine_report_time_result(Request $request)
     {
-        $stationId =  $request->station_id;
         $machineId = $request->machine_id;
         $fuelType = $request->fuel_type;
         $startDate = $request->start_date;
         $endDate = $request->end_date;
+        $stationIds = $this->resolveStationIds($request);
 
         $machinesQuery = \App\Models\Machine::query()->with('stock.station');
-        if ($stationId) $machinesQuery->where('station_id', $stationId);
+        $machinesQuery->whereIn('station_id', $stationIds);
         if ($machineId) $machinesQuery->where('id', $machineId);
         if ($fuelType) $machinesQuery->whereHas('stock', fn($q) => $q->where('type', $fuelType));
         $machines = $machinesQuery->get();
@@ -432,7 +456,7 @@ class ReportController extends Controller
             ];
         });
 
-        $station = $stationId ? Station::find($stationId) : null;
+        $station = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
         return view('machine_report_time_result', compact('results', 'station', 'startDate', 'endDate'));
     }
 
@@ -445,13 +469,13 @@ class ReportController extends Controller
 
     public function stock_report_result(Request $request)
     {
-        $stationId = Auth::user()->type == 3 ? Auth::user()->stations[0]->pivot->station_id : $request->station_id;
+        $stationIds = $this->resolveStationIds($request); // will abort(403) if they picked a station that isn't theirs
         $fuelType = $request->fuel_type;
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
         $stocksQuery = \App\Models\Stock::query()->with('station');
-        if ($stationId) $stocksQuery->where('station_id', $stationId);
+        $stocksQuery->whereIn('station_id', $stationIds);
         if ($fuelType) $stocksQuery->where('type', $fuelType);
         $stocks = $stocksQuery->get();
 
@@ -478,7 +502,7 @@ class ReportController extends Controller
             ];
         });
 
-        $station = $stationId ? Station::find($stationId) : null;
+        $station = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
         return view('stock_report_result', compact('results', 'station', 'startDate', 'endDate'));
     }
 
@@ -499,6 +523,11 @@ class ReportController extends Controller
         $endDate = $request->end_date;
 
         $stock = \App\Models\Stock::with('station')->findOrFail($request->stock_id);
+
+        // البير يجب أن يكون تابعًا لإحدى محطات المستخدم (station_id المُرسل مجرد فلتر للعرض)
+        if (!in_array((int) $stock->station_id, $this->resolveStationIds($request), true)) {
+            abort(403, 'ليس لديك صلاحية الوصول لهذه المحطة');
+        }
 
         // الاضافات: من التناكر (بلا تاريخ في stock_details)
         $additions = \App\Models\StockDetail::where('stock_id', $stock->id)
