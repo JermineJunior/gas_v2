@@ -49,14 +49,13 @@ class StationHubController extends Controller
             ->sum('d.remaining');
         $stats['remaining'] = $latestRemaining;
 
-        // مديونيات وإيرادات العملاء حسب النوع
-        $accountUser = $station->users()->where('type', 3)->first()
-            ?? $station->users()->where('type', 2)->first();
+        // مديونيات وإيرادات العملاء حسب النوع — لكل المستخدمين المرتبطين بالمحطة
+        $stationUserIds = $station->users()->pluck('users.id');
 
         $clientTotals = ['1' => ['total' => 0, 'paid' => 0], '2' => ['total' => 0, 'paid' => 0]];
 
-        if ($accountUser) {
-            $clients = Client::where('user_id', $accountUser->id)
+        if ($stationUserIds->isNotEmpty()) {
+            $clients = Client::whereIn('user_id', $stationUserIds)
                 ->withSum('details as total_sum', 'total')
                 ->withSum('details as paid_sum', 'amount')
                 ->get();
