@@ -217,7 +217,7 @@
             </div>
             @endcanany
 
-@canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary', 'reports.stations_summary', 'reports.stations_details'])
+@canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary', 'reports.stations_summary', 'reports.stations_details', 'reports.complete'])
             <div x-data="{ open: false }" class="nav-dropdown {{ $isReports ? 'active' : '' }}">
                 <button @click="open = !open" class="flex items-center gap-1 focus:outline-none">
                     التقارير
@@ -227,6 +227,9 @@
                 </button>
                 <div x-cloak x-show="open" @click.away="open = false"
                     class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 z-50">
+                    @can('reports.complete')
+                        <a href="{{ route('reports.complete') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">التقرير المتكامل</a>
+                    @endcan
                     @can('reports.debt')
                         <a href="{{ route('reports.debt') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حسابات العملاء</a>
                     @endcan
@@ -361,7 +364,7 @@
         @endcanany
 
         <!-- Dropdown للتقارير -->
-        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary'])
+        @canany(['reports.debt', 'reports.tuncker', 'reports.machine_detail', 'reports.deposit_detail', 'reports.supplier', 'reports.machine_report', 'reports.machine_report_time', 'reports.stock_general', 'reports.stock_movement', 'reports.employee_account', 'reports.expense_list', 'reports.expense_summary', 'reports.complete'])
         <div x-data="{ open: false }" class="border rounded-lg">
             <button @click="open = !open" class="w-full flex items-center justify-between mobile-link px-4 py-2">
                 التقارير
@@ -372,6 +375,9 @@
             </button>
 
             <div x-cloak x-show="open" class="mt-1 space-y-1 bg-gray-50 rounded-lg shadow-inner">
+                @can('reports.complete')
+                    <a href="{{ route('reports.complete') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">التقرير المتكامل</a>
+                @endcan
                 @can('reports.debt')
                     <a href="{{ route('reports.debt') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">تقرير حسابات العملاء</a>
                 @endcan

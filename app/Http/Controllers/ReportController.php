@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\DepositDetail;
 use App\Models\Detail;
+use App\Models\Employee;
+use App\Models\ExpenseDetail;
 use App\Models\FuelDeliviery;
 use App\Models\FuelOrder;
 use App\Models\MachineDetail;
+use App\Models\Stock;
 use App\Models\Station;
 use App\Models\Supplier;
 use App\Models\Deposit;
@@ -565,5 +568,127 @@ class ReportController extends Controller
             'startDate',
             'endDate'
         ));
+    }
+
+    public function complete_report()
+    {
+        $stations = Auth::user()->stations;
+
+        // موظفو كل محطات الحساب — تُصفّى القائمة في الصفحة حسب المحطة المختارة
+        $employees = Employee::whereIn('station_id', $stations->pluck('id'))
+            ->orderBy('name')
+            ->get();
+
+        return view('complete_report', compact('stations', 'employees'));
+    }
+
+    /**
+     * التقرير المتكامل: قراءات العدادات + إجمالي المصروفات + إجمالي التوريدات + رصيد الأبر.
+     * كل الأقسام تُصفّى بنفس قواعد الصلاحيات (resolveStationIds) وتُصفّى بالتاريخ.
+     * قائمة القراءات مُرقّمة لتجنب جلب آلاف الصفوف مرة واحدة؛ روابط الصفحات تحمل
+     * الفلاتر عبر $appends (لذلك المسار يقبل GET و POST). المصروفات والتوريدات إجمالي فقط.
+     */
+
+    public function complete_report_result(Request $request)
+    {
+        $validated = $request->validate([
+            'station_id'  => ['nullable', 'integer'],
+            'employee_id' => ['nullable', 'integer'],
+            'start_date'  => ['nullable', 'date'],
+            'end_date'    => ['nullable', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        $start_date = $validated['start_date'] ?? null;
+        $end_date   = $validated['end_date'] ?? null;
+
+        $stationIds = $this->resolveStationIds($request);
+        $station    = count($stationIds) === 1 ? Station::find($stationIds[0]) : null;
+
+        $employee = null;
+        if (!empty($validated['employee_id'])) {
+            $employee = Employee::whereIn('station_id', $stationIds)->find($validated['employee_id']);
+            if (!$employee) {
+                abort(403, 'ليس لديك صلاحية الوصول لهذا الموظف');
+            }
+        }
+
+        // تُحفظ مع روابط الترقيم حتى لا تضيع الفلاتر عند الانتقال لصفحة أخرى
+        $appends = $request->except(['_token', 'page']);
+
+        // 1) قراءات العدادات
+        $readingsQuery = MachineDetail::with(['station', 'machine', 'gun', 'employee'])
+            ->whereIn('station_id', $stationIds)
+            ->when($employee?->id, fn ($q, $id) => $q->where('employee_id', $id))
+            ->when($start_date, fn ($q) => $q->whereDate('date', '>=', $start_date))
+            ->when($end_date, fn ($q) => $q->whereDate('date', '<=', $end_date));
+
+        // المبيعات لا تشمل القراءات المعلقة (NULL عادية != 'pending')
+        $readingsTotal = (float) (clone $readingsQuery)
+            ->where(function ($q) {
+                $q->whereNull('approval_status')->orWhere('approval_status', '!=', 'pending');
+            })
+            ->sum('total');
+
+        $readings = (clone $readingsQuery)
+            ->orderBy('date')
+            ->orderBy('id')
+            ->paginate(50)
+            ->appends($appends);
+
+        $pendingReadingsCount = (clone $readingsQuery)
+            ->where('approval_status', 'pending')
+            ->count();
+
+        // 2) المصروفات — إجمالي فقط، بند على مستوى المحطة، بلا فلترة موظف
+        $expensesTotal = (float) ExpenseDetail::whereIn('station_id', $stationIds)
+            ->when($start_date, fn ($q) => $q->whereDate('date', '>=', $start_date))
+            ->when($end_date, fn ($q) => $q->whereDate('date', '<=', $end_date))
+            ->sum('expense_amount');
+
+        // 3) التوريدات — إجمالي فقط
+        $depositsQuery = Deposit::whereIn('station_id', $stationIds)
+            ->when($employee?->id, fn ($q, $id) => $q->where('employee_id', $id))
+            ->when($start_date, fn ($q) => $q->whereDate('date', '>=', $start_date))
+            ->when($end_date, fn ($q) => $q->whereDate('date', '<=', $end_date));
+
+        $depositsTotal = (float) DepositDetail::whereIn('deposit_id', (clone $depositsQuery)->pluck('id'))
+            ->sum('deposit_amount');
+
+        // المتبقي يُؤخذ من آخر توريد داخل الفترة (الأحدث تاريخًا ثم الأحدث إدخالًا)
+        $lastDeposit = (clone $depositsQuery)
+            ->withSum('deposit_details as deposited_sum', 'deposit_amount')
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->first();
+
+        // 4) رصيد الأبار — الرصيد الحالي للمحطات المختارة (لا يُقيَّد بالتاريخ)
+        $stocks = Stock::whereIn('station_id', $stationIds)
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        $stocksByType = $stocks->groupBy('type');
+        $stockTotals  = [
+            1 => (float) $stocks->where('type', 1)->sum('qty'),
+            2 => (float) $stocks->where('type', 2)->sum('qty'),
+        ];
+
+        return view('complete_report_result', [
+            'station'             => $station,
+            'employee'            => $employee,
+            'start_date'          => $start_date,
+            'end_date'            => $end_date,
+            'appends'             => $appends,
+            'readings'            => $readings,
+            'readingsTotal'       => $readingsTotal,
+            'pendingReadingsCount'=> $pendingReadingsCount,
+            'expensesTotal'       => $expensesTotal,
+            'depositsTotal'       => $depositsTotal,
+            'lastDeposit'         => $lastDeposit,
+            'remaining'           => $lastDeposit?->remaining,
+            'stocks'              => $stocks,
+            'stocksByType'        => $stocksByType,
+            'stockTotals'         => $stockTotals,
+        ]);
     }
 }

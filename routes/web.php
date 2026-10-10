@@ -74,6 +74,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/reports/employee-account', [ReportController::class, 'employee_account'])->name('reports.employee_account');
     Route::post('report/employee-account', [ReportController::class, 'employee_account_result'])->name('reports.employee_account.result');
 
+    Route::get('report/complete', [ReportController::class, 'complete_report'])->name('reports.complete')->middleware('can:reports.complete');
+    Route::match(['get', 'post'], 'report/complete-result', [ReportController::class, 'complete_report_result'])->name('reports.complete.result')->middleware('can:reports.complete');
+
     Route::get('/api/expense-users', function (\Illuminate\Http\Request $request) {
         return \App\Models\User::whereIn('id',
             \App\Models\Expense::where('station_id', $request->station_id)->select('user_id')

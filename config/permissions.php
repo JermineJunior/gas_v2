@@ -113,6 +113,7 @@ return [
         'reports.expense_summary'       => 'ملخص المصروفات',
         'reports.stations_summary'      => 'ملخص مبيعات المحطات',
         'reports.stations_details'      => 'تفاصيل مبيعات المحطات',
+        'reports.complete'              => 'التقرير المتكامل',
     ],
     'warehouses' => [
         'warehouses.view'              => 'عرض المستودعات',
