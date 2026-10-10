@@ -60,6 +60,8 @@
                                             <th class="px-4 py-3 text-right"> الموظف</th>
                                             <th class="px-4 py-3 text-right"> البيان</th>
                                             <th class="px-4 py-3 text-right">المبلغ</th>
+                                            <th class="px-4 py-3 text-right">اسم البنك</th>
+                                            <th class="px-4 py-3 text-right">رقم العملية</th>
                                             @canany(['deposit_details.edit', 'deposit_details.delete', 'deposits.approve'])
                                                 <th class="px-4 py-3 text-right">الاجراءات</th>
                                             @endcanany
@@ -91,6 +93,8 @@
                                                     <td class="px-4 py-3">{{ $deposit->deposit_desc }}</td>
                                                     <td class="px-4 py-3">{{ number_format($deposit->deposit_amount) }}
                                                     </td>
+                                                    <td class="px-4 py-3">{{ $deposit->bank_name ?? '' }}</td>
+                                                    <td class="px-4 py-3">{{ $deposit->operation_number ?? '' }}</td>
                                                     @canany(['deposit_details.edit', 'deposit_details.delete', 'deposits.approve'])
                                                         <td class="px-4 py-3 flex gap-2 flex-wrap">
                                                             @can('deposits.approve')

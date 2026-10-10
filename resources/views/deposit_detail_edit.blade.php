@@ -109,7 +109,7 @@
                     @foreach ($deposit->deposit_details as $deposit_detail)
                         @php $isApproved = $deposit_detail->status == 1; @endphp
                         <div
-                            class="deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 {{ $isApproved ? 'bg-green-50 border border-green-200' : 'bg-primary-soft' }} rounded-lg relative ">
+                            class="deposit-item grid grid-cols-[1fr,1.5fr,1fr,1fr,40px] gap-3 items-start p-4 {{ $isApproved ? 'bg-green-50 border border-green-200' : 'bg-primary-soft' }} rounded-lg relative ">
                             <input type="hidden" name="detail_ids[]" value="{{ $deposit_detail->id }}">
 
                             <!-- مبلغ التوريد -->
@@ -134,6 +134,24 @@
                                 <input type="text" name="deposit_desc[{{ $loop->index }}]" id="deposit_desc_{{ $loop->index }}"
                                     placeholder="مثال: توريد يوم الأحد" value="{{ $deposit_detail->deposit_desc }}"
                                     class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                    @if ($isApproved) readonly @endif>
+                            </div>
+
+                            <!-- اسم البنك -->
+                            <div>
+                                <label class="block mb-1 text-sm font-medium text-gray-700">اسم البنك</label>
+                                <input type="text" name="bank_name[{{ $loop->index }}]" id="bank_name_{{ $loop->index }}"
+                                    placeholder="مثال: البنك الأهلي" value="{{ $deposit_detail->bank_name ?? '' }}"
+                                    class="bank-name w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                                    @if ($isApproved) readonly @endif>
+                            </div>
+
+                            <!-- رقم العملية -->
+                            <div>
+                                <label class="block mb-1 text-sm font-medium text-gray-700">رقم العملية</label>
+                                <input type="text" name="operation_number[{{ $loop->index }}]" id="operation_number_{{ $loop->index }}"
+                                    placeholder="مثال: 123456" value="{{ $deposit_detail->operation_number ?? '' }}"
+                                    class="operation-number w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                                     @if ($isApproved) readonly @endif>
                             </div>
 
@@ -339,7 +357,7 @@
                 let index = depositContainer.querySelectorAll('.deposit-item').length;
                 const row = document.createElement('div');
                 row.className =
-                    "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
+                    "deposit-item grid grid-cols-[1fr,1.5fr,1fr,1fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
                 row.innerHTML = `
                     <input type="hidden" name="detail_ids[]" value="">
                     <div>
@@ -352,6 +370,18 @@
                         <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
                         <input type="text" name="deposit_desc[${index}]" id="deposit_desc_${index}" placeholder="مثال: توريد إضافي"
                             class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">اسم البنك</label>
+                        <input type="text" name="bank_name[${index}]" id="bank_name_${index}" placeholder="مثال: البنك الأهلي"
+                            class="bank-name w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">رقم العملية</label>
+                        <input type="text" name="operation_number[${index}]" id="operation_number_${index}" placeholder="مثال: 123456"
+                            class="operation-number w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 
                     <button type="button" class="remove-deposit-row text-red-600 font-bold text-lg mt-6">✖</button>

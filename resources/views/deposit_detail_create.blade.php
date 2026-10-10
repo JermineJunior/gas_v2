@@ -93,7 +93,7 @@
                     </div>
                     <!-- الصف الأساسي -->
                     <div
-                        class="deposit-item grid grid-cols-[1fr,1.5fr] gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
+                        class="deposit-item grid grid-cols-[1fr,1.5fr,1fr,1fr] gap-3 items-start p-4 bg-primary-soft rounded-lg relative">
                         <!-- مبلغ التوريد -->
                         <div>
                             <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
@@ -107,6 +107,22 @@
                             <input type="text" name="deposit_desc[0]" id="deposit_desc_0"
                                 placeholder="مثال: توريد يوم الأحد"
                                 class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+
+                        <!-- اسم البنك -->
+                        <div>
+                            <label class="block mb-1 text-sm font-medium text-gray-700">اسم البنك</label>
+                            <input type="text" name="bank_name[0]" id="bank_name_0"
+                                placeholder="مثال: البنك الأهلي"
+                                class="bank-name w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+
+                        <!-- رقم العملية -->
+                        <div>
+                            <label class="block mb-1 text-sm font-medium text-gray-700">رقم العملية</label>
+                            <input type="text" name="operation_number[0]" id="operation_number_0"
+                                placeholder="مثال: 123456"
+                                class="operation-number w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
                     </div>
                 </div>
@@ -331,7 +347,7 @@
                 let index = depositContainer.querySelectorAll('.deposit-item').length;
                 const row = document.createElement('div');
                 row.className =
-                    "deposit-item grid grid-cols-[1fr,1.5fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
+                    "deposit-item grid grid-cols-[1fr,1.5fr,1fr,1fr,40px] gap-3 items-start p-4 bg-primary-soft rounded-lg relative";
                 row.innerHTML = `
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-700">مبلغ التوريد</label>
@@ -343,6 +359,18 @@
                         <label class="block mb-1 text-sm font-medium text-gray-700">بيان التوريد</label>
                         <input type="text" name="deposit_desc[${index}]" id="deposit_desc_${index}" placeholder="مثال: توريد إضافي"
                             class="deposit-desc w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">اسم البنك</label>
+                        <input type="text" name="bank_name[${index}]" id="bank_name_${index}" placeholder="مثال: البنك الأهلي"
+                            class="bank-name w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">رقم العملية</label>
+                        <input type="text" name="operation_number[${index}]" id="operation_number_${index}" placeholder="مثال: 123456"
+                            class="operation-number w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
                     </div>
 
                     <button type="button" class="remove-deposit-row text-red-600 font-bold text-lg mt-6">✖</button>

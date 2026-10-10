@@ -65,6 +65,14 @@ class DepositDetailController extends Controller
      */
     public function store(Request $request)
     {
+        // حقول اختيارية لكل بند — بلا قاعدة required
+        $request->validate([
+            'bank_name'          => ['nullable', 'array'],
+            'bank_name.*'        => ['nullable', 'string', 'max:255'],
+            'operation_number'   => ['nullable', 'array'],
+            'operation_number.*' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $stationId  = $request->station_id;
         $employeeId = $request->employee_id;
 
@@ -114,12 +122,14 @@ class DepositDetailController extends Controller
             $data = [];
             foreach ($request->deposit_amount as $index => $amount) {
             $data[] = [
-                'date'           => $request->date,
-                'deposit_id'     => $deposit->id,
-                'station_id'     => $request->station_id,
+                'date'              => $request->date,
+                'deposit_id'        => $deposit->id,
+                'station_id'        => $request->station_id,
                 // تطبيع دفاعي: قد تصل القيم بفواصل التنسيق إن تجاوز عميل جافاسكربت
-                'deposit_amount' => str_replace(',', '', $amount),
-                'deposit_desc'   => $request->deposit_desc[$index],
+                'deposit_amount'    => str_replace(',', '', $amount),
+                'deposit_desc'      => $request->deposit_desc[$index],
+                'bank_name'         => $request->bank_name[$index] ?? null,
+                'operation_number'  => $request->operation_number[$index] ?? null,
             ];
             }
 
@@ -166,6 +176,14 @@ class DepositDetailController extends Controller
 
     public function update(Deposit $deposit, Request $request)
     {
+        // حقول اختيارية لكل بند — بلا قاعدة required
+        $request->validate([
+            'bank_name'          => ['nullable', 'array'],
+            'bank_name.*'        => ['nullable', 'string', 'max:255'],
+            'operation_number'   => ['nullable', 'array'],
+            'operation_number.*' => ['nullable', 'string', 'max:255'],
+        ]);
+
         //  المحطة والموظف ثابتان بعد إنشاء التوريد (حقولا عرض فقط في النموذج، وقيمهما تُرسل مخفيتين).
         // السبب: سلسلة الرصيد المرحَّل مبنية على زوج (موظف، محطة) لا يتغير —
         // total_old_machine وremaining محسوبان من متبقيات توريدات سابقة لنفس الزوج،
@@ -195,8 +213,15 @@ class DepositDetailController extends Controller
             $index = $submittedIds->search($id);
             $amount = (float) str_replace(',', '', $request->deposit_amount[$index]);
             $desc = trim((string) ($request->deposit_desc[$index] ?? ''));
+            $bankName = trim((string) ($request->bank_name[$index] ?? ''));
+            $operationNumber = trim((string) ($request->operation_number[$index] ?? ''));
 
-            if (abs($amount - (float) $detail->deposit_amount) > 0.001 || $desc !== trim((string) $detail->deposit_desc)) {
+            if (
+                abs($amount - (float) $detail->deposit_amount) > 0.001
+                || $desc !== trim((string) $detail->deposit_desc)
+                || $bankName !== trim((string) ($detail->bank_name ?? ''))
+                || $operationNumber !== trim((string) ($detail->operation_number ?? ''))
+            ) {
                 $conflicts[] = "لا يمكن تعديل البند المعتمد رقم #{$id} — قيمته " . number_format($detail->deposit_amount);
             }
         }
@@ -251,6 +276,8 @@ class DepositDetailController extends Controller
             foreach ($request->detail_ids as $index => $submittedId) {
                 $amount = str_replace(',', '', $request->deposit_amount[$index]);
                 $desc = $request->deposit_desc[$index] ?? '';
+                $bankName = trim((string) ($request->bank_name[$index] ?? ''));
+                $operationNumber = trim((string) ($request->operation_number[$index] ?? ''));
 
                 if ($submittedId && isset($existingDetails[(int) $submittedId])) {
                     $detail = $existingDetails[(int) $submittedId];
@@ -263,21 +290,25 @@ class DepositDetailController extends Controller
 
                     // بند معلق: حدثه بشكل طبيعي
                     $detail->update([
-                        'date'          => $request->date,
-                        'station_id'    => $stationId,
-                        'deposit_amount' => $amount,
-                        'deposit_desc'  => $desc,
+                        'date'             => $request->date,
+                        'station_id'       => $stationId,
+                        'deposit_amount'   => $amount,
+                        'deposit_desc'     => $desc,
+                        'bank_name'        => $bankName ?: null,
+                        'operation_number' => $operationNumber ?: null,
                     ]);
                     $keptIds[] = $detail->id;
                 } else {
                     // بند جديد
                     $newDetail = DepositDetail::create([
-                        'date'           => $request->date,
-                        'deposit_id'     => $deposit->id,
-                        'station_id'     => $stationId,
-                        'deposit_amount' => $amount,
-                        'deposit_desc'   => $desc,
-                        'status'         => 0,
+                        'date'             => $request->date,
+                        'deposit_id'       => $deposit->id,
+                        'station_id'       => $stationId,
+                        'deposit_amount'   => $amount,
+                        'deposit_desc'     => $desc,
+                        'bank_name'        => $bankName ?: null,
+                        'operation_number' => $operationNumber ?: null,
+                        'status'           => 0,
                     ]);
                     $keptIds[] = $newDetail->id;
                 }

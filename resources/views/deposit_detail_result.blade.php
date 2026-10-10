@@ -96,6 +96,8 @@
                         @endif
                         <th class="p-3 text-center">المبلغ</th>
                         <th class="p-3 text-center">الوصف</th>
+                        <th class="p-3 text-center">اسم البنك</th>
+                        <th class="p-3 text-center">رقم العملية</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,10 +112,12 @@
                             @endif
                             <td class="p-3 text-center">{{ formatNumber($deposit->deposit_amount) }} جنيه</td>
                             <td class="p-3 text-center">{{ $deposit->deposit_desc ?? '-' }}</td>
+                            <td class="p-3 text-center">{{ $deposit->bank_name ?? '' }}</td>
+                            <td class="p-3 text-center">{{ $deposit->operation_number ?? '' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="p-4 text-center text-gray-500">لا توجد بيانات لعرضها</td>
+                            <td colspan="{{ $station ? 8 : 7 }}" class="p-4 text-center text-gray-500">لا توجد بيانات لعرضها</td>
                         </tr>
                     @endforelse
                 </tbody>

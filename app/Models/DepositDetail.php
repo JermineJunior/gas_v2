@@ -6,7 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class DepositDetail extends Model
 {
-    protected $fillable = ['deposit_id','station_id','date','deposit_amount','deposit_desc','status','approved_by','approved_at'];
+    protected $fillable = [
+        'deposit_id',
+        'station_id',
+        'date',
+        'deposit_amount',
+        'deposit_desc',
+        'bank_name',
+        'operation_number',
+        'status',
+        'approved_by',
+        'approved_at'
+    ];
 
     protected $casts = [
         'date' => 'date',
@@ -28,4 +39,3 @@ class DepositDetail extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 }
-
